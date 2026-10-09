@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}
+English Pass | Inglês Secreto
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-header">
+
+    <div>
+
+        <span class="small-label">
+            GAMIFICAÇÃO
+        </span>
+
+        <h1>
+            KNN English Pass
+        </h1>
+
+    </div>
+
+</div>
+
+
+<section class="pass-intro">
+
+    <div class="pass-intro-icon">
+        🏆
+    </div>
+
+    <div>
+
+        <h2>
+            Participantes que desbloquearam o Pass
+        </h2>
+
+        <p>
+            O English Pass é desbloqueado automaticamente
+            após 3 descobertas.
+        </p>
+
+    </div>
+
+</section>
+
+
+<div class="table-container">
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Participante
+                </th>
+
+                <th>
+                    WhatsApp
+                </th>
+
+                <th>
+                    Recompensa
+                </th>
+
+                <th>
+                    Status
+                </th>
+
+                <th>
+                    Ação
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for premio in premios %}
+
+            <tr>
+
+                <td>
+                    <strong>
+                        {{ premio.usuario_nome }}
+                    </strong>
+                </td>
+
+                <td>
+                    {{ premio.whatsapp }}
+                </td>
+
+                <td>
+                    {{ premio.recompensa_nome }}
+                </td>
+
+                <td>
+
+                    {% if premio.status == 'utilizado' %}
+
+                    <span class="status">
+                        UTILIZADO
+                    </span>
+
+                    {% else %}
+
+                    <span class="status active">
+                        DISPONÍVEL
+                    </span>
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    {% if premio.status != 'utilizado' %}
+
+                    <form method="POST" action="{{ url_for('utilizar_premio', premio_id=premio.id) }}">
+
+                        <button type="submit" class="table-button">
+                            MARCAR UTILIZADO
+                        </button>
+
+                    </form>
+
+                    {% else %}
+
+                    —
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+
+                <td colspan="5" class="empty-table">
+                    Nenhum English Pass desbloqueado ainda.
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

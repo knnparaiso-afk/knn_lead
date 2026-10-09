@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+Login | Inglês Secreto
+{% endblock %}
+
+{% block body_class %}admin-login{% endblock %}
+
+{% block content %}
+
+<section class="login-page">
+    <div class="login-card">
+        <div class="login-logo"><strong>KNN</strong></div>
+        <div class="login-intro"><span class="small-label">ÁREA RESTRITA</span><h1>Gestão da<br><em>campanha.</em></h1><p>Entre para acompanhar os QR Codes, os leads e os prêmios da sua unidade.</p></div>
+        <form method="POST">
+            <div class="form-group"><label for="username">Usuário</label><input id="username" type="text" name="username" autocomplete="username" required></div>
+            <div class="form-group"><label for="password">Senha</label><input id="password" type="password" name="password" autocomplete="current-password" required></div>
+            <button type="submit" class="btn btn-primary full" style="width: 100%;">ENTRAR NO PAINEL <span>→</span></button>
+        </form>
+    </div>
+</section>
+
+{% endblock %}

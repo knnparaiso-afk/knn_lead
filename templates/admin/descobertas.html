@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}
+Descobertas | Inglês Secreto
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-header">
+
+    <div>
+
+        <span class="small-label">
+            MÉTRICAS DA CAMPANHA
+        </span>
+
+        <h1>
+            Descobertas
+        </h1>
+
+    </div>
+
+</div>
+
+
+<div class="table-container">
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Pessoa
+                </th>
+
+                <th>
+                    Frase
+                </th>
+
+                <th>
+                    Local
+                </th>
+
+                <th>
+                    Parceiro
+                </th>
+
+                <th>
+                    QR
+                </th>
+
+                <th>
+                    Data
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for descoberta in descobertas %}
+
+            <tr>
+
+                <td>
+
+                    <strong>
+                        {{ descoberta.usuario_nome }}
+                    </strong>
+
+                    <small>
+                        {{ descoberta.whatsapp }}
+                    </small>
+
+                </td>
+
+                <td>
+
+                    {{ descoberta.frase }}
+
+                    <small>
+                        Semana {{ descoberta.semana }}
+                    </small>
+
+                </td>
+
+                <td>
+                    {{ descoberta.local_nome }}
+                </td>
+
+                <td>
+                    {{ descoberta.parceiro or '—' }}
+                </td>
+
+                <td>
+                    {{ descoberta.qr_codigo }}
+                </td>
+
+                <td>
+                    {{ descoberta.data_hora }}
+                </td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+
+                <td colspan="6" class="empty-table">
+                    Nenhuma descoberta registrada.
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

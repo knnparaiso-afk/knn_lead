@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}
+Participantes | Inglês Secreto
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-header">
+
+    <div>
+
+        <span class="small-label">
+            CAÇADORES
+        </span>
+
+        <h1>
+            Participantes
+        </h1>
+
+    </div>
+
+</div>
+
+
+<div class="table-container">
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Nome
+                </th>
+
+                <th>
+                    WhatsApp
+                </th>
+
+                <th>
+                    E-mail
+                </th>
+
+                <th>
+                    Descobertas
+                </th>
+
+                <th>
+                    Status
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for participante in participantes %}
+
+            <tr>
+
+                <td>
+                    <strong>
+                        {{ participante.nome }}
+                    </strong>
+                </td>
+
+                <td>
+                    {{ participante.whatsapp }}
+                </td>
+
+                <td>
+                    {{ participante.email or '—' }}
+                </td>
+
+                <td>
+                    {{ participante.total_descobertas }}
+                </td>
+
+                <td>
+
+                    {% if participante.total_descobertas >= pass_required %}
+
+                    <span class="status pass">
+                        🏆 PASS
+
+                    </span>
+
+                    {% else %}
+
+                    <span class="status">
+                        {{ participante.total_descobertas }}/{{ pass_required }}
+
+                    </span>
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+
+                <td colspan="5" class="empty-table">
+                    Ainda não existem participantes.
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

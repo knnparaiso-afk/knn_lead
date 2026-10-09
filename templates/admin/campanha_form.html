@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if campanha %}
+Editar campanha
+{% else %}
+Nova campanha
+{% endif %}
+| Inglês Secreto
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-header">
+
+    <div>
+
+        <span class="small-label">
+            CAMPANHA
+        </span>
+
+        <h1>
+
+            {% if campanha %}
+            Editar campanha
+            {% else %}
+            Nova campanha
+            {% endif %}
+
+        </h1>
+
+    </div>
+
+</div>
+
+
+<form method="POST" class="form-card admin-form">
+
+    <div class="form-grid">
+
+        <div>
+
+            <label>
+                Nome da campanha
+            </label>
+
+            <input type="text" name="nome" value="{{ campanha.nome if campanha else '' }}"
+                placeholder="Semana 1 — O primeiro encontro" required>
+
+        </div>
+
+
+        <div>
+
+            <label>
+                Semana
+            </label>
+
+            <input type="number" name="semana" min="1" value="{{ campanha.semana if campanha else 1 }}" required>
+
+        </div>
+
+    </div>
+
+
+    <label>
+        Frase secreta
+    </label>
+
+    <input type="text" name="frase" value="{{ campanha.frase if campanha else '' }}" placeholder="SEE YOU THERE."
+        required>
+
+
+    <div style="background: #fdfaf6; border: 1px solid #ebd9c8; border-radius: 6px; padding: 18px; margin: 18px 0;">
+        <span class="small-label" style="display: block; margin-bottom: 8px;">DESAFIO DE MÚLTIPLA ESCOLHA (A, B, C)</span>
+        <p style="font-size: 13px; color: var(--admin-muted); margin-bottom: 15px;">Configure as 3 alternativas que o participante verá na tela interativa.</p>
+
+        <label style="margin-top: 10px;">Opção A</label>
+        <input type="text" name="opcao_a" value="{{ campanha.opcao_a if campanha and campanha.opcao_a else (campanha.traducao if campanha else '') }}" placeholder="Ex: Vejo você lá" required>
+
+        <label style="margin-top: 10px;">Opção B</label>
+        <input type="text" name="opcao_b" value="{{ campanha.opcao_b if campanha and campanha.opcao_b else '' }}" placeholder="Ex: Onde você está?" required>
+
+        <label style="margin-top: 10px;">Opção C</label>
+        <input type="text" name="opcao_c" value="{{ campanha.opcao_c if campanha and campanha.opcao_c else '' }}" placeholder="Ex: Bom te ver ontem" required>
+
+        <label style="margin-top: 12px;">Qual é a alternativa correta?</label>
+        <select name="resposta_correta" style="width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--border-dark); border-radius: 4px; font-weight: 700; background: #fff;">
+            <option value="A" {% if not campanha or not campanha.resposta_correta or campanha.resposta_correta == 'A' %}selected{% endif %}>Opção A é a correta</option>
+            <option value="B" {% if campanha and campanha.resposta_correta == 'B' %}selected{% endif %}>Opção B é a correta</option>
+            <option value="C" {% if campanha and campanha.resposta_correta == 'C' %}selected{% endif %}>Opção C é a correta</option>
+        </select>
+    </div>
+
+    <label style="margin-top: 14px;">
+        Tradução / Resposta livre adicional (opcional)
+    </label>
+
+    <input type="text" name="traducao" value="{{ campanha.traducao if campanha else '' }}" placeholder="Pode deixar vazio ou preencher para compatibilidade">
+
+
+    <div class="form-grid">
+
+        <div>
+
+            <label>
+                Data inicial
+            </label>
+
+            <input type="date" name="data_inicio" value="{{ campanha.data_inicio if campanha else '' }}">
+
+        </div>
+
+
+        <div>
+
+            <label>
+                Data final
+            </label>
+
+            <input type="date" name="data_fim" value="{{ campanha.data_fim if campanha else '' }}">
+
+        </div>
+
+    </div>
+
+
+    <label class="checkbox-label">
+
+        <input type="checkbox" name="ativa" {% if not campanha or campanha.ativa %}checked{% endif %}>
+
+        Campanha ativa
+
+    </label>
+
+
+    <div class="form-actions">
+
+        <a href="{{ url_for('campanhas') }}" class="btn">
+            CANCELAR
+        </a>
+
+        <button type="submit" class="btn btn-primary">
+            SALVAR CAMPANHA
+        </button>
+
+    </div>
+
+</form>
+
+{% endblock %}

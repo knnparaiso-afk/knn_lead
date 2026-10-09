@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+Participar | Inglês Secreto
+{% endblock %}
+
+{% block body_class %}public-page public-lead{% endblock %}
+
+{% block content %}
+
+<section class="lead-shell">
+    <header class="experience-header"><a class="wordmark" href="{{ url_for('index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a><span class="mission-tag is-unlocked">DESBLOQUEADO</span></header>
+    <div class="mission-progress" aria-label="Etapa 2 de 2"><span class="active"></span><span class="active"></span></div>
+    <div class="lead-intro"><span class="eyebrow">VOCÊ ACERTOU</span><h1>Sua conquista<br>começa <em>agora.</em></h1><p>Complete seu cadastro para contabilizar a missão e entrar na trilha de prêmios.</p></div>
+    <form method="POST" class="lead-form">
+        <div class="field"><label for="nome">Nome completo</label><input id="nome" type="text" name="nome" autocomplete="name" placeholder="Como podemos te chamar?" required></div>
+        <div class="field"><label for="whatsapp">WhatsApp</label><input id="whatsapp" type="tel" name="whatsapp" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" required></div>
+        <div class="lead-grid"><div class="field"><label for="idade">Idade</label><input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" placeholder="Ex.: 18" required></div><div class="field"><label for="email">E-mail</label><input id="email" type="email" name="email" autocomplete="email" placeholder="voce@email.com" required></div></div>
+        <label class="consent"><input type="checkbox" name="consentimento" required><span>Autorizo o contato da KNN sobre esta campanha e oportunidades relacionadas ao meu aprendizado de inglês.</span></label>
+        <button type="submit" class="btn btn-primary lead-submit">CONTABILIZAR MISSÃO <span>→</span></button>
+        <p class="form-note">Seus dados são usados exclusivamente para esta experiência e contato da unidade KNN.</p>
+    </form>
+</section>
+
+<script>
+    const telefone = document.getElementById('whatsapp');
+    telefone.addEventListener('input', () => {
+        const numeros = telefone.value.replace(/\D/g, '').slice(0, 11);
+        telefone.value = numeros.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,700;1,800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    --p-red: #e51b2b;
+    --p-red-dark: #bb1020;
+    --p-ink: #141416;
+    --p-cream: #f7f5f1;
+    --p-line: #dedbd5;
+    --p-muted: #68666a;
+}
+
+.public-page { background: var(--p-cream); color: var(--p-ink); font-family: "DM Sans", Arial, sans-serif; }
+.public-page .topbar, .public-page .footer { display: none; }
+.public-page .main-container { width: 100%; max-width: none; margin: 0; padding: 0; }
+.public-page .flash { width: min(calc(100% - 32px), 540px); margin: 18px auto 0; }
+.public-page .btn { font-family: "DM Sans", sans-serif; letter-spacing: .02em; }
+
+.eyebrow { display: inline-block; color: var(--p-red); font-size: 11px; font-weight: 800; letter-spacing: .15em; }
+.eyebrow-light { color: rgba(255,255,255,.68); }
+.wordmark, .landing-mark { display: inline-flex; align-items: center; gap: 10px; color: var(--p-ink); text-decoration: none; }
+.wordmark strong, .landing-mark strong { color: var(--p-red); font-family: "Barlow Condensed", Impact, sans-serif; font-size: 35px; font-style: italic; font-weight: 900; letter-spacing: -1.8px; line-height: .8; }
+.wordmark span, .landing-mark span { padding-left: 10px; border-left: 1px solid #c9c5be; color: #565259; font-size: 9px; font-weight: 800; letter-spacing: .13em; }
+
+/* Página de entrada */
+.landing-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .7fr); grid-template-areas: "mark mark" "copy steps" "status status"; gap: 54px 74px; min-height: 100vh; padding: 46px max(7vw, 32px) 40px; overflow: hidden; background: var(--p-ink); color: #fff; position: relative; }
+.landing-shell::before { content: "KNN"; position: absolute; right: -2vw; bottom: -8vw; color: rgba(255,255,255,.035); font: italic 900 clamp(220px, 35vw, 520px)/.7 "Barlow Condensed", sans-serif; letter-spacing: -.09em; pointer-events: none; }
+.landing-mark { grid-area: mark; position: relative; z-index: 1; }
+.landing-mark strong { color: #fff; }
+.landing-mark span { border-color: rgba(255,255,255,.25); color: rgba(255,255,255,.72); }
+.landing-copy { grid-area: copy; position: relative; z-index: 1; align-self: end; }
+.landing-copy h1 { max-width: 680px; margin: 14px 0 21px; font: 900 clamp(64px, 9.1vw, 138px)/.79 "Barlow Condensed", Impact, sans-serif; letter-spacing: -.045em; }
+.landing-copy h1 em, .challenge-heading h1 em, .lead-intro h1 em, .success-shell h1 em { color: var(--p-red); font-style: italic; }
+.landing-copy p { max-width: 460px; color: rgba(255,255,255,.7); font-size: 17px; line-height: 1.65; }
+.landing-steps { grid-area: steps; position: relative; z-index: 1; align-self: end; border-top: 1px solid rgba(255,255,255,.21); }
+.landing-steps div { display: grid; grid-template-columns: 45px 1fr; gap: 12px; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,.21); }
+.landing-steps b { color: var(--p-red); font: 800 21px "Barlow Condensed", sans-serif; }
+.landing-steps span { font-weight: 600; }
+.landing-status { grid-area: status; z-index: 1; margin: 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.54); font-size: 13px; }
+
+/* Fluxo QR */
+.experience-shell, .lead-shell, .success-shell { width: min(100%, 640px); min-height: 100vh; margin: auto; padding: 28px 28px 48px; }
+.experience-header { display: flex; align-items: center; justify-content: space-between; min-height: 40px; }
+.mission-tag { padding: 7px 10px; border: 1px solid var(--p-line); border-radius: 999px; color: var(--p-muted); font-size: 9px; font-weight: 800; letter-spacing: .11em; }
+.mission-tag.is-unlocked { border-color: rgba(229,27,43,.25); background: #fff0f1; color: var(--p-red); }
+.mission-progress { display: flex; gap: 6px; margin: 44px 0 44px; }
+.mission-progress span { display: block; height: 4px; flex: 1; border-radius: 100px; background: #dedbd5; }
+.mission-progress span.active { background: var(--p-red); }
+.challenge-heading { margin-bottom: 34px; }
+.challenge-heading h1, .lead-intro h1, .success-shell h1 { margin: 10px 0 14px; font: 800 clamp(51px, 12vw, 76px)/.85 "Barlow Condensed", Impact, sans-serif; letter-spacing: -.035em; }
+.challenge-heading p, .lead-intro p { max-width: 420px; color: var(--p-muted); font-size: 16px; line-height: 1.55; }
+.phrase-card { position: relative; overflow: hidden; min-height: 190px; margin-bottom: 20px; padding: 26px; border-radius: 6px; background: var(--p-red); color: #fff; box-shadow: 0 14px 32px rgba(190,16,32,.18); }
+.phrase-card::before { content: ""; position: absolute; width: 240px; height: 240px; right: -96px; bottom: -138px; border: 32px solid rgba(255,255,255,.1); border-radius: 50%; }
+.phrase-card span { position: relative; z-index: 1; display: block; color: rgba(255,255,255,.7); font-size: 10px; font-weight: 800; letter-spacing: .14em; }
+.phrase-card strong { position: relative; z-index: 1; display: block; max-width: 85%; margin-top: 29px; font: 800 clamp(40px, 10vw, 65px)/.87 "Barlow Condensed", Impact, sans-serif; letter-spacing: -.03em; text-transform: uppercase; }
+.phrase-card i { position: absolute; right: 26px; top: 20px; color: rgba(255,255,255,.32); font: italic 900 75px/.8 Georgia, serif; }
+.answer-panel { padding: 27px; border: 1px solid var(--p-line); border-radius: 6px; background: #fff; box-shadow: 0 8px 24px rgba(26,23,20,.04); }
+.answer-panel label { display: block; margin-bottom: 5px; font-size: 18px; font-weight: 700; }
+.answer-panel > p:not(.challenge-feedback) { margin: 0 0 17px; color: var(--p-muted); font-size: 13px; }
+.answer-row { display: flex; gap: 8px; }
+.answer-row input, .field input { min-width: 0; width: 100%; height: 54px; padding: 0 15px; border: 1px solid #cbc7c0; border-radius: 3px; outline: none; background: #fff; color: var(--p-ink); font: 500 16px "DM Sans", sans-serif; }
+.answer-row input:focus, .field input:focus { border-color: var(--p-red); box-shadow: 0 0 0 3px rgba(229,27,43,.11); }
+.public-page .btn-primary { min-height: 54px; padding: 0 20px; border-radius: 3px; background: var(--p-red); box-shadow: none; font-size: 12px; font-weight: 800; letter-spacing: .07em; }
+.public-page .btn-primary:hover { background: var(--p-red-dark); transform: none; }
+.public-page .btn-primary span { margin-left: 8px; font-size: 19px; line-height: 0; }
+.public-page .btn-primary:disabled { opacity: .65; cursor: wait; }
+.challenge-feedback { min-height: 20px; margin: 13px 0 0; color: var(--p-muted); font-size: 12px; }
+.challenge-feedback.is-error { color: var(--p-red-dark); }.challenge-feedback.is-success { color: #11824a; font-weight: 700; }
+.prize-strip { display: flex; align-items: center; gap: 12px; margin-top: 22px; padding: 0 4px; }.prize-strip p { margin: 0; color: var(--p-muted); font-size: 12px; line-height: 1.5; }.prize-strip strong { color: var(--p-ink); }.prize-star { display: grid; width: 31px; height: 31px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: var(--p-ink); color: #fff; font-size: 13px; }
+
+/* Cadastro */
+.lead-intro { margin-bottom: 31px; }.lead-form { padding: 26px; border: 1px solid var(--p-line); border-radius: 6px; background: #fff; }.field { margin-bottom: 18px; }.field label { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 700; }.field input { height: 52px; }.lead-grid { display: grid; grid-template-columns: .55fr 1fr; gap: 12px; }.consent { display: flex; align-items: flex-start; gap: 10px; margin: 4px 0 20px; color: var(--p-muted); font-size: 11px; line-height: 1.48; }.consent input { width: 16px; height: 16px; margin-top: 1px; accent-color: var(--p-red); }.lead-submit { width: 100%; }.form-note { margin: 14px 0 0; color: #85817b; font-size: 10px; line-height: 1.45; text-align: center; }
+
+/* Confirmação */
+.success-shell { padding-top: 36px; text-align: center; }.success-shell .experience-header { margin-bottom: 60px; }.success-seal { display: grid; width: 66px; height: 66px; margin: 0 auto 25px; place-items: center; border-radius: 50%; background: var(--p-red); color: #fff; box-shadow: 0 10px 22px rgba(229,27,43,.2); font-size: 32px; font-weight: 700; }.success-copy { max-width: 390px; margin: 0 auto 29px; color: var(--p-muted); line-height: 1.6; }.journey-card { padding: 23px; border-radius: 6px; background: var(--p-ink); color: #fff; text-align: left; }.journey-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }.journey-top span { color: rgba(255,255,255,.6); font-size: 10px; font-weight: 700; letter-spacing: .1em; }.journey-top strong { color: #fff; font-size: 14px; }.journey-track { height: 7px; margin: 17px 0 13px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.18); }.journey-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--p-red); transition: width .8s ease; }.journey-card p { margin: 0; color: rgba(255,255,255,.68); font-size: 12px; line-height: 1.5; }.next-mission, .reward-callout { display: flex; gap: 13px; align-items: center; margin-top: 17px; padding: 18px; border: 1px solid var(--p-line); border-radius: 6px; text-align: left; }.next-mission { display: block; }.next-mission span { display: block; margin-bottom: 3px; color: var(--p-red); font-size: 10px; font-weight: 800; letter-spacing: .1em; }.next-mission strong { font-size: 14px; }.reward-callout > span { display: grid; width: 35px; height: 35px; place-items: center; border-radius: 50%; background: var(--p-red); color: #fff; }.reward-callout strong { font-size: 14px; }.reward-callout p { margin: 2px 0 0; color: var(--p-muted); font-size: 12px; }
+
+@media (max-width: 560px) { .landing-shell { grid-template-columns: 1fr; grid-template-areas: "mark" "copy" "steps" "status"; gap: 43px; padding: 36px 24px 30px; }.landing-copy h1 { font-size: clamp(65px, 19vw, 105px); }.landing-copy p { font-size: 15px; }.experience-shell, .lead-shell, .success-shell { padding: 23px 18px 38px; }.mission-progress { margin: 32px 0 35px; }.phrase-card { min-height: 170px; padding: 23px; }.phrase-card strong { margin-top: 27px; }.answer-panel, .lead-form { padding: 20px; }.answer-row { display: block; }.answer-row input { margin-bottom: 8px; }.answer-row .btn { width: 100%; }.lead-grid { grid-template-columns: 1fr; gap: 0; }.success-shell .experience-header { margin-bottom: 49px; } }

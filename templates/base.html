@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        Inglês Secreto | KNN
+        {% endblock %}
+    </title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/public.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+
+<body class="{% if request.path.startswith('/admin') %}admin-page{% endif %} {% block body_class %}{% endblock %}">
+
+    <header class="topbar">
+
+        <a class="brand" href="{% if session.get('admin_logged') %}{{ url_for('admin_dashboard') }}{% else %}{{ url_for('index') }}{% endif %}">
+            <span class="brand-knn">KNN</span>
+            <span class="brand-secret">INGLÊS SECRETO</span>
+        </a>
+
+        {% if session.get('admin_logged') %}
+
+        <nav class="admin-nav">
+
+            <a href="{{ url_for('admin_dashboard') }}">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('campanhas') }}">
+                Campanhas
+            </a>
+
+            <a href="{{ url_for('locais') }}">
+                Locais
+            </a>
+
+            <a href="{{ url_for('participantes') }}">
+                Participantes
+            </a>
+
+            <a href="{{ url_for('descobertas') }}">
+                Descobertas
+            </a>
+
+            <a href="{{ url_for('admin_pass') }}">
+                English Pass
+            </a>
+
+            <a href="{{ url_for('admin_logout') }}">
+                Sair
+            </a>
+
+        </nav>
+
+        {% endif %}
+
+    </header>
+
+
+    <main class="main-container">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+        {% for category, message in messages %}
+
+        <div class="flash {{ category }}">
+            {{ message }}
+        </div>
+
+        {% endfor %}
+
+        {% endif %}
+
+        {% endwith %}
+
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+
+    <footer class="footer">
+
+        <p>
+            Inglês Secreto · KNN
+        </p>
+
+    </footer>
+
+</body>
+
+</html>

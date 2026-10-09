@@ -1,0 +1,547 @@
+{% extends "base.html" %}
+
+{% block title %}
+Mensagem Secreta | KNN
+{% endblock %}
+
+{% block body_class %}public-page public-challenge{% endblock %}
+
+{% block content %}
+
+{% if erro %}
+
+<section class="center-page">
+
+    <div class="secret-card">
+
+        <div class="big-icon">
+            🔎
+        </div>
+
+        <h1>
+            Ops!
+        </h1>
+
+        <p>
+            {{ erro }}
+        </p>
+
+        <a href="{{ url_for('index') }}" class="btn">
+            Voltar
+        </a>
+
+    </div>
+
+</section>
+
+{% else %}
+
+<section class="experience-shell" id="frame-1">
+    <header class="experience-header">
+        <a class="wordmark" href="{{ url_for('index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a>
+        <span class="mission-tag">MISSÃO {{ '%02d'|format(qr.semana) }}</span>
+    </header>
+    
+    <div class="intro-discovery">
+        <div class="discovery-badge-pulse">
+            <span class="discovery-radar"></span>
+            <div class="discovery-icon">🎯</div>
+        </div>
+        
+        <span class="eyebrow" style="margin-bottom: 8px;">PISTA LOCALIZADA</span>
+        <h1 class="discovery-title">Você encontrou um<br><em>Inglês Secreto!</em></h1>
+        
+        <p class="discovery-desc">
+            Parabéns! Há um enigma escondido bem aqui {% if qr.local_nome %}no <strong>{{ qr.local_nome }}</strong>{% endif %}.
+            Prepare-se para testar seus conhecimentos e desbloquear prêmios.
+        </p>
+
+        <button type="button" class="btn btn-primary btn-reveal" id="btn-iniciar-desafio">
+            REVELAR A MENSAGEM <span>➔</span>
+        </button>
+        
+        <div class="discovery-tips">
+            <span>💡 Dica: observe com atenção a pronúncia e o contexto!</span>
+        </div>
+    </div>
+</section>
+
+<section class="experience-shell" id="frame-2" style="display: none;">
+    <header class="experience-header">
+        <a class="wordmark" href="{{ url_for('index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a>
+        <span class="mission-tag">SEMANA {{ '%02d'|format(qr.semana) }}</span>
+    </header>
+
+    <div class="mission-progress" aria-label="Etapa 1 de 2">
+        <span class="active"></span>
+        <span></span>
+    </div>
+
+    <!-- 1º MOMENTO: Mensagem misteriosa animada -->
+    <div class="challenge-reveal-box" id="phrase-box">
+        <div class="reveal-header">
+            <span class="secret-tag">ENIGMA REVELADO</span>
+            <span class="decode-anim">● DECODIFICADO</span>
+        </div>
+
+        <article class="phrase-card-animated" id="phrase-card">
+            <div class="phrase-glow"></div>
+            <span class="phrase-label">FRASE ENCONTRADA</span>
+            <strong class="phrase-text">{{ qr.frase }}</strong>
+            <i class="phrase-symbol">?</i>
+        </article>
+    </div>
+
+    <!-- 2º MOMENTO: Opções A, B, C aparecem depois com animação -->
+    <div class="options-container" id="options-panel" style="display: none;">
+        <div class="challenge-question">
+            <h2>O que significa essa frase?</h2>
+            <p>Selecione a alternativa correta para destravar seu prêmio:</p>
+        </div>
+
+        <div class="answers-grid" id="answers-group">
+            {% for op in opcoes %}
+            <button type="button" class="option-btn" data-letra="{{ op.letra }}">
+                <span class="option-letter">{{ op.letra }}</span>
+                <span class="option-text">{{ op.texto }}</span>
+                <span class="option-status-icon"></span>
+            </button>
+            {% endfor %}
+        </div>
+
+        <p class="challenge-feedback" id="challenge-feedback" aria-live="polite">
+            Selecione uma das opções para validar.
+        </p>
+    </div>
+
+    <aside class="prize-strip">
+        <span class="prize-star">★</span>
+        <p><strong>Acerte a alternativa</strong> para registrar sua conquista e avançar para os prêmios KNN.</p>
+    </aside>
+</section>
+
+<style>
+/* =========================================================
+   ESTILOS DE INTERATIVIDADE & ANIMAÇÃO
+   ========================================================= */
+.intro-discovery {
+    text-align: center;
+    padding: 30px 10px 20px;
+}
+
+.discovery-badge-pulse {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 24px;
+    display: grid;
+    place-items: center;
+}
+
+.discovery-icon {
+    position: relative;
+    z-index: 2;
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: var(--p-red, #e51b2b);
+    display: grid;
+    place-items: center;
+    font-size: 38px;
+    box-shadow: 0 10px 25px rgba(229, 27, 43, 0.35);
+    animation: iconBounce 2s ease-in-out infinite;
+}
+
+.discovery-radar {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 2px solid var(--p-red, #e51b2b);
+    opacity: 0.8;
+    animation: radarRipple 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+@keyframes radarRipple {
+    0% { transform: scale(0.85); opacity: 0.9; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes iconBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.discovery-title {
+    margin: 10px 0 16px;
+    font: 900 clamp(44px, 11vw, 68px)/0.88 "Barlow Condensed", Impact, sans-serif;
+    letter-spacing: -0.03em;
+    color: var(--p-ink, #141416);
+}
+
+.discovery-title em {
+    color: var(--p-red, #e51b2b);
+    font-style: italic;
+}
+
+.discovery-desc {
+    max-width: 440px;
+    margin: 0 auto 34px;
+    color: var(--p-muted, #68666a);
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.btn-reveal {
+    width: 100%;
+    max-width: 400px;
+    min-height: 56px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    box-shadow: 0 10px 28px rgba(229, 27, 43, 0.28) !important;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.btn-reveal:hover {
+    transform: scale(1.02);
+}
+
+.discovery-tips {
+    margin-top: 28px;
+    font-size: 13px;
+    color: var(--p-muted, #85817b);
+}
+
+/* Caixa da Frase Animada */
+.challenge-reveal-box {
+    margin-bottom: 22px;
+}
+
+.reveal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.secret-tag {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: var(--p-red, #e51b2b);
+}
+
+.decode-anim {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #11824a;
+    animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.phrase-card-animated {
+    position: relative;
+    overflow: hidden;
+    min-height: 180px;
+    padding: 28px 24px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #e51b2b 0%, #ab0f1d 100%);
+    color: #fff;
+    box-shadow: 0 16px 36px rgba(187, 16, 32, 0.25);
+    animation: phraseImpact 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes phraseImpact {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.phrase-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 60%);
+    pointer-events: none;
+    animation: rotateGlow 8s linear infinite;
+}
+
+@keyframes rotateGlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.phrase-label {
+    position: relative;
+    z-index: 1;
+    display: block;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+}
+
+.phrase-text {
+    position: relative;
+    z-index: 1;
+    display: block;
+    margin-top: 24px;
+    font: 900 clamp(42px, 11vw, 68px)/0.86 "Barlow Condensed", Impact, sans-serif;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    animation: textShine 1.8s ease-in-out;
+}
+
+@keyframes textShine {
+    0% { filter: blur(3px); opacity: 0; }
+    100% { filter: blur(0); opacity: 1; }
+}
+
+.phrase-symbol {
+    position: absolute;
+    right: 22px;
+    top: 15px;
+    color: rgba(255, 255, 255, 0.25);
+    font: italic 900 80px/0.8 Georgia, serif;
+    pointer-events: none;
+}
+
+/* Opções A, B, C */
+.options-container {
+    animation: optionsSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes optionsSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.challenge-question {
+    margin: 24px 0 16px;
+    text-align: left;
+}
+
+.challenge-question h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--p-ink, #141416);
+    margin-bottom: 4px;
+}
+
+.challenge-question p {
+    font-size: 14px;
+    color: var(--p-muted, #68666a);
+    margin: 0;
+}
+
+.answers-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.option-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 60px;
+    padding: 12px 18px;
+    border: 2px solid var(--p-line, #dedbd5);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--p-ink, #141416);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.02);
+}
+
+.option-btn:hover {
+    border-color: var(--p-red, #e51b2b);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(229, 27, 43, 0.1);
+}
+
+.option-letter {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    margin-right: 14px;
+    border-radius: 6px;
+    background: #f1eeea;
+    color: var(--p-ink, #141416);
+    font: 900 16px "Barlow Condensed", Impact, sans-serif;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+}
+
+.option-btn:hover .option-letter {
+    background: var(--p-red, #e51b2b);
+    color: #fff;
+}
+
+.option-text {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.35;
+    flex-grow: 1;
+}
+
+/* Estados da Opção */
+.option-btn.is-selected {
+    border-color: var(--p-red, #e51b2b);
+    background: #fff8f9;
+}
+
+.option-btn.is-correct {
+    border-color: #11824a !important;
+    background: #eaf8ef !important;
+    color: #0b5e35 !important;
+}
+
+.option-btn.is-correct .option-letter {
+    background: #11824a !important;
+    color: #fff !important;
+}
+
+.option-btn.is-wrong {
+    border-color: #c9001d !important;
+    background: #fff0f2 !important;
+    color: #920015 !important;
+    animation: shake 0.4s ease;
+}
+
+.option-btn.is-wrong .option-letter {
+    background: #c9001d !important;
+    color: #fff !important;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+
+.challenge-feedback {
+    min-height: 24px;
+    margin: 8px 0 0;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.challenge-feedback.is-error {
+    color: #c9001d;
+}
+
+.challenge-feedback.is-success {
+    color: #11824a;
+    font-size: 15px;
+    font-weight: 800;
+}
+</style>
+
+<script>
+    // Transição entre Frame 1 (Pista encontrada) e Frame 2 (Frase + Opções)
+    const btnIniciar = document.getElementById("btn-iniciar-desafio");
+    const frame1 = document.getElementById("frame-1");
+    const frame2 = document.getElementById("frame-2");
+    const optionsPanel = document.getElementById("options-panel");
+    const feedback = document.getElementById("challenge-feedback");
+    const optionButtons = document.querySelectorAll(".option-btn");
+
+    btnIniciar.addEventListener("click", () => {
+        // Oculta frame 1 e exibe frame 2 com animação
+        frame1.style.display = "none";
+        frame2.style.display = "block";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Temporizador para efeito: Primeiro aprecia a mensagem, depois revelam-se as opções A, B, C!
+        setTimeout(() => {
+            optionsPanel.style.display = "block";
+        }, 1200); // 1.2 segundos para focar na mensagem antes das opções
+    });
+
+    // Manipulação da escolha A, B, C
+    optionButtons.forEach(button => {
+        button.addEventListener("click", async () => {
+            const letra = button.dataset.letra;
+            
+            // Desabilita botões temporariamente
+            optionButtons.forEach(btn => {
+                btn.style.pointerEvents = "none";
+                btn.classList.remove("is-selected");
+            });
+            button.classList.add("is-selected");
+
+            feedback.className = "challenge-feedback";
+            feedback.textContent = "Verificando resposta...";
+
+            try {
+                const formData = new FormData();
+                formData.append("resposta", letra);
+
+                const response = await fetch("{{ url_for('responder_desafio', codigo=qr.codigo) }}", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.ok) {
+                    button.classList.remove("is-selected");
+                    button.classList.add("is-correct");
+                    feedback.className = "challenge-feedback is-success";
+                    feedback.textContent = "🎉 Acertou em cheio! Desbloqueando seu prêmio...";
+
+                    setTimeout(() => {
+                        window.location.href = data.url;
+                    }, 800);
+                    return;
+                }
+
+                // Errou
+                button.classList.remove("is-selected");
+                button.classList.add("is-wrong");
+                feedback.className = "challenge-feedback is-error";
+                feedback.textContent = data.mensagem || "Não foi dessa vez! Tente outra alternativa.";
+
+                setTimeout(() => {
+                    button.classList.remove("is-wrong");
+                    optionButtons.forEach(btn => btn.style.pointerEvents = "auto");
+                }, 900);
+
+            } catch (err) {
+                feedback.className = "challenge-feedback is-error";
+                feedback.textContent = "Ocorreu um erro ao validar. Tente novamente.";
+                optionButtons.forEach(btn => btn.style.pointerEvents = "auto");
+            }
+        });
+    });
+</script>
+
+{% endif %}
+
+{% endblock %}

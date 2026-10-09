@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+Inglês Secreto | KNN
+{% endblock %}
+
+{% block body_class %}public-page public-home{% endblock %}
+
+{% block content %}
+
+<section class="landing-shell">
+    <div class="landing-mark"><strong>KNN</strong><span>INGLÊS SECRETO</span></div>
+    <div class="landing-copy">
+        <span class="eyebrow eyebrow-light">UMA EXPERIÊNCIA KNN</span>
+        <h1>ENCONTRE.<br>DECIFRE.<br><em>CONQUISTE.</em></h1>
+        <p>O inglês está escondido pela cidade. Cada frase que você decifrar aproxima você de prêmios especiais.</p>
+    </div>
+    <div class="landing-steps" aria-label="Como participar">
+        <div><b>01</b><span>Encontre um QR Code</span></div>
+        <div><b>02</b><span>Decifre a mensagem</span></div>
+        <div><b>03</b><span>Avance para os prêmios</span></div>
+    </div>
+    <p class="landing-status">{% if campanha %}A campanha da semana está ativa. Encontre o próximo QR Code.{% else %}Uma nova missão está chegando. Fique de olho pela cidade.{% endif %}</p>
+</section>
+
+{% endblock %}

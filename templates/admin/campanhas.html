@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}
+Campanhas | Inglês Secreto
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-header">
+
+    <div>
+
+        <span class="small-label">
+            GERENCIAMENTO
+        </span>
+
+        <h1>
+            Campanhas
+        </h1>
+
+    </div>
+
+    <a href="{{ url_for('nova_campanha') }}" class="btn btn-primary">
+        + NOVA CAMPANHA
+    </a>
+
+</div>
+
+
+<div class="table-container">
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Semana
+                </th>
+
+                <th>
+                    Código
+                </th>
+
+                <th>
+                    Frase
+                </th>
+
+                <th>
+                    Descobertas
+                </th>
+
+                <th>
+                    Status
+                </th>
+
+                <th>
+                    Ações
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for campanha in campanhas %}
+
+            <tr>
+
+                <td>
+                    {{ campanha.semana }}
+                </td>
+
+                <td>
+                    <strong>
+                        {{ campanha.codigo }}
+                    </strong>
+                </td>
+
+                <td>
+
+                    <strong>
+                        {{ campanha.frase }}
+                    </strong>
+
+                    <small>
+                        {{ campanha.traducao }}
+                    </small>
+
+                </td>
+
+                <td>
+                    {{ campanha.total_descobertas }}
+                </td>
+
+                <td>
+
+                    {% if campanha.ativa %}
+
+                    <span class="status active">
+                        ATIVA
+                    </span>
+
+                    {% else %}
+
+                    <span class="status">
+                        INATIVA
+                    </span>
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    <a href="{{ url_for('editar_campanha', campanha_id=campanha.id) }}" class="table-link">
+                        Editar
+                    </a>
+
+                    <a href="{{ url_for('gerenciar_qr', campanha_id=campanha.id) }}" class="btn btn-primary">
+                        GERAR QR CODE
+                    </a>
+
+                    <form method="POST" action="{{ url_for('excluir_campanha', campanha_id=campanha.id) }}" style="display: inline-block;" onsubmit="return confirm('Tem certeza que deseja excluir esta campanha e todos os seus QR Codes?');">
+                        <button type="submit" class="btn btn-danger" style="padding: 6px 12px; min-height: 34px; font-size: 10px;">EXCLUIR</button>
+                    </form>
+
+                </td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+
+                <td colspan="6" class="empty-table">
+                    Nenhuma campanha cadastrada.
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}
