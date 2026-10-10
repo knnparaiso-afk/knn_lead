@@ -6,11 +6,9 @@
 {% block content %}
 <section class="admin-hero">
     <div>
-        <span class="admin-kicker">PAINEL DE OPERAÇÃO</span>
         <h1>Campanha em<br><em>movimento.</em></h1>
         <p>Acompanhe a jornada que transforma QR Codes em leads para a sua unidade KNN.</p>
     </div>
-    <a href="{{ url_for('nova_campanha') }}" class="btn btn-primary">NOVA CAMPANHA <span>→</span></a>
 </section>
 
 <section class="metric-grid">
@@ -22,13 +20,13 @@
 
 {% if campanha_atual %}
 <section class="current-campaign">
-    <div class="current-campaign-top"><div><span class="admin-kicker">CAMPANHA ATIVA · SEMANA {{ campanha_atual.semana }}</span><h2>{{ campanha_atual.nome }}</h2></div><span class="live-badge">AO VIVO</span></div>
-    <div class="campaign-phrase"><span>FRASE EM CIRCULAÇÃO</span><strong>{{ campanha_atual.frase }}</strong></div>
+    <div class="current-campaign-top"><div><h2>{{ campanha_atual.nome }}</h2></div><span class="live-badge">AO VIVO</span></div>
+    <div class="campaign-phrase"><strong>{{ campanha_atual.frase }}</strong></div>
     <div class="campaign-health"><div><strong>{{ campanha_atual.total_qrs }}</strong><span>QR Codes gerados</span></div><div><strong>{{ campanha_atual.total_descobertas }}</strong><span>Leads desta campanha</span></div><a href="{{ url_for('gerenciar_qr', campanha_id=campanha_atual.id) }}" class="btn btn-secondary">GERENCIAR PONTOS <span>→</span></a></div>
 </section>
 {% else %}
-<section class="setup-card"><span class="setup-number">01</span><div><span class="admin-kicker">PRÓXIMO PASSO</span><h2>Crie a primeira campanha semanal.</h2><p>Defina a frase, a resposta válida e os locais que receberão um QR Code.</p></div><a href="{{ url_for('nova_campanha') }}" class="btn btn-primary">CRIAR CAMPANHA <span>→</span></a></section>
+<section class="setup-card"><span class="setup-number">01</span><div><h2>Crie a primeira campanha semanal.</h2><p>Defina a frase, a resposta válida e os locais que receberão um QR Code.</p></div><a href="{{ url_for('nova_campanha') }}" class="btn btn-primary">CRIAR CAMPANHA <span>→</span></a></section>
 {% endif %}
 
-<section class="workflow-section"><div><span class="admin-kicker">OPERAÇÃO DA CAMPANHA</span><h2>Um fluxo claro, do planejamento ao prêmio.</h2></div><div class="workflow-grid"><a href="{{ url_for('campanhas') }}"><b>01</b><strong>Campanhas</strong><span>Crie uma frase por semana.</span></a><a href="{{ url_for('locais') }}"><b>02</b><strong>Locais</strong><span>Cadastre seus pontos parceiros.</span></a><a href="{{ url_for('participantes') }}"><b>03</b><strong>Leads</strong><span>Acompanhe cada cadastro.</span></a><a href="{{ url_for('admin_pass') }}"><b>04</b><strong>Prêmios</strong><span>Gerencie os Passes liberados.</span></a></div></section>
+<section class="workflow-section"><div><h2>Um fluxo claro, do planejamento ao prêmio.</h2></div><div class="workflow-grid"><a href="{{ url_for('campanhas') }}"><b>01</b><strong>Campanhas</strong><span>Crie uma frase por semana.</span></a><a href="{{ url_for('locais') }}"><b>02</b><strong>Locais</strong><span>Cadastre seus pontos parceiros.</span></a><a href="{{ url_for('participantes') }}"><b>03</b><strong>Leads</strong><span>Acompanhe cada cadastro.</span></a><a href="{{ url_for('admin_pass') }}"><b>04</b><strong>Prêmios</strong><span>Gerencie os Passes liberados.</span></a></div></section>
 {% endblock %}

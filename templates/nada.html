@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+Missão Concluída | KNN Idiomas
+{% endblock %}
+
+{% block body_class %}public-page public-nada{% endblock %}
+
+{% block content %}
+
+<section class="experience-shell" style="max-width: 680px; margin: 40px auto; padding: 40px 28px; text-align: center; background: #ffffff; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-md);">
+
+    <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: #fff0f2; border-radius: 50%; margin-bottom: 24px; border: 2px solid #fecdd3;">
+        <span style="font-size: 38px;">🎉</span>
+    </div>
+
+    <div style="margin-bottom: 28px;">
+        <h1 style="font-size: clamp(28px, 4vw, 40px); font-weight: 800; color: #111827; line-height: 1.15; margin-bottom: 12px;">
+            {% if nome %}
+                Parabéns, <span style="color: var(--knn-red);">{{ nome }}</span>!
+            {% else %}
+                Missão <span style="color: var(--knn-red);">Concluída!</span>
+            {% endif %}
+        </h1>
+        <p style="font-size: 16px; color: #4b5563; line-height: 1.6; max-width: 520px; margin: 0 auto;">
+            Sua participação foi registrada no <strong>Inglês Secreto da KNN Paraisópolis</strong>. Em breve nossa equipe entrará em contato com você pelo WhatsApp!
+        </p>
+    </div>
+
+    <!-- CARD INSTAGRAM KNN PARAISÓPOLIS -->
+    <div style="background: linear-gradient(135deg, #fff5f5 0%, #fff0f2 100%); border: 2px solid #fed7aa; border-color: #fecdd3; border-radius: 16px; padding: 32px 24px; margin: 32px 0 24px; text-align: center; box-shadow: 0 4px 15px rgba(237, 27, 47, 0.08);">
+        
+        <div style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; padding: 6px 14px; border-radius: 999px; margin-bottom: 16px; border: 1px solid #fee2e2;">
+            <svg style="width: 18px; height: 18px; fill: #ed1b2f;" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+            <span style="font-size: 12px; font-weight: 800; color: #ed1b2f; letter-spacing: 0.5px;">INSTAGRAM OFICIAL</span>
+        </div>
+
+        <h2 style="font-size: 22px; font-weight: 800; color: #111827; margin-bottom: 8px;">
+            Siga @knnparaisopolis
+        </h2>
+
+        <p style="font-size: 14px; color: #4b5563; margin-bottom: 22px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.5;">
+            Acompanhe a revelação das frases secretas, dicas semanais de inglês e veja os ganhadores do <strong>English Pass</strong>!
+        </p>
+
+        <a href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 28px; font-size: 15px; font-weight: 800; border-radius: 10px; background: #ed1b2f; color: #ffffff; text-decoration: none; box-shadow: 0 4px 14px rgba(237, 27, 47, 0.35);">
+            SEGUIR NO INSTAGRAM ➔
+        </a>
+
+    </div>
+
+    <div>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary" style="font-size: 13px; font-weight: 600; padding: 10px 20px;">
+            Voltar para o início
+        </a>
+    </div>
+
+</section>
+
+{% endblock %}

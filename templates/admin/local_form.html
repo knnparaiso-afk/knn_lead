@@ -4,59 +4,33 @@
 Novo local | Inglês Secreto
 {% endblock %}
 
-
 {% block content %}
 
 <div class="admin-header">
-
     <div>
-
-        <span class="small-label">
-            PARCEIRO
-        </span>
-
         <h1>
             Novo local
         </h1>
-
     </div>
-
 </div>
-
 
 <form method="POST" class="form-card admin-form">
 
-    <label>
-        Nome do local
-    </label>
+    <div style="margin-bottom: 16px;">
+        <input type="text" name="nome" placeholder="Nome do local:" required style="width: 100%; height: 46px; border-radius: 4px; padding: 0 14px;">
+    </div>
 
-    <input type="text" name="nome" placeholder="Cafeteria X" required>
-
-
-    <label>
-        Parceiro
-    </label>
-
-    <input type="text" name="parceiro" placeholder="Nome da empresa parceira">
-
-
-    <label>
-        Endereço
-    </label>
-
-    <input type="text" name="endereco" placeholder="Rua, número, bairro...">
-
+    <div style="margin-bottom: 24px;">
+        <input type="text" name="endereco" placeholder="Endereço completo:" style="width: 100%; height: 46px; border-radius: 4px; padding: 0 14px;">
+    </div>
 
     <div class="form-actions">
-
         <a href="{{ url_for('locais') }}" class="btn">
             CANCELAR
         </a>
-
         <button type="submit" class="btn btn-primary">
             SALVAR LOCAL
         </button>
-
     </div>
 
 </form>

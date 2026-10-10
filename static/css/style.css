@@ -1372,3 +1372,10 @@ table tbody tr:hover {
     .reward-teaser { align-items: flex-start; }
     .form-card { padding: 22px; }
 }
+
+/* Ocultar rótulos e labels residuais do sistema */
+.small-label,
+.admin-kicker,
+.eyebrow {
+    display: none !important;
+}

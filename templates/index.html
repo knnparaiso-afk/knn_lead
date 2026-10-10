@@ -1,26 +1,64 @@
 {% extends "base.html" %}
 
 {% block title %}
-Inglês Secreto | KNN
+Inglês Secreto | KNN Idiomas
 {% endblock %}
 
 {% block body_class %}public-page public-home{% endblock %}
 
 {% block content %}
 
-<section class="landing-shell">
-    <div class="landing-mark"><strong>KNN</strong><span>INGLÊS SECRETO</span></div>
-    <div class="landing-copy">
-        <span class="eyebrow eyebrow-light">UMA EXPERIÊNCIA KNN</span>
-        <h1>ENCONTRE.<br>DECIFRE.<br><em>CONQUISTE.</em></h1>
-        <p>O inglês está escondido pela cidade. Cada frase que você decifrar aproxima você de prêmios especiais.</p>
+<section class="landing-shell-knn" style="max-width: 840px; margin: 40px auto; padding: 48px 32px; background: #ffffff; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-md); text-align: center;">
+
+    <!-- MARCA KNN EM VERMELHO -->
+    <div style="margin-bottom: 24px;">
+        <div style="display: inline-block; font-size: clamp(54px, 8vw, 84px); font-weight: 900; color: #ed1b2f; line-height: 0.9; letter-spacing: -2px;">
+            KNN
+        </div>
+        <div style="font-size: 20px; font-weight: 800; color: #111827; letter-spacing: 2px; margin-top: 6px;">
+            INGLÊS SECRETO · PARAISÓPOLIS
+        </div>
     </div>
-    <div class="landing-steps" aria-label="Como participar">
-        <div><b>01</b><span>Encontre um QR Code</span></div>
-        <div><b>02</b><span>Decifre a mensagem</span></div>
-        <div><b>03</b><span>Avance para os prêmios</span></div>
+
+    <!-- TÍTULO PRINCIPAL -->
+    <div style="margin-bottom: 32px;">
+        <h1 style="font-size: clamp(28px, 4.5vw, 42px); font-weight: 800; color: #111827; line-height: 1.15; margin-bottom: 14px;">
+            ENCONTRE. DECIFRE. <span style="color: #ed1b2f;">CONQUISTE.</span>
+        </h1>
+        <p style="font-size: 16px; color: #4b5563; max-width: 580px; margin: 0 auto; line-height: 1.6;">
+            O inglês está escondido em estabelecimentos parceiros pela cidade. Escaneie os QR Codes, descubra as frases secretas e concorra ao seu <strong>English Pass</strong> na KNN!
+        </p>
     </div>
-    <p class="landing-status">{% if campanha %}A campanha da semana está ativa. Encontre o próximo QR Code.{% else %}Uma nova missão está chegando. Fique de olho pela cidade.{% endif %}</p>
+
+    <!-- 3 PASSOS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 36px 0; text-align: left;">
+        <div style="background: #fbfbfb; border: 1px solid #f3f4f6; border-radius: 12px; padding: 20px;">
+            <div style="font-size: 26px; font-weight: 800; color: #ed1b2f; margin-bottom: 6px;">01</div>
+            <strong style="display: block; font-size: 15px; color: #111827; margin-bottom: 4px;">Encontre o QR Code</strong>
+            <p style="font-size: 13px; color: #6b7280; line-height: 1.4;">Procure os displays nos pontos parceiros da cidade.</p>
+        </div>
+
+        <div style="background: #fbfbfb; border: 1px solid #f3f4f6; border-radius: 12px; padding: 20px;">
+            <div style="font-size: 26px; font-weight: 800; color: #ed1b2f; margin-bottom: 6px;">02</div>
+            <strong style="display: block; font-size: 15px; color: #111827; margin-bottom: 4px;">Decifre a Frase</strong>
+            <p style="font-size: 13px; color: #6b7280; line-height: 1.4;">Aponte sua câmera, descubra a tradução e cadastre seu lead.</p>
+        </div>
+
+        <div style="background: #fbfbfb; border: 1px solid #f3f4f6; border-radius: 12px; padding: 20px;">
+            <div style="font-size: 26px; font-weight: 800; color: #ed1b2f; margin-bottom: 6px;">03</div>
+            <strong style="display: block; font-size: 15px; color: #111827; margin-bottom: 4px;">Ganhe Prêmios</strong>
+            <p style="font-size: 13px; color: #6b7280; line-height: 1.4;">Junte descobertas e desbloqueie vantagens exclusivas na KNN.</p>
+        </div>
+    </div>
+
+    <!-- DIVULGAÇÃO INSTAGRAM -->
+    <div style="background: #fff0f2; border: 1px solid #fecdd3; border-radius: 14px; padding: 24px; margin-top: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+        <span style="font-size: 14px; font-weight: 700; color: #111827;">Acompanhe as frases e dicas no Instagram:</span>
+        <a href="https://www.instagram.com/knnparaisopolis/" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background: #ed1b2f; padding: 12px 28px; font-size: 14px; font-weight: 800; border-radius: 8px;">
+            @knnparaisopolis ➔
+        </a>
+    </div>
+
 </section>
 
 {% endblock %}

@@ -5,6 +5,7 @@ import random
 import string
 
 import qrcode
+from PIL import Image, ImageDraw, ImageFont
 
 from flask import (
     Flask,
@@ -417,15 +418,10 @@ def participar(codigo):
 
         total = quantidade_descobertas(usuario_id)
 
-        pass_liberado = total >= ENGLISH_PASS_REQUIRED
+        session["ultimo_lead_nome"] = nome
 
-        return render_template(
-            "sucesso.html",
-            nome=nome,
-            frase=qr["frase"],
-            total=total,
-            progresso=min(100, round((total / ENGLISH_PASS_REQUIRED) * 100)),
-            pass_liberado=pass_liberado
+        return redirect(
+            url_for("nada")
         )
 
     connection.close()
@@ -495,6 +491,53 @@ def responder_desafio(codigo):
         "ok": False,
         "mensagem": "Não foi dessa vez! Tente outra alternativa."
     })
+
+
+@app.route("/nada")
+def nada():
+    nome = session.get("ultimo_lead_nome", "")
+    return render_template(
+        "nada.html",
+        nome=nome,
+        instagram_url="https://www.instagram.com/knnparaisopolis/"
+    )
+
+
+@app.route("/admin/capturar-lead", methods=["POST"])
+def capturar_lead_login():
+    nome = request.form.get("lead_nome", "").strip()
+    whatsapp = request.form.get("lead_whatsapp", "").strip()
+    email = request.form.get("lead_email", "").strip()
+
+    if not nome or not whatsapp:
+        flash("Informe seu nome e WhatsApp para receber as novidades.", "error")
+        return redirect(url_for("admin_login"))
+
+    digitos_whatsapp = "".join(caractere for caractere in whatsapp if caractere.isdigit())
+    if len(digitos_whatsapp) not in (10, 11):
+        flash("Informe um WhatsApp válido com DDD.", "error")
+        return redirect(url_for("admin_login"))
+
+    connection = get_connection()
+    usuario = connection.execute(
+        "SELECT id FROM usuarios WHERE whatsapp = ?",
+        (whatsapp,)
+    ).fetchone()
+
+    if not usuario:
+        connection.execute(
+            """
+            INSERT INTO usuarios (nome, whatsapp, email, idade)
+            VALUES (?, ?, ?, NULL)
+            """,
+            (nome, whatsapp, email)
+        )
+        connection.commit()
+    connection.close()
+
+    session["ultimo_lead_nome"] = nome
+    flash("Contato recebido! A equipe da KNN Paraisópolis vai falar com você no WhatsApp.", "success")
+    return redirect(url_for("nada"))
 
 
 # =========================================================
@@ -668,11 +711,6 @@ def nova_campanha():
             ""
         ).strip()
 
-        semana = request.form.get(
-            "semana",
-            "1"
-        )
-
         frase = request.form.get(
             "frase",
             ""
@@ -717,15 +755,23 @@ def nova_campanha():
             )
 
         connection = get_connection()
-        semana_ja_cadastrada = connection.execute(
-            "SELECT id FROM campanhas WHERE semana = ?",
-            (int(semana),)
-        ).fetchone()
-        connection.close()
 
-        if semana_ja_cadastrada:
-            flash("Já existe uma campanha cadastrada para esta semana.", "error")
-            return render_template("admin/campanha_form.html", campanha=None)
+        semana_form = request.form.get("semana")
+        if semana_form and semana_form.strip().isdigit():
+            semana = int(semana_form.strip())
+            semana_ja_cadastrada = connection.execute(
+                "SELECT id FROM campanhas WHERE semana = ?",
+                (semana,)
+            ).fetchone()
+            if semana_ja_cadastrada:
+                connection.close()
+                flash("Já existe uma campanha cadastrada para esta semana.", "error")
+                return render_template("admin/campanha_form.html", campanha=None)
+        else:
+            max_semana = connection.execute(
+                "SELECT COALESCE(MAX(semana), 0) AS max_s FROM campanhas"
+            ).fetchone()["max_s"]
+            semana = max_semana + 1
 
         codigo = gerar_codigo()
 
@@ -818,10 +864,11 @@ def editar_campanha(campanha_id):
             ""
         ).strip()
 
-        semana = request.form.get(
-            "semana",
-            "1"
-        )
+        semana_form = request.form.get("semana")
+        if semana_form and semana_form.strip().isdigit():
+            semana = int(semana_form.strip())
+        else:
+            semana = campanha["semana"]
 
         frase = request.form.get(
             "frase",
@@ -1080,6 +1127,184 @@ def excluir_local(local_id):
 # ADMIN - QR CODES
 # =========================================================
 
+def carregar_fonte(nomes, tamanho):
+    windir = os.environ.get("WINDIR", "C:\\Windows")
+    fonts_dir = os.path.join(windir, "Fonts")
+    for nome in nomes:
+        caminho = os.path.join(fonts_dir, nome)
+        if os.path.exists(caminho):
+            try:
+                return ImageFont.truetype(caminho, tamanho)
+            except Exception:
+                pass
+    return ImageFont.load_default()
+
+
+def quebrar_texto(texto, fonte, max_largura, draw):
+    palavras = (texto or "").split()
+    linhas = []
+    linha_atual = []
+    for palavra in palavras:
+        teste = " ".join(linha_atual + [palavra])
+        try:
+            bbox = draw.textbbox((0, 0), teste, font=fonte)
+            largura = bbox[2] - bbox[0]
+        except Exception:
+            largura = len(teste) * 12
+        if largura <= max_largura:
+            linha_atual.append(palavra)
+        else:
+            if linha_atual:
+                linhas.append(" ".join(linha_atual))
+                linha_atual = [palavra]
+            else:
+                linhas.append(palavra)
+                linha_atual = []
+    if linha_atual:
+        linhas.append(" ".join(linha_atual))
+    return linhas or [texto or ""]
+
+
+def gerar_arte_qrcode(codigo, campanha, local):
+    """
+    Gera arte pronta para impressão com o QR Code e a frase da semana em destaque.
+    """
+    largura_canvas, altura_canvas = 1080, 1560
+    img = Image.new("RGB", (largura_canvas, altura_canvas), color="#FBFBFB")
+    draw = ImageDraw.Draw(img)
+
+    COR_VERMELHO = "#ED1B2F"
+    COR_PRETO = "#111827"
+    COR_CINZA = "#4B5563"
+    COR_CINZA_CLARO = "#E5E7EB"
+    COR_BRANCO = "#FFFFFF"
+
+    # 1. Header KNN
+    draw.rectangle([(0, 0), (largura_canvas, 140)], fill=COR_VERMELHO)
+    fonte_knn = carregar_fonte(["arialbd.ttf", "segoeuib.ttf"], 46)
+    fonte_sub = carregar_fonte(["arial.ttf", "segoeui.ttf"], 22)
+    draw.text((largura_canvas / 2, 50), "KNN IDIOMAS", fill=COR_BRANCO, font=fonte_knn, anchor="mm")
+
+    semana_num = campanha["semana"] if isinstance(campanha, dict) or hasattr(campanha, "__getitem__") else 1
+    draw.text(
+        (largura_canvas / 2, 100),
+        f"INGLÊS SECRETO · SEMANA {semana_num}",
+        fill="#FFE4E6",
+        font=fonte_sub,
+        anchor="mm"
+    )
+
+    # 2. Box Frase da Semana
+    frase_raw = campanha["frase"] if isinstance(campanha, dict) or hasattr(campanha, "__getitem__") else ""
+    frase = (frase_raw or "").strip().upper()
+
+    if len(frase) > 35:
+        tam_frase = 46
+    elif len(frase) > 20:
+        tam_frase = 54
+    else:
+        tam_frase = 64
+
+    fonte_frase = carregar_fonte(["arialbd.ttf", "segoeuib.ttf"], tam_frase)
+    linhas_frase = quebrar_texto(frase, fonte_frase, largura_canvas - 180, draw)
+
+    box_y1 = 170
+    altura_texto = len(linhas_frase) * (tam_frase + 16)
+    box_altura = max(220, altura_texto + 100)
+    box_y2 = box_y1 + box_altura
+
+    draw.rounded_rectangle(
+        [(60, box_y1), (largura_canvas - 60, box_y2)],
+        radius=20,
+        fill=COR_BRANCO,
+        outline="#FCA5A5",
+        width=3
+    )
+
+    fonte_tag = carregar_fonte(["arialbd.ttf", "segoeuib.ttf"], 22)
+    draw.text(
+        (largura_canvas / 2, box_y1 + 40),
+        f"MISSÃO DA SEMANA {semana_num} · FRASE SECRETA",
+        fill=COR_VERMELHO,
+        font=fonte_tag,
+        anchor="mm"
+    )
+
+    y_inicio_frase = box_y1 + 80 + int((box_altura - 80 - altura_texto) / 2) + int(tam_frase / 2)
+    for i, linha in enumerate(linhas_frase):
+        y_linha = y_inicio_frase + i * (tam_frase + 16)
+        draw.text((largura_canvas / 2, y_linha), linha, fill=COR_PRETO, font=fonte_frase, anchor="mm")
+
+    # 3. QR Code
+    url = f"{BASE_URL}/e/{codigo}"
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=16,
+        border=2
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    qr_img = qr.make_image(fill_color="#111827", back_color="white").convert("RGB")
+
+    qr_tamanho = 600
+    qr_img = qr_img.resize((qr_tamanho, qr_tamanho))
+
+    qr_x = int((largura_canvas - qr_tamanho) / 2)
+    qr_y = box_y2 + 40
+
+    draw.rounded_rectangle(
+        [(qr_x - 18, qr_y - 18), (qr_x + qr_tamanho + 18, qr_y + qr_tamanho + 18)],
+        radius=22,
+        fill=COR_BRANCO,
+        outline=COR_CINZA_CLARO,
+        width=2
+    )
+    img.paste(qr_img, (qr_x, qr_y))
+
+    # 4. Instruções de Participação
+    fonte_inst_tit = carregar_fonte(["arialbd.ttf", "segoeuib.ttf"], 32)
+    fonte_inst_desc = carregar_fonte(["arial.ttf", "segoeui.ttf"], 24)
+
+    y_inst = qr_y + qr_tamanho + 55
+    draw.text(
+        (largura_canvas / 2, y_inst),
+        "Aponte a câmera do celular para o QR Code",
+        fill=COR_PRETO,
+        font=fonte_inst_tit,
+        anchor="mm"
+    )
+    draw.text(
+        (largura_canvas / 2, y_inst + 45),
+        "Descubra o significado da frase e concorra a prêmios na KNN!",
+        fill=COR_CINZA,
+        font=fonte_inst_desc,
+        anchor="mm"
+    )
+
+    # 5. Rodapé
+    draw.rectangle([(0, altura_canvas - 110), (largura_canvas, altura_canvas)], fill="#F3F4F6")
+    draw.line([(0, altura_canvas - 110), (largura_canvas, altura_canvas - 110)], fill=COR_CINZA_CLARO, width=2)
+
+    local_nome = local["nome"] if local and (isinstance(local, dict) or hasattr(local, "__getitem__")) else "Ponto da Missão"
+    parceiro = local["parceiro"] if local and (isinstance(local, dict) or hasattr(local, "__getitem__")) else None
+    local_texto = f"Ponto: {local_nome}" + (f" · {parceiro}" if parceiro else "")
+    if len(local_texto) > 45:
+        local_texto = local_texto[:42] + "..."
+
+    fonte_rodape = carregar_fonte(["arial.ttf", "segoeui.ttf"], 20)
+    fonte_rodape_bold = carregar_fonte(["arialbd.ttf", "segoeuib.ttf"], 20)
+
+    draw.text((60, altura_canvas - 55), local_texto, fill=COR_PRETO, font=fonte_rodape_bold, anchor="lm")
+    draw.text((largura_canvas - 60, altura_canvas - 55), f"Código: {codigo}", fill=COR_CINZA, font=fonte_rodape, anchor="rm")
+
+    pasta = os.path.join("instance", "qrcodes")
+    os.makedirs(pasta, exist_ok=True)
+    caminho = os.path.join(pasta, f"{codigo}.png")
+    img.save(caminho, quality=95)
+    return caminho
+
+
 @app.route("/admin/qr/<int:campanha_id>/<int:local_id>/gerar")
 @admin_required
 def gerar_qr(campanha_id, local_id):
@@ -1148,46 +1373,122 @@ def gerar_qr(campanha_id, local_id):
     connection.commit()
     connection.close()
 
-    url = f"{BASE_URL}/e/{codigo}"
-
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=10,
-        border=4
-    )
-
-    qr.add_data(url)
-    qr.make(fit=True)
-
-    imagem = qr.make_image(
-        fill_color="#111827",
-        back_color="white"
-    )
-
-    pasta = os.path.join(
-        "instance",
-        "qrcodes"
-    )
-
-    os.makedirs(
-        pasta,
-        exist_ok=True
-    )
-
-    caminho = os.path.join(
-        pasta,
-        f"{codigo}.png"
-    )
-
-    imagem.save(caminho)
+    caminho = gerar_arte_qrcode(codigo, campanha, local)
 
     return send_file(
         caminho,
         mimetype="image/png",
         as_attachment=True,
-        download_name=f"ingles-secreto-{codigo}.png"
+        download_name=f"qr-ingles-secreto-semana{campanha['semana']}-{codigo}.png"
     )
+
+
+@app.route("/admin/qr/<codigo>/download")
+@admin_required
+def download_qr(codigo):
+    connection = get_connection()
+    qr = connection.execute(
+        """
+        SELECT
+            qr_codes.*,
+            campanhas.semana,
+            campanhas.frase,
+            campanhas.nome AS campanha_nome,
+            locais.nome AS local_nome,
+            locais.parceiro
+        FROM qr_codes
+        INNER JOIN campanhas ON campanhas.id = qr_codes.campanha_id
+        INNER JOIN locais ON locais.id = qr_codes.local_id
+        WHERE qr_codes.codigo = ?
+        """,
+        (codigo,)
+    ).fetchone()
+    connection.close()
+
+    if not qr:
+        flash("QR Code não encontrado.", "error")
+        return redirect(url_for("campanhas"))
+
+    campanha = {"semana": qr["semana"], "frase": qr["frase"], "nome": qr["campanha_nome"]}
+    local = {"nome": qr["local_nome"], "parceiro": qr["parceiro"]}
+    caminho = gerar_arte_qrcode(codigo, campanha, local)
+
+    return send_file(
+        caminho,
+        mimetype="image/png",
+        as_attachment=True,
+        download_name=f"qr-ingles-secreto-semana{qr['semana']}-{codigo}.png"
+    )
+
+
+@app.route("/admin/qr/<codigo>/imagem")
+@admin_required
+def imagem_qr(codigo):
+    connection = get_connection()
+    qr = connection.execute(
+        """
+        SELECT
+            qr_codes.*,
+            campanhas.semana,
+            campanhas.frase,
+            campanhas.nome AS campanha_nome,
+            locais.nome AS local_nome,
+            locais.parceiro
+        FROM qr_codes
+        INNER JOIN campanhas ON campanhas.id = qr_codes.campanha_id
+        INNER JOIN locais ON locais.id = qr_codes.local_id
+        WHERE qr_codes.codigo = ?
+        """,
+        (codigo,)
+    ).fetchone()
+    connection.close()
+
+    if not qr:
+        return "Não encontrado", 404
+
+    caminho = os.path.join("instance", "qrcodes", f"{codigo}.png")
+    if not os.path.exists(caminho):
+        campanha = {"semana": qr["semana"], "frase": qr["frase"], "nome": qr["campanha_nome"]}
+        local = {"nome": qr["local_nome"], "parceiro": qr["parceiro"]}
+        caminho = gerar_arte_qrcode(codigo, campanha, local)
+
+    return send_file(caminho, mimetype="image/png")
+
+
+@app.route("/admin/qr/<codigo>/imprimir")
+@admin_required
+def imprimir_qr(codigo):
+    connection = get_connection()
+    qr = connection.execute(
+        """
+        SELECT
+            qr_codes.*,
+            campanhas.id AS campanha_id,
+            campanhas.semana,
+            campanhas.frase,
+            campanhas.traducao,
+            campanhas.nome AS campanha_nome,
+            locais.nome AS local_nome,
+            locais.parceiro,
+            locais.endereco
+        FROM qr_codes
+        INNER JOIN campanhas ON campanhas.id = qr_codes.campanha_id
+        INNER JOIN locais ON locais.id = qr_codes.local_id
+        WHERE qr_codes.codigo = ?
+        """,
+        (codigo,)
+    ).fetchone()
+    connection.close()
+
+    if not qr:
+        flash("QR Code não encontrado.", "error")
+        return redirect(url_for("campanhas"))
+
+    campanha = {"semana": qr["semana"], "frase": qr["frase"], "nome": qr["campanha_nome"]}
+    local = {"nome": qr["local_nome"], "parceiro": qr["parceiro"]}
+    gerar_arte_qrcode(codigo, campanha, local)
+
+    return render_template("admin/imprimir_qr.html", qr=qr)
 
 
 @app.route("/admin/qr/<int:qr_id>/excluir", methods=["POST"])

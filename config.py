@@ -25,7 +25,7 @@ ADMIN_PASSWORD = os.getenv(
 # Durante o desenvolvimento:
 BASE_URL = os.getenv(
     "BASE_URL",
-    "http://192.168.1.44:5000"
+    "http://192.168.1.109:5000"
 )
 
 ENGLISH_PASS_REQUIRED = 3
