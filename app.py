@@ -63,25 +63,25 @@ csrf = CSRFProtect(app)
 init_db()
 
 PRIVACY_NOTICE_VERSION = "2026-10-13-v1"
-PRIVACY_NOTICE_ACK_TEXT = (
-    "Declaro que li o Aviso de Privacidade do Inglês Secreto, versão "
-    + PRIVACY_NOTICE_VERSION + "."
-)
-MARKETING_CONSENT_TEXT = (
-    "Autorizo a unidade KNN responsável a entrar em contato comigo por WhatsApp "
-    "ou e-mail sobre esta campanha e oportunidades relacionadas ao aprendizado de inglês."
+CONSENT_TEXT_VERSION = "2026-10-13-v3"
+PARTICIPATION_CONSENT_TEXT = (
+    "Concordo em participar da campanha e autorizo a unidade KNN responsável "
+    "a entrar em contato comigo por WhatsApp ou e-mail, inclusive para enviar mensagens "
+    "sobre a campanha, novidades, promoções e oportunidades relacionadas aos cursos da unidade. "
+    "Se a pessoa participante tiver menos de 18 anos, declaro ser pai, mãe ou responsável legal "
+    "e autorizo sua participação e esses contatos."
 )
 GUARDIAN_CONSENT_TEXT = (
     "Declaro ser pai, mãe ou responsável legal pela pessoa menor de 18 anos e "
-    "autorizo sua participação nesta experiência e o tratamento dos dados informados, "
-    "conforme o Aviso de Privacidade vigente."
+    "autorizo sua participação na campanha e o contato por WhatsApp ou e-mail, "
+    "incluindo mensagens relacionadas, novidades, promoções e oportunidades da unidade."
 )
 
 FIELD_MAX_LENGTHS = {
     "username": 100, "password": 256,
-    "nome": 120, "lead_nome": 120,
-    "whatsapp": 32, "lead_whatsapp": 32,
-    "email": 254, "lead_email": 254,
+    "nome": 120,
+    "whatsapp": 32,
+    "email": 254,
     "idade": 3, "frase": 500, "traducao": 1000,
     "opcao_a": 400, "opcao_b": 400, "opcao_c": 400,
     "resposta_correta": 1, "semana": 4,
@@ -91,14 +91,14 @@ FIELD_MAX_LENGTHS = {
 }
 
 
-def registrar_consentimento(connection, usuario_id, tipo, texto):
+def registrar_consentimento(connection, usuario_id, tipo, texto, versao=None):
     """Grava a versão e o texto exato da declaração afirmada no formulário."""
     connection.execute(
         """
         INSERT INTO registros_consentimento (usuario_id, tipo, versao, texto)
         VALUES (?, ?, ?, ?)
         """,
-        (usuario_id, tipo, PRIVACY_NOTICE_VERSION, texto),
+        (usuario_id, tipo, versao or CONSENT_TEXT_VERSION, texto),
     )
 
 
@@ -452,14 +452,14 @@ def participar(codigo):
         whatsapp = request.form.get("whatsapp", "").strip()
         email = request.form.get("email", "").strip()
         idade = request.form.get("idade", "").strip()
-        consentimento = request.form.get("consentimento")
+        participacao_confirmada = request.form.get("participacao_confirmada")
 
         if (not nome or not whatsapp or not email or not idade
-                or not request.form.get("privacidade_lida")):
+                or not participacao_confirmada):
             connection.close()
 
             flash(
-                "Preencha os campos obrigatórios e confirme a leitura do Aviso de Privacidade para continuar.",
+                "Preencha os campos obrigatórios e confirme sua participação e autorização de contato para continuar.",
                 "error"
             )
 
@@ -475,14 +475,6 @@ def participar(codigo):
         except ValueError:
             connection.close()
             flash("Informe uma idade válida.", "error")
-            return render_template("participar.html", qr=qr)
-
-        if idade < 18 and not request.form.get("responsavel_confirmado"):
-            connection.close()
-            flash(
-                "Para participantes menores de 18 anos, o pai, a mãe ou responsável legal deve preencher o cadastro e confirmar a autorização.",
-                "error",
-            )
             return render_template("participar.html", qr=qr)
 
         if len(nome) > 120 or len(whatsapp) > 32 or len(email) > 254:
@@ -584,15 +576,13 @@ def participar(codigo):
             )
 
         registrar_consentimento(
-            connection, usuario_id, "aviso_privacidade", PRIVACY_NOTICE_ACK_TEXT
+            connection, usuario_id, "participacao_e_mensagens", PARTICIPATION_CONSENT_TEXT,
+            versao=CONSENT_TEXT_VERSION,
         )
-        if consentimento:
-            registrar_consentimento(
-                connection, usuario_id, "contato_comercial", MARKETING_CONSENT_TEXT
-            )
         if idade < 18:
             registrar_consentimento(
-                connection, usuario_id, "responsavel_legal", GUARDIAN_CONSENT_TEXT
+                connection, usuario_id, "responsavel_legal", GUARDIAN_CONSENT_TEXT,
+                versao=CONSENT_TEXT_VERSION,
             )
 
         connection.commit()
@@ -604,7 +594,7 @@ def participar(codigo):
 
         # Não guardar nome/telefone/e-mail no cookie assinado do navegador.
         session.pop("ultimo_lead_nome", None)
-        session["contato_autorizado"] = bool(consentimento)
+        session["contato_autorizado"] = True
 
         return redirect(
             url_for("nada")
@@ -696,63 +686,6 @@ def nada():
         contato_autorizado=contato_autorizado,
         instagram_url="https://www.instagram.com/knnparaisopolis/"
     )
-
-
-@app.route("/admin/capturar-lead", methods=["POST"])
-def capturar_lead_login():
-    if not permitir_requisicao("lead_login", 10, 600):
-        return make_response("Muitas tentativas de cadastro. Aguarde alguns minutos.", 429)
-
-    nome = request.form.get("lead_nome", "").strip()
-    whatsapp = request.form.get("lead_whatsapp", "").strip()
-    email = request.form.get("lead_email", "").strip()
-
-    if not nome or not whatsapp or not request.form.get("consentimento_marketing"):
-        flash("Informe seu nome, WhatsApp e autorize o contato comercial para continuar.", "error")
-        return redirect(url_for("admin_login"))
-
-    digitos_whatsapp = "".join(caractere for caractere in whatsapp if caractere.isdigit())
-    if len(digitos_whatsapp) not in (10, 11):
-        flash("Informe um WhatsApp válido com DDD.", "error")
-        return redirect(url_for("admin_login"))
-
-    connection = get_connection()
-    try:
-        usuario = connection.execute(
-            "SELECT id FROM usuarios WHERE whatsapp = ?",
-            (whatsapp,)
-        ).fetchone()
-
-        if usuario:
-            usuario_id = usuario["id"]
-        else:
-            cursor = connection.execute(
-                """
-                INSERT INTO usuarios (nome, whatsapp, email, idade)
-                VALUES (?, ?, ?, NULL)
-                RETURNING id
-                """,
-                (nome, whatsapp, email or None)
-            )
-            usuario_id = cursor.fetchone()["id"]
-
-        registrar_consentimento(
-            connection,
-            usuario_id,
-            "contato_comercial",
-            MARKETING_CONSENT_TEXT,
-        )
-        connection.commit()
-    except Exception:
-        connection.rollback()
-        raise
-    finally:
-        connection.close()
-
-    session.pop("ultimo_lead_nome", None)
-    session["contato_autorizado"] = True
-    flash("Contato recebido! A equipe da KNN Paraisópolis vai falar com você no WhatsApp.", "success")
-    return redirect(url_for("nada"))
 
 
 @app.route("/privacidade")
