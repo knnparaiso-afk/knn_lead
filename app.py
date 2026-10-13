@@ -365,6 +365,7 @@ def participar(codigo):
                 INSERT INTO usuarios
                 (nome, whatsapp, email, idade)
                 VALUES (?, ?, ?, ?)
+                RETURNING id
                 """,
                 (
                     nome,
@@ -374,7 +375,9 @@ def participar(codigo):
                 )
             )
 
-            usuario_id = cursor.lastrowid
+            # RETURNING id funciona em SQLite moderno e PostgreSQL; evita depender
+            # do cursor.lastrowid, que não é equivalente nos dois drivers.
+            usuario_id = cursor.fetchone()["id"]
 
         # Verifica se já encontrou essa campanha
         ja_encontrou = connection.execute(
