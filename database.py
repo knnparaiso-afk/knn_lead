@@ -85,6 +85,26 @@ CREATE TABLE IF NOT EXISTS premios (
     FOREIGN KEY (recompensa_id) REFERENCES recompensas(id) ON DELETE CASCADE,
     UNIQUE(usuario_id)
 );
+
+-- Registra a versão do aviso e cada autorização declarada no cadastro.
+CREATE TABLE IF NOT EXISTS registros_consentimento (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_id INTEGER NOT NULL,
+    tipo TEXT NOT NULL,
+    versao TEXT NOT NULL,
+    texto TEXT NOT NULL,
+    data_consentimento TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+-- Contadores compartilhados entre workers e reinícios da aplicação.
+CREATE TABLE IF NOT EXISTS rate_limit_buckets (
+    bucket_key TEXT PRIMARY KEY,
+    window_start BIGINT NOT NULL,
+    request_count INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_rate_limit_buckets_window_start
+    ON rate_limit_buckets(window_start);
 """
 
 

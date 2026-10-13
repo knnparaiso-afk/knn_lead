@@ -50,3 +50,16 @@ except ValueError as exc:
 
 if ENGLISH_PASS_REQUIRED < 1:
     raise RuntimeError("ENGLISH_PASS_REQUIRED precisa ser pelo menos 1.")
+
+
+# Preencha estas variáveis no Render com os dados reais da empresa/franqueada
+# controladora e seu canal de privacidade antes da divulgação pública.
+PRIVACY_CONTROLLER_NAME = os.getenv(
+    "PRIVACY_CONTROLLER_NAME", "A informar pela unidade responsável"
+).strip()
+PRIVACY_CONTROLLER_CNPJ = os.getenv(
+    "PRIVACY_CONTROLLER_CNPJ", "A informar pela unidade responsável"
+).strip()
+PRIVACY_CONTACT_EMAIL = os.getenv(
+    "PRIVACY_CONTACT_EMAIL", "A informar pela unidade responsável"
+).strip()

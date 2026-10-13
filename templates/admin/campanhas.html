@@ -121,6 +121,7 @@ Campanhas | Inglês Secreto
                     </a>
 
                     <form method="POST" action="{{ url_for('excluir_campanha', campanha_id=campanha.id) }}" style="display: inline-block;" onsubmit="return confirm('Tem certeza que deseja excluir esta campanha e todos os seus QR Codes?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-danger" style="padding: 6px 12px; min-height: 34px; font-size: 10px;">EXCLUIR</button>
                     </form>
 

@@ -11,16 +11,17 @@ Participar | Inglês Secreto
 <section class="lead-shell">
     <header class="experience-header"><a class="wordmark" href="{{ url_for('index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a><span class="mission-tag is-unlocked">DESBLOQUEADO</span></header>
     <div class="mission-progress" aria-label="Etapa 2 de 2"><span class="active"></span><span class="active"></span></div>
-    <div class="lead-intro"><h1>Sua conquista<br>começa <em>agora.</em></h1><p>Complete seu cadastro para contabilizar a missão e entrar na trilha de prêmios.</p></div>
+    <div class="lead-intro"><h1>Sua conquista<br>começa <em>agora.</em></h1><p>Complete seu cadastro para contabilizar a missão e entrar na trilha de prêmios.</p><p style="font-size:12px;line-height:1.5;color:#6b7280;">Se a pessoa participante tiver menos de 18 anos, o pai, a mãe ou responsável legal deve preencher o cadastro usando os próprios contatos.</p></div>
     
     <form method="POST" class="lead-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="field">
-            <input id="nome" type="text" name="nome" autocomplete="name" placeholder="Nome" required>
+            <input id="nome" type="text" name="nome" maxlength="120" autocomplete="name" placeholder="Nome" required>
         </div>
 
         <div class="field">
             <label for="whatsapp" style="display: block; font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 6px;">Número de celular</label>
-            <input id="whatsapp" type="tel" name="whatsapp" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" required>
+            <input id="whatsapp" type="tel" name="whatsapp" maxlength="32" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" required>
         </div>
 
         <div class="lead-grid">
@@ -28,22 +29,46 @@ Participar | Inglês Secreto
                 <input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" placeholder="Idade" required>
             </div>
             <div class="field">
-                <input id="email" type="email" name="email" autocomplete="email" placeholder="example@gmail.com" required>
+                <input id="email" type="email" name="email" maxlength="254" autocomplete="email" placeholder="example@gmail.com" required>
             </div>
         </div>
 
-        <div class="consent" style="display: flex; align-items: flex-start; gap: 8px; margin: 12px 0 20px;">
-            <input type="checkbox" id="consentimento" name="consentimento" required style="margin-top: 3px; accent-color: var(--knn-red); cursor: pointer;">
-            <span style="font-size: 11px; color: #6b7280; line-height: 1.4;">Autorizo o contato da KNN sobre esta campanha e oportunidades relacionadas ao meu aprendizado de inglês.</span>
+        <div id="responsavel-bloco" class="consent" style="display:flex;align-items:flex-start;gap:8px;margin:12px 0 16px;">
+            <input type="checkbox" id="responsavel_confirmado" name="responsavel_confirmado" style="margin-top:3px;accent-color:var(--knn-red);cursor:pointer;">
+            <label for="responsavel_confirmado" style="font-size:11px;color:#6b7280;line-height:1.4;">Sou pai, mãe ou responsável legal e autorizo a participação e o tratamento dos dados da pessoa menor de 18 anos conforme o Aviso de Privacidade.</label>
+        </div>
+
+        <div class="consent" style="display:flex;align-items:flex-start;gap:8px;margin:12px 0 12px;">
+            <input type="checkbox" id="privacidade_lida" name="privacidade_lida" required style="margin-top:3px;accent-color:var(--knn-red);cursor:pointer;">
+            <label for="privacidade_lida" style="font-size:11px;color:#6b7280;line-height:1.4;">Li e entendi o <a href="{{ url_for('privacidade') }}" target="_blank" rel="noopener noreferrer">Aviso de Privacidade</a>.</label>
+        </div>
+
+        <div class="consent" style="display:flex;align-items:flex-start;gap:8px;margin:12px 0 20px;">
+            <input type="checkbox" id="consentimento" name="consentimento" style="margin-top:3px;accent-color:var(--knn-red);cursor:pointer;">
+            <label for="consentimento" style="font-size:11px;color:#6b7280;line-height:1.4;">Opcional: autorizo o contato da unidade KNN responsável por WhatsApp ou e-mail sobre esta campanha e oportunidades relacionadas ao aprendizado de inglês.</label>
         </div>
 
         <button type="submit" class="btn btn-primary lead-submit">CONTABILIZAR MISSÃO <span>→</span></button>
-        <p class="form-note">Seus dados são usados exclusivamente para esta experiência e contato da unidade KNN.</p>
+        <p class="form-note">Para solicitar acesso, correção ou exclusão de dados, use o canal informado no Aviso de Privacidade.</p>
     </form>
 </section>
 
 <script>
     const telefone = document.getElementById('whatsapp');
+    const idadeInput = document.getElementById('idade');
+    const responsavelBloco = document.getElementById('responsavel-bloco');
+    const responsavelInput = document.getElementById('responsavel_confirmado');
+    function atualizarResponsavel() {
+        const idade = Number.parseInt(idadeInput.value, 10);
+        const precisaResponsavel = Number.isFinite(idade) && idade < 18;
+        responsavelBloco.hidden = !precisaResponsavel;
+        responsavelBloco.style.display = precisaResponsavel ? "flex" : "none";
+        responsavelInput.required = precisaResponsavel;
+        if (!precisaResponsavel) responsavelInput.checked = false;
+    }
+    idadeInput.addEventListener('input', atualizarResponsavel);
+    atualizarResponsavel();
+
     telefone.addEventListener('input', () => {
         const numeros = telefone.value.replace(/\D/g, '').slice(0, 11);
         telefone.value = numeros.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');

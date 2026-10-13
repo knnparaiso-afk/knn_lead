@@ -15,13 +15,14 @@ Novo local | Inglês Secreto
 </div>
 
 <form method="POST" class="form-card admin-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <div style="margin-bottom: 16px;">
-        <input type="text" name="nome" placeholder="Nome do local:" required style="width: 100%; height: 46px; border-radius: 4px; padding: 0 14px;">
+        <input type="text" name="nome" maxlength="120" placeholder="Nome do local:" required style="width: 100%; height: 46px; border-radius: 4px; padding: 0 14px;">
     </div>
 
     <div style="margin-bottom: 24px;">
-        <input type="text" name="endereco" placeholder="Endereço completo:" style="width: 100%; height: 46px; border-radius: 4px; padding: 0 14px;">
+        <input type="text" name="endereco" maxlength="250" placeholder="Endereço completo:" style="width: 100%; height: 46px; border-radius: 4px; padding: 0 14px;">
     </div>
 
     <div class="form-actions">

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>
         {% block title %}
@@ -54,9 +55,10 @@
                 English Pass
             </a>
 
-            <a href="{{ url_for('admin_logout') }}">
-                Sair
-            </a>
+            <form method="POST" action="{{ url_for('admin_logout') }}" style="display:inline; margin:0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="admin-nav-link" style="background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0;">Sair</button>
+            </form>
 
         </nav>
 
@@ -93,7 +95,7 @@
     <footer class="footer">
 
         <p>
-            Inglês Secreto · KNN
+            Inglês Secreto · KNN · <a href="{{ url_for('privacidade') }}">Aviso de Privacidade</a>
         </p>
 
     </footer>

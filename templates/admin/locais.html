@@ -45,14 +45,17 @@
                 </a>
                 <form method="POST" action="{{ url_for('excluir_qr', qr_id=qr_local.id) }}"
                     onsubmit="return confirm('Tem certeza que deseja excluir este QR Code?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-danger"
                         style="width: 100%; min-height: 34px; font-size: 10px; justify-content: center;">EXCLUIR
                         QR</button>
                 </form>
             </div>
             {% else %}
-            <a href="{{ url_for('gerar_qr', campanha_id=campanha_qr.id, local_id=local.id) }}"
-                class="btn btn-primary">GERAR QR <span>→</span></a>
+            <form method="POST" action="{{ url_for('gerar_qr', campanha_id=campanha_qr.id, local_id=local.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-primary">GERAR QR <span>→</span></button>
+            </form>
             {% endif %}
         </article>
         {% else %}<div class="empty-points"><strong>Você ainda não cadastrou locais.</strong>
@@ -92,7 +95,8 @@
                                 href="{{ url_for('download_qr', codigo=qr.codigo) }}" class="table-link">Baixar</a>
                             <form method="POST" action="{{ url_for('excluir_qr', qr_id=qr.id) }}"
                                 onsubmit="return confirm('Tem certeza que deseja excluir este QR Code?');"
-                                style="display: inline;"><button type="submit" class="table-button"
+                                style="display: inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="table-button"
                                     style="color: var(--knn-red-dark);">Excluir</button></form>
                         </div>
                     </td>
@@ -132,7 +136,8 @@
                     <td><span class="location-qr-total">{{ local.total_qr }}</span></td>
                     <td>
                         <form method="POST" action="{{ url_for('excluir_local', local_id=local.id) }}"
-                            onsubmit="return confirm('Tem certeza que deseja excluir este local?');"><button
+                            onsubmit="return confirm('Tem certeza que deseja excluir este local?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button
                                 type="submit" class="table-button" style="color: var(--knn-red-dark);">Excluir</button>
                         </form>
                     </td>
