@@ -1131,16 +1131,71 @@ def excluir_local(local_id):
 # =========================================================
 
 def carregar_fonte(nomes, tamanho):
-    windir = os.environ.get("WINDIR", "C:\\Windows")
-    fonts_dir = os.path.join(windir, "Fonts")
-    for nome in nomes:
-        caminho = os.path.join(fonts_dir, nome)
-        if os.path.exists(caminho):
-            try:
-                return ImageFont.truetype(caminho, tamanho)
-            except Exception:
-                pass
-    return ImageFont.load_default()
+    """Carrega fontes legíveis no Windows local e no Linux do Render.
+
+    O código antigo procurava fontes apenas no diretório do Windows. No Render,
+    isso falhava e o fallback do Pillow tinha tamanho padrão muito pequeno,
+    ignorando o tamanho solicitado para a arte do QR Code.
+    """
+    fontes = []
+
+    # Caminho de fontes do Windows (ambiente local de desenvolvimento).
+    windir = os.environ.get("WINDIR")
+    if windir:
+        fontes.append(os.path.join(windir, "Fonts"))
+    elif os.name == "nt":
+        fontes.append(os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "Fonts"))
+
+    # Caminhos mais comuns em imagens Linux/Debian, como as usadas na hospedagem.
+    fontes.extend([
+        "/usr/share/fonts/truetype/dejavu",
+        "/usr/share/fonts/truetype/liberation2",
+        "/usr/share/fonts/truetype/liberation",
+        "/usr/share/fonts/truetype/msttcorefonts",
+        "/usr/local/share/fonts",
+    ])
+
+    # Primeiro tenta exatamente os nomes originalmente solicitados.
+    for pasta in fontes:
+        for nome in nomes:
+            caminho = os.path.join(pasta, nome)
+            if os.path.isfile(caminho):
+                try:
+                    return ImageFont.truetype(caminho, tamanho)
+                except (OSError, ValueError):
+                    continue
+
+    # Se o servidor Linux não tiver Arial/Segoe UI, usa fontes equivalentes.
+    nomes_lower = " ".join(nomes).lower()
+    negrito = any(marca in nomes_lower for marca in ("bd", "bold", "segoeuib"))
+    alternativas = (
+        [
+            "DejaVuSans-Bold.ttf",
+            "LiberationSans-Bold.ttf",
+            "Lato-Bold.ttf",
+        ] if negrito else [
+            "DejaVuSans.ttf",
+            "LiberationSans-Regular.ttf",
+            "Lato-Regular.ttf",
+        ]
+    )
+    for pasta in fontes:
+        for nome in alternativas:
+            caminho = os.path.join(pasta, nome)
+            if os.path.isfile(caminho):
+                try:
+                    return ImageFont.truetype(caminho, tamanho)
+                except (OSError, ValueError):
+                    continue
+
+    # Pillow >= 10.1 aceita tamanho no fallback interno. Isso evita que o
+    # texto caia para a fonte bitmap minúscula padrão de aproximadamente 10 px.
+    try:
+        return ImageFont.load_default(size=tamanho)
+    except TypeError:
+        # Compatibilidade com ambientes locais antigos; o requirements.txt
+        # da aplicação instala uma versão recente do Pillow no deploy.
+        return ImageFont.load_default()
 
 
 def quebrar_texto(texto, fonte, max_largura, draw):

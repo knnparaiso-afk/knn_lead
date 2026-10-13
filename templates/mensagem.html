@@ -355,7 +355,8 @@ Mensagem Secreta | KNN
 
     /* Opções A, B, C */
     .options-container {
-        animation: optionsSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        flex-direction: column;
+        animation: optionsSlideUp 0.6s cubic-bezier(0.16, 0.8, 0.3, 1) forwards;
     }
 
     @keyframes optionsSlideUp {
@@ -521,12 +522,12 @@ Mensagem Secreta | KNN
     btnIniciar.addEventListener("click", () => {
         // Oculta frame 1 e exibe frame 2 com animação
         frame1.style.display = "none";
-        frame2.style.display = "block";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const layoutMobile = window.matchMedia("(max-width: 700px)").matches;
+        frame2.style.display = layoutMobile ? "flex" : "block";
 
         // Temporizador para efeito: Primeiro aprecia a mensagem, depois revelam-se as opções A, B, C!
         setTimeout(() => {
-            optionsPanel.style.display = "block";
+            optionsPanel.style.display = layoutMobile ? "flex" : "block";
         }, 1200); // 1.2 segundos para focar na mensagem antes das opções
     });
 
