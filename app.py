@@ -902,18 +902,16 @@ def nova_campanha():
 
         codigo_campanha = gerar_codigo()
 
-        connection.execute(
+        cursor = connection.execute(
             """
             INSERT INTO campanhas
             (codigo, nome, semana, frase, traducao, categoria, data_inicio, data_fim, ativa)
             VALUES (?, ?, ?, '', '', ?, ?, ?, ?)
+            RETURNING id
             """,
             (codigo_campanha, nome, semana, categoria, data_inicio, data_fim, ativa)
         )
-
-        campanha_id = connection.execute(
-            "SELECT last_insert_rowid() AS id"
-        ).fetchone()["id"]
+        campanha_id = cursor.fetchone()["id"]
 
         # Auto-gerar QR Code para a campanha
         codigo_qr = gerar_codigo()
@@ -923,12 +921,10 @@ def nova_campanha():
             "SELECT id FROM locais WHERE nome = 'Geral' LIMIT 1"
         ).fetchone()
         if not local_generico:
-            connection.execute(
-                "INSERT INTO locais (nome, endereco, parceiro) VALUES ('Geral', '', '')"
+            cursor_local = connection.execute(
+                "INSERT INTO locais (nome, endereco, parceiro) VALUES ('Geral', '', '') RETURNING id"
             )
-            local_id = connection.execute(
-                "SELECT last_insert_rowid() AS id"
-            ).fetchone()["id"]
+            local_id = cursor_local.fetchone()["id"]
         else:
             local_id = local_generico["id"]
 

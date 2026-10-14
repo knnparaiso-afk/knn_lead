@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS campanhas (
     resposta_correta TEXT DEFAULT 'A',
     data_inicio TEXT,
     data_fim TEXT,
+    categoria TEXT DEFAULT 'frases',
     ativa INTEGER NOT NULL DEFAULT 0,
     data_criacao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
