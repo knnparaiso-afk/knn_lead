@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Missão Encerrada | KNN{% endblock %}
+
+{% block body_class %}public-page public-challenge{% endblock %}
+
+{% block content %}
+
+<section class="experience-shell">
+    <header class="experience-header">
+        <a class="wordmark" href="{{ url_for('index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a>
+        <span class="mission-tag">MISSÃO {{ '%02d'|format(qr.semana) }}</span>
+    </header>
+
+    <div class="inativa-container">
+
+        <!-- Ícone animado -->
+        <div class="inativa-badge">
+            <span class="inativa-radar"></span>
+            <div class="inativa-icon">⏰</div>
+        </div>
+
+        <h1 class="inativa-title">Missão<br><em>Encerrada!</em></h1>
+
+        <div class="inativa-card">
+            <span class="inativa-card-tag">FRASE DA SEMANA {{ '%02d'|format(qr.semana) }}</span>
+            <strong class="inativa-card-frase">{{ qr.frase }}</strong>
+            {% if qr.traducao %}
+            <span class="inativa-card-traducao">{{ qr.traducao.split('|')[0].strip() }}</span>
+            {% endif %}
+        </div>
+
+        <p class="inativa-desc">
+            Essa missão já foi concluída, mas <strong>novas frases secretas</strong> estão espalhadas pela cidade!
+            Continue explorando para encontrar o próximo QR Code e concorrer a prêmios.
+        </p>
+
+        <div class="inativa-next-steps">
+            <div class="inativa-step">
+                <span class="inativa-step-icon">📍</span>
+                <div>
+                    <strong>Explore a cidade</strong>
+                    <p>Novos QR Codes estão escondidos em pontos de Paraisópolis</p>
+                </div>
+            </div>
+            <div class="inativa-step">
+                <span class="inativa-step-icon">🎯</span>
+                <div>
+                    <strong>Encontre a missão ativa</strong>
+                    <p>Escaneie o QR Code e descubra a frase secreta da semana</p>
+                </div>
+            </div>
+            <div class="inativa-step">
+                <span class="inativa-step-icon">🏆</span>
+                <div>
+                    <strong>Ganhe prêmios</strong>
+                    <p>Acerte o desafio e desbloqueie recompensas na KNN!</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="https://www.instagram.com/knnparaisopolis/" target="_blank" class="inativa-btn-instagram">
+            <span>📲</span> Siga a KNN no Instagram para não perder nada
+        </a>
+
+        <a href="{{ url_for('index') }}" class="btn btn-primary inativa-btn-home">
+            VOLTAR AO INÍCIO <span>➔</span>
+        </a>
+
+    </div>
+</section>
+
+<style>
+.inativa-container {
+    text-align: center;
+    padding: 20px 10px 40px;
+}
+
+/* Badge animado */
+.inativa-badge {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 10px auto 24px;
+    display: grid;
+    place-items: center;
+}
+
+.inativa-icon {
+    position: relative;
+    z-index: 2;
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    display: grid;
+    place-items: center;
+    font-size: 38px;
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35);
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+.inativa-radar {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 2px solid #f59e0b;
+    opacity: 0.8;
+    animation: radarPulse 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+@keyframes radarPulse {
+    0% { transform: scale(0.85); opacity: 0.9; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* Título */
+.inativa-title {
+    margin: 10px 0 24px;
+    font: 900 clamp(44px, 11vw, 68px)/0.88 "Barlow Condensed", Impact, sans-serif;
+    letter-spacing: -0.03em;
+    color: var(--p-ink, #141416);
+}
+
+.inativa-title em {
+    color: var(--p-red, #e51b2b);
+    font-style: italic;
+}
+
+/* Card da frase */
+.inativa-card {
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto 28px;
+    max-width: 440px;
+    padding: 24px 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(31, 41, 55, 0.3);
+    animation: cardReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardReveal {
+    0% { opacity: 0; transform: scale(0.92) translateY(16px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.inativa-card-tag {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 14px;
+}
+
+.inativa-card-frase {
+    display: block;
+    font: 900 clamp(28px, 8vw, 42px)/0.9 "Barlow Condensed", Impact, sans-serif;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    text-decoration: line-through;
+    text-decoration-color: rgba(229, 27, 43, 0.7);
+    text-decoration-thickness: 3px;
+}
+
+.inativa-card-traducao {
+    display: block;
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+/* Descrição */
+.inativa-desc {
+    max-width: 420px;
+    margin: 0 auto 30px;
+    color: var(--p-muted, #68666a);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* Próximos passos */
+.inativa-next-steps {
+    max-width: 400px;
+    margin: 0 auto 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.inativa-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    text-align: left;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #fafaf9;
+    border: 1px solid #e5e7eb;
+    animation: stepSlide 0.5s ease forwards;
+    opacity: 0;
+    transform: translateX(-15px);
+}
+
+.inativa-step:nth-child(1) { animation-delay: 0.3s; }
+.inativa-step:nth-child(2) { animation-delay: 0.5s; }
+.inativa-step:nth-child(3) { animation-delay: 0.7s; }
+
+@keyframes stepSlide {
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.inativa-step-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.inativa-step strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--p-ink, #141416);
+    margin-bottom: 2px;
+}
+
+.inativa-step p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--p-muted, #68666a);
+    line-height: 1.4;
+}
+
+/* Botão Instagram */
+.inativa-btn-instagram {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 400px;
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(131, 58, 180, 0.25);
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 14px;
+}
+
+.inativa-btn-instagram:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(131, 58, 180, 0.35);
+}
+
+/* Botão voltar */
+.inativa-btn-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+    min-height: 52px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+</style>
+
+{% endblock %}

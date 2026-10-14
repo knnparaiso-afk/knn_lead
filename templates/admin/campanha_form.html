@@ -21,7 +21,7 @@ Nova Campanha
             {% endif %}
         </h1>
         <p style="color: #6b7280; font-size: 14px;">
-            Defina o enigma da semana, as alternativas de resposta e o período da campanha.
+            Configure a campanha. O conteúdo dos desafios é sorteado automaticamente pela categoria.
         </p>
     </div>
 </div>
@@ -43,63 +43,42 @@ Nova Campanha
                 Nome da campanha
             </label>
             <input id="nome" type="text" name="nome" value="{{ campanha.nome if campanha else '' }}"
-                placeholder="Nome" required style="width: 100%; height: 48px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 16px; font-size: 15px; background: #fff;">
+                placeholder="Ex: Halloween 2026" required style="width: 100%; height: 48px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 16px; font-size: 15px; background: #fff;">
         </div>
 
         <div>
-            <label for="frase" style="display: block; font-size: 13px; font-weight: 700; color: #1f2937; margin-bottom: 6px;">
-                Frase secreta
+            <label for="categoria" style="display: block; font-size: 13px; font-weight: 700; color: #1f2937; margin-bottom: 6px;">
+                Categoria
             </label>
-            <input id="frase" type="text" name="frase" value="{{ campanha.frase if campanha else '' }}"
-                placeholder="Frase secreta" required style="width: 100%; height: 48px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 16px; font-size: 15px; font-weight: 700; text-transform: uppercase; background: #fff; letter-spacing: 0.5px;">
+            <select id="categoria" name="categoria" style="width: 100%; height: 48px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; font-weight: 700; background: #fff;">
+                {% for cat_id, cat_nome in categorias.items() %}
+                <option value="{{ cat_id }}" {% if campanha and campanha.categoria == cat_id %}selected{% elif not campanha and cat_id == 'frases' %}selected{% endif %}>
+                    {{ cat_nome }}
+                </option>
+                {% endfor %}
+            </select>
+            <span style="display: block; margin-top: 6px; font-size: 12px; color: #9ca3af;">
+                O conteúdo dos desafios será sorteado automaticamente com base na categoria selecionada.
+            </span>
         </div>
     </div>
 
-    <!-- SEÇÃO 2: DESAFIO DE MÚLTIPLA ESCOLHA -->
+    <!-- SEÇÃO 2: PREVIEW DOS DESAFIOS -->
     <div style="margin-bottom: 30px; background: #fbfbfc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
         <div style="font-size: 16px; font-weight: 800; color: #111827; margin-bottom: 16px;">
-            Desafio de Múltipla Escolha
+            Desafios disponíveis nesta categoria
         </div>
-
-        <div style="display: flex; flex-direction: column; gap: 14px;">
-            <div>
-                <label for="opcao_a" style="display: block; font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 6px;">Alternativa A</label>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #fee2e2; color: #ed1b2f; font-weight: 800; border-radius: 8px; font-size: 14px; flex-shrink: 0;">A</span>
-                    <input id="opcao_a" type="text" name="opcao_a" value="{{ campanha.opcao_a if campanha and campanha.opcao_a else (campanha.traducao if campanha else '') }}" placeholder="Opção A" required style="flex: 1; height: 46px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; background: #fff;">
-                </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            {% for d in desafios_preview %}
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px;">
+                <span style="font-size: 20px;">{{ d.emoji }}</span>
+                <span style="font-weight: 600; color: #374151;">{{ d.frase }}</span>
             </div>
-
-            <div>
-                <label for="opcao_b" style="display: block; font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 6px;">Alternativa B</label>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #fee2e2; color: #ed1b2f; font-weight: 800; border-radius: 8px; font-size: 14px; flex-shrink: 0;">B</span>
-                    <input id="opcao_b" type="text" name="opcao_b" value="{{ campanha.opcao_b if campanha and campanha.opcao_b else '' }}" placeholder="Opção B" required style="flex: 1; height: 46px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; background: #fff;">
-                </div>
-            </div>
-
-            <div>
-                <label for="opcao_c" style="display: block; font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 6px;">Alternativa C</label>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #fee2e2; color: #ed1b2f; font-weight: 800; border-radius: 8px; font-size: 14px; flex-shrink: 0;">C</span>
-                    <input id="opcao_c" type="text" name="opcao_c" value="{{ campanha.opcao_c if campanha and campanha.opcao_c else '' }}" placeholder="Opção C" required style="flex: 1; height: 46px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; background: #fff;">
-                </div>
-            </div>
-
-            <div style="margin-top: 10px; padding-top: 14px; border-top: 1px dashed #e5e7eb;">
-                <label for="resposta_correta" style="display: block; font-size: 13px; font-weight: 700; color: #1f2937; margin-bottom: 6px;">
-                    Resposta correta do enigma
-                </label>
-                <select id="resposta_correta" name="resposta_correta" style="width: 100%; height: 48px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; font-weight: 700; background: #fff;">
-                    <option value="A" {% if not campanha or not campanha.resposta_correta or campanha.resposta_correta == 'A' %}selected{% endif %}>Opção A é a correta</option>
-                    <option value="B" {% if campanha and campanha.resposta_correta == 'B' %}selected{% endif %}>Opção B é a correta</option>
-                    <option value="C" {% if campanha and campanha.resposta_correta == 'C' %}selected{% endif %}>Opção C é a correta</option>
-                </select>
-            </div>
-
-            <div style="margin-top: 6px;">
-            </div>
+            {% endfor %}
         </div>
+        <p style="margin-top: 12px; font-size: 12px; color: #9ca3af;">
+            Cada pessoa que escanear o QR Code receberá um desafio aleatório dentre estes.
+        </p>
     </div>
 
     <!-- SEÇÃO 3: PERÍODO DE VIGÊNCIA -->

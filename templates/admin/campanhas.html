@@ -41,7 +41,7 @@ Campanhas | Inglês Secreto
                 </th>
 
                 <th>
-                    Frase
+                    Campanha / Categoria
                 </th>
 
                 <th>
@@ -79,11 +79,11 @@ Campanhas | Inglês Secreto
                 <td>
 
                     <strong>
-                        {{ campanha.frase }}
+                        {{ campanha.nome or campanha.frase }}
                     </strong>
 
                     <small>
-                        {{ campanha.traducao }}
+                        {% if campanha.categoria == 'jogos' %}Jogos Interativos{% else %}Frases em Inglês (Sorteio){% endif %}
                     </small>
 
                 </td>

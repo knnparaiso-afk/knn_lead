@@ -143,6 +143,9 @@ def init_db():
     if "resposta_correta" not in colunas_campanhas:
         connection.execute("ALTER TABLE campanhas ADD COLUMN resposta_correta TEXT DEFAULT 'A'")
 
+    if "categoria" not in colunas_campanhas:
+        connection.execute("ALTER TABLE campanhas ADD COLUMN categoria TEXT DEFAULT 'frases'")
+
     # Se a campanha existente tiver traducao com | (ex: "Vejo você lá | Vejo voce la"), limpar para a opcao_a
     campanhas_existentes = connection.execute("SELECT id, traducao, opcao_a FROM campanhas").fetchall()
     for camp in campanhas_existentes:

@@ -1,0 +1,813 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ desafio.tema }} | KNN Halloween
+{% endblock %}
+
+{% block body_class %}public-page public-challenge halloween-theme{% endblock %}
+
+{% block content %}
+
+<!-- Atmospheric Halloween Background Elements -->
+<div class="hw-cobweb hw-cobweb-left" aria-hidden="true"></div>
+<div class="hw-cobweb hw-cobweb-right" aria-hidden="true"></div>
+
+<div class="hw-particles" aria-hidden="true">
+    <div class="hw-particle p1">{{ desafio.emoji }}</div>
+    <div class="hw-particle p2">{{ desafio.emoji }}</div>
+    <div class="hw-particle p3">{{ desafio.emoji }}</div>
+    <div class="hw-particle p4">{{ desafio.emoji }}</div>
+    <div class="hw-particle p5">{{ desafio.emoji }}</div>
+    <div class="hw-particle p6">{{ desafio.emoji }}</div>
+    <div class="hw-particle p7">{{ desafio.emoji }}</div>
+    <div class="hw-particle p8">{{ desafio.emoji }}</div>
+</div>
+
+<div class="hw-fog" aria-hidden="true"></div>
+
+<!-- FRAME 1 - Discovery Screen -->
+<section class="experience-shell hw-shell" id="frame-1">
+    <header class="hw-header">
+        <a class="hw-brand" href="{{ url_for('index') }}">
+            <strong class="hw-brand-knn">KNN</strong>
+            <span class="hw-brand-hw">HALLOWEEN</span>
+        </a>
+        <div class="hw-header-emoji">{{ desafio.emoji }}</div>
+    </header>
+
+    <div class="intro-discovery">
+        <div class="discovery-badge-pulse">
+            <span class="discovery-radar"></span>
+            <div class="discovery-icon">{{ desafio.emoji }}</div>
+        </div>
+
+        <h1 class="discovery-title">Você encontrou uma<br><em>Mensagem Secreta!</em></h1>
+
+        <p class="discovery-desc">
+            Um enigma de Halloween está escondido aqui. Teste seus conhecimentos de inglês e concorra a prêmios na KNN!
+        </p>
+
+        <button type="button" class="btn btn-primary btn-reveal" id="btn-iniciar-desafio">
+            REVELAR A MENSAGEM <span>➔</span>
+        </button>
+
+        <div class="discovery-tips">
+            <span>💀 Cuidado... a frase pode ser assustadora!</span>
+        </div>
+    </div>
+</section>
+
+<!-- FRAME 2 - Challenge Screen -->
+<section class="experience-shell hw-shell" id="frame-2" style="display: none;">
+    <header class="hw-header">
+        <a class="hw-brand" href="{{ url_for('index') }}">
+            <strong class="hw-brand-knn">KNN</strong>
+            <span class="hw-brand-hw">HALLOWEEN</span>
+        </a>
+        <div class="hw-header-emoji">{{ desafio.emoji }}</div>
+    </header>
+
+    <div class="mission-progress hw-progress" aria-label="Etapa 1 de 2">
+        <span class="active"></span>
+        <span></span>
+    </div>
+
+    <!-- Phrase Card -->
+    <div class="challenge-reveal-box" id="phrase-box">
+        <article class="phrase-card-animated hw-phrase-card" id="phrase-card">
+            <div class="phrase-glow"></div>
+            <span class="hw-secret-tag">ENIGMA REVELADO</span>
+            <span class="phrase-watermark-emoji" aria-hidden="true">{{ desafio.emoji }}</span>
+            <strong class="phrase-text">{{ desafio.frase }}</strong>
+            <i class="phrase-symbol">?</i>
+        </article>
+    </div>
+
+    <!-- Options Panel -->
+    <div class="options-container" id="options-panel" style="display: none;">
+        <div class="challenge-question">
+            <h2>O que significa essa frase?</h2>
+            <p>Selecione a alternativa correta:</p>
+        </div>
+
+        <div class="answers-grid" id="answers-group">
+            {% for op in desafio.opcoes %}
+            <button type="button" class="option-btn" data-letra="{{ op.letra }}">
+                <span class="option-letter">{{ op.letra }}</span>
+                <span class="option-text">{{ op.texto }}</span>
+                <span class="option-status-icon"></span>
+            </button>
+            {% endfor %}
+        </div>
+
+        <p class="challenge-feedback" id="challenge-feedback" aria-live="polite">
+            Selecione uma das opções para validar.
+        </p>
+    </div>
+
+    <aside class="prize-strip hw-prize-strip">
+        <span class="prize-star">★</span>
+        <p><strong>Acerte a alternativa</strong> para registrar sua conquista e avançar para os prêmios KNN.</p>
+    </aside>
+</section>
+
+<style>
+/* CSS Variables & Halloween Palette */
+:root {
+    --hw-bg: {{ desafio.cor_bg }};
+    --hw-accent: {{ desafio.cor_accent }};
+}
+
+body.halloween-theme {
+    background: radial-gradient(circle at 50% 15%, var(--hw-bg) 0%, #0d0b13 70%, #050408 100%) fixed;
+    color: #f3f3f3;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Cobweb decorations in top corners */
+.hw-cobweb {
+    position: fixed;
+    top: 0;
+    width: 140px;
+    height: 140px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.22;
+}
+
+.hw-cobweb-left {
+    left: 0;
+    background: 
+        radial-gradient(circle at 0 0, transparent 20px, rgba(255,255,255,0.45) 21px, transparent 22px, transparent 45px, rgba(255,255,255,0.45) 46px, transparent 47px, transparent 75px, rgba(255,255,255,0.45) 76px, transparent 77px, transparent 110px, rgba(255,255,255,0.45) 111px, transparent 112px),
+        linear-gradient(to bottom right, transparent 49%, rgba(255,255,255,0.35) 50%, transparent 51%),
+        linear-gradient(25deg, transparent 49%, rgba(255,255,255,0.25) 50%, transparent 51%),
+        linear-gradient(65deg, transparent 49%, rgba(255,255,255,0.25) 50%, transparent 51%);
+    border-bottom-right-radius: 100%;
+}
+
+.hw-cobweb-right {
+    right: 0;
+    background: 
+        radial-gradient(circle at 100% 0, transparent 20px, rgba(255,255,255,0.45) 21px, transparent 22px, transparent 45px, rgba(255,255,255,0.45) 46px, transparent 47px, transparent 75px, rgba(255,255,255,0.45) 76px, transparent 77px, transparent 110px, rgba(255,255,255,0.45) 111px, transparent 112px),
+        linear-gradient(to bottom left, transparent 49%, rgba(255,255,255,0.35) 50%, transparent 51%),
+        linear-gradient(-25deg, transparent 49%, rgba(255,255,255,0.25) 50%, transparent 51%),
+        linear-gradient(-65deg, transparent 49%, rgba(255,255,255,0.25) 50%, transparent 51%);
+    border-bottom-left-radius: 100%;
+}
+
+/* Floating Particles */
+.hw-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.hw-particle {
+    position: absolute;
+    user-select: none;
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.6));
+}
+
+.hw-particle.p1 { left: 8%; top: 12%; font-size: 24px; opacity: 0.15; animation: drift1 11s ease-in-out infinite; }
+.hw-particle.p2 { left: 84%; top: 16%; font-size: 34px; opacity: 0.22; animation: drift2 14s ease-in-out infinite; }
+.hw-particle.p3 { left: 14%; top: 62%; font-size: 28px; opacity: 0.26; animation: drift3 9s ease-in-out infinite; }
+.hw-particle.p4 { left: 78%; top: 72%; font-size: 38px; opacity: 0.18; animation: drift1 15s ease-in-out infinite; }
+.hw-particle.p5 { left: 48%; top: 8%; font-size: 22px; opacity: 0.12; animation: drift2 10s ease-in-out infinite; }
+.hw-particle.p6 { left: 88%; top: 44%; font-size: 30px; opacity: 0.20; animation: drift3 12s ease-in-out infinite; }
+.hw-particle.p7 { left: 6%; top: 38%; font-size: 36px; opacity: 0.16; animation: drift1 13s ease-in-out infinite; }
+.hw-particle.p8 { left: 62%; top: 86%; font-size: 26px; opacity: 0.24; animation: drift2 8s ease-in-out infinite; }
+
+@keyframes drift1 {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(25px, -35px) rotate(15deg); }
+}
+
+@keyframes drift2 {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(-30px, 30px) rotate(-20deg); }
+}
+
+@keyframes drift3 {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(20px, 25px) rotate(10deg); }
+}
+
+/* Atmospheric Fog at Bottom */
+.hw-fog {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 190px;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 45%, transparent 100%);
+    pointer-events: none;
+    z-index: 2;
+    animation: fogDrift 8s ease-in-out infinite alternate;
+}
+
+@keyframes fogDrift {
+    0% { opacity: 0.65; transform: translateY(0); }
+    100% { opacity: 0.95; transform: translateY(-8px); }
+}
+
+/* Layout Shell */
+.hw-shell {
+    position: relative;
+    z-index: 3;
+}
+
+/* Header Bar */
+.hw-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 52px;
+    padding: 12px 20px;
+    background: var(--hw-bg);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    margin-bottom: 24px;
+}
+
+.hw-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.hw-brand-knn {
+    color: #ED1B2F;
+    font-family: "Barlow Condensed", Impact, sans-serif;
+    font-size: 32px;
+    font-style: italic;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    line-height: 0.85;
+}
+
+.hw-brand-hw {
+    padding-left: 10px;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    font-family: "Barlow Condensed", Impact, sans-serif;
+}
+
+.hw-header-emoji {
+    font-size: 26px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+
+/* Discovery Frame 1 */
+.intro-discovery {
+    text-align: center;
+    padding: 24px 10px 20px;
+}
+
+.discovery-badge-pulse {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 24px;
+    display: grid;
+    place-items: center;
+}
+
+.discovery-icon {
+    position: relative;
+    z-index: 2;
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: var(--hw-accent);
+    display: grid;
+    place-items: center;
+    font-size: 38px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45), 0 0 20px var(--hw-accent);
+    animation: iconBounce 2s ease-in-out infinite;
+}
+
+.discovery-radar {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 2px solid var(--hw-accent);
+    opacity: 0.8;
+    animation: radarRipple 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+@keyframes radarRipple {
+    0% { transform: scale(0.85); opacity: 0.9; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes iconBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.discovery-title {
+    margin: 12px 0 16px;
+    font: 900 clamp(42px, 11vw, 64px)/0.9 "Barlow Condensed", Impact, sans-serif;
+    letter-spacing: -0.03em;
+    color: #ffffff;
+}
+
+.discovery-title em {
+    color: var(--hw-accent);
+    font-style: italic;
+    text-shadow: 0 0 16px var(--hw-accent);
+}
+
+.discovery-desc {
+    max-width: 440px;
+    margin: 0 auto 34px;
+    color: #a1a1aa;
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.btn-reveal {
+    width: 100%;
+    max-width: 400px;
+    min-height: 56px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    background: #ED1B2F !important;
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    box-shadow: 0 10px 28px rgba(237, 27, 47, 0.35) !important;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.btn-reveal:hover {
+    transform: scale(1.02);
+    box-shadow: 0 14px 32px rgba(237, 27, 47, 0.55) !important;
+}
+
+.discovery-tips {
+    margin-top: 26px;
+    font-size: 13px;
+    color: #a1a1aa;
+    font-weight: 500;
+}
+
+/* Mission Progress */
+.hw-progress {
+    display: flex;
+    gap: 8px;
+    margin: 20px 0 28px;
+}
+
+.hw-progress span {
+    display: block;
+    height: 4px;
+    flex: 1;
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.hw-progress span.active {
+    background: var(--hw-accent);
+    box-shadow: 0 0 10px var(--hw-accent);
+}
+
+/* Phrase Card Animated */
+.challenge-reveal-box {
+    margin-bottom: 22px;
+}
+
+.hw-phrase-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 180px;
+    padding: 28px 24px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--hw-bg) 0%, #0d0d10 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 24px var(--hw-accent);
+    animation: phraseImpact 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards, hwGlowPulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes hwGlowPulse {
+    0% {
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 14px rgba(0, 0, 0, 0.3);
+    }
+    100% {
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 28px var(--hw-accent);
+    }
+}
+
+@keyframes phraseImpact {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.phrase-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--hw-accent) 0%, transparent 60%);
+    opacity: 0.18;
+    pointer-events: none;
+    animation: rotateGlow 8s linear infinite;
+}
+
+@keyframes rotateGlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.hw-secret-tag {
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+    color: var(--hw-accent);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.phrase-watermark-emoji {
+    position: absolute;
+    top: 6px;
+    right: 18px;
+    font-size: 80px;
+    opacity: 0.18;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+    filter: blur(0.5px);
+}
+
+.phrase-text {
+    position: relative;
+    z-index: 2;
+    display: block;
+    margin-top: 22px;
+    font: 900 clamp(38px, 10.5vw, 64px)/0.88 "Barlow Condensed", Impact, sans-serif;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    animation: textShine 1.8s ease-in-out;
+}
+
+@keyframes textShine {
+    0% { filter: blur(3px); opacity: 0; }
+    100% { filter: blur(0); opacity: 1; }
+}
+
+.phrase-symbol {
+    position: absolute;
+    right: 22px;
+    bottom: 12px;
+    color: rgba(255, 255, 255, 0.22);
+    font: italic 900 70px/0.8 Georgia, serif;
+    pointer-events: none;
+    animation: symbolPulse 2s ease-in-out infinite;
+}
+
+@keyframes symbolPulse {
+    0%, 100% { transform: scale(1); opacity: 0.2; }
+    50% { transform: scale(1.14); opacity: 0.45; text-shadow: 0 0 14px var(--hw-accent); }
+}
+
+/* Options Panel */
+.options-container {
+    animation: optionsSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes optionsSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.challenge-question {
+    margin: 24px 0 16px;
+    text-align: left;
+}
+
+.challenge-question h2 {
+    font-family: "Barlow Condensed", Impact, sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+}
+
+.challenge-question p {
+    font-size: 14px;
+    color: #a1a1aa;
+    margin: 0;
+}
+
+.answers-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.option-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 60px;
+    padding: 12px 18px;
+    border: 2px solid #333333;
+    border-radius: 8px;
+    background: #1f1f1f;
+    color: #f3f3f3;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    position: relative;
+}
+
+.option-btn:hover {
+    border-color: var(--hw-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 12px rgba(255, 255, 255, 0.05);
+}
+
+.option-letter {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    margin-right: 14px;
+    border-radius: 6px;
+    background: #2b2b2b;
+    color: #ffffff;
+    font: 900 16px "Barlow Condensed", Impact, sans-serif;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+}
+
+.option-btn:hover .option-letter {
+    background: var(--hw-accent);
+    color: #ffffff;
+}
+
+.option-text {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    flex-grow: 1;
+    color: #f1f1f3;
+}
+
+.option-status-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    margin-left: 8px;
+}
+
+/* Option States */
+.option-btn.is-selected {
+    border-color: var(--hw-accent);
+    background: #282425;
+}
+
+.option-btn.is-correct {
+    border-color: #11824a !important;
+    background: #0d2e1a !important;
+    color: #d1fae5 !important;
+    box-shadow: 0 0 16px rgba(17, 130, 74, 0.45) !important;
+}
+
+.option-btn.is-correct .option-letter {
+    background: #11824a !important;
+    color: #ffffff !important;
+}
+
+.option-btn.is-correct .option-text {
+    color: #ffffff !important;
+}
+
+.option-btn.is-correct .option-status-icon::after {
+    content: "✓";
+    color: #34d399;
+    font-weight: 900;
+    font-size: 18px;
+}
+
+.option-btn.is-wrong {
+    border-color: #c9001d !important;
+    background: #331317 !important;
+    color: #fee2e2 !important;
+    animation: shake 0.4s ease;
+    box-shadow: 0 0 16px rgba(201, 0, 29, 0.45) !important;
+}
+
+.option-btn.is-wrong .option-letter {
+    background: #c9001d !important;
+    color: #ffffff !important;
+}
+
+.option-btn.is-wrong .option-text {
+    color: #ffffff !important;
+}
+
+.option-btn.is-wrong .option-status-icon::after {
+    content: "✕";
+    color: #f87171;
+    font-weight: 900;
+    font-size: 18px;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+
+.challenge-feedback {
+    min-height: 24px;
+    margin: 12px 0 0;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    color: #a1a1aa;
+}
+
+.challenge-feedback.is-error {
+    color: #f87171;
+}
+
+.challenge-feedback.is-success {
+    color: #34d399;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+/* Prize Strip */
+.hw-prize-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 26px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+}
+
+.hw-prize-strip p {
+    margin: 0;
+    color: #a1a1aa;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.hw-prize-strip strong {
+    color: #ffffff;
+}
+
+.hw-prize-strip .prize-star {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--hw-accent);
+    color: #ffffff;
+    font-size: 14px;
+    box-shadow: 0 0 10px var(--hw-accent);
+}
+
+@media (max-width: 560px) {
+    .hw-cobweb {
+        width: 100px;
+        height: 100px;
+    }
+    .discovery-title {
+        font-size: clamp(38px, 11vw, 54px);
+    }
+    .phrase-text {
+        font-size: clamp(32px, 10vw, 48px);
+    }
+}
+</style>
+
+<script>
+    const btnIniciar = document.getElementById("btn-iniciar-desafio");
+    const frame1 = document.getElementById("frame-1");
+    const frame2 = document.getElementById("frame-2");
+    const optionsPanel = document.getElementById("options-panel");
+    const feedback = document.getElementById("challenge-feedback");
+    const optionButtons = document.querySelectorAll(".option-btn");
+
+    if (btnIniciar) {
+        btnIniciar.addEventListener("click", () => {
+            frame1.style.display = "none";
+            frame2.style.display = "block";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            setTimeout(() => {
+                optionsPanel.style.display = "block";
+            }, 1200);
+        });
+    }
+
+    optionButtons.forEach(button => {
+        button.addEventListener("click", async () => {
+            const letra = button.dataset.letra;
+
+            // Desabilita botões temporariamente
+            optionButtons.forEach(btn => {
+                btn.style.pointerEvents = "none";
+                btn.classList.remove("is-selected");
+            });
+            button.classList.add("is-selected");
+
+            feedback.className = "challenge-feedback";
+            feedback.textContent = "Verificando resposta...";
+
+            try {
+                const formData = new FormData();
+                formData.append("resposta", letra);
+
+                const response = await fetch("/e/{{ codigo }}/responder", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.ok) {
+                    button.classList.remove("is-selected");
+                    button.classList.add("is-correct");
+                    feedback.className = "challenge-feedback is-success";
+                    feedback.textContent = "🎃 Acertou em cheio! Desbloqueando seu prêmio...";
+
+                    const redirectUrl = data.url || response.url || "/participar/{{ codigo }}";
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 800);
+                    return;
+                }
+
+                // Errou
+                button.classList.remove("is-selected");
+                button.classList.add("is-wrong");
+                feedback.className = "challenge-feedback is-error";
+                feedback.textContent = data.mensagem || "Não foi dessa vez! Tente outra alternativa.";
+
+                setTimeout(() => {
+                    button.classList.remove("is-wrong");
+                    optionButtons.forEach(btn => btn.style.pointerEvents = "auto");
+                }, 900);
+
+            } catch (err) {
+                feedback.className = "challenge-feedback is-error";
+                feedback.textContent = "Ocorreu um erro ao validar. Tente novamente.";
+                optionButtons.forEach(btn => btn.style.pointerEvents = "auto");
+            }
+        });
+    });
+</script>
+
+{% endblock %}
