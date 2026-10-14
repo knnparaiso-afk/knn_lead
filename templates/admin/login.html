@@ -1,29 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}
-Acesso | KNN Idiomas
-{% endblock %}
-
+{% block title %}Acesso administrativo | Inglês Secreto{% endblock %}
 {% block body_class %}admin-login{% endblock %}
 
 {% block content %}
-
 <section class="login-page">
-    <div class="login-card" style="max-width: 440px; padding: 36px 30px;">
+    <div class="login-card" style="max-width: 400px; padding: 36px 30px;">
         <div class="login-logo" style="margin-bottom: 20px;"><strong>KNN</strong></div>
 
         <div class="login-intro" style="margin-bottom: 24px; text-align: center;">
             <h1 style="font-size: 26px; font-weight: 800; color: #ffffff; margin-bottom: 8px;">Área Administrativa</h1>
-            <p style="color: rgba(255,255,255,0.7); font-size: 13px;">Gerenciamento de campanhas, QR Codes e participantes.</p>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.5;">Acesso exclusivo à equipe autorizada para gerenciar campanhas, QR Codes e participantes.</p>
         </div>
 
-        <!-- FORMULÁRIO DE LOGIN (SEM LABELS) -->
-        <form method="POST" style="margin-bottom: 30px;">
+        <form method="POST" autocomplete="on">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group" style="margin-bottom: 12px;">
+                <label for="username" class="sr-only">Usuário</label>
                 <input id="username" type="text" name="username" autocomplete="username" placeholder="Usuário" required style="width: 100%; height: 46px; border-radius: 6px; padding: 0 14px; font-size: 14px;">
             </div>
 
             <div class="form-group" style="margin-bottom: 18px;">
+                <label for="password" class="sr-only">Senha</label>
                 <input id="password" type="password" name="password" autocomplete="current-password" placeholder="Senha" required style="width: 100%; height: 46px; border-radius: 6px; padding: 0 14px; font-size: 14px;">
             </div>
 
@@ -32,47 +30,7 @@ Acesso | KNN Idiomas
             </button>
         </form>
 
-        <!-- CAPTURA DE LEAD PARA VISITANTES / ALUNOS -->
-        <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 20px; text-align: left; margin-bottom: 20px;">
-            <div style="font-size: 14px; font-weight: 800; color: #ffffff; margin-bottom: 4px;">
-                Quer aprender inglês na KNN?
-            </div>
-            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 14px; line-height: 1.4;">
-                Cadastre-se para receber condições exclusivas e bolsas de estudo em Paraisópolis.
-            </p>
-
-            <form method="POST" action="{{ url_for('capturar_lead_login') }}">
-                <div style="margin-bottom: 10px;">
-                    <input type="text" name="lead_nome" placeholder="Seu nome" required style="width: 100%; height: 40px; border-radius: 5px; padding: 0 12px; font-size: 13px; background: rgba(255,255,255,0.9); border: none; color: #111;">
-                </div>
-                <div style="margin-bottom: 12px;">
-                    <input type="tel" name="lead_whatsapp" id="lead_whatsapp" placeholder="WhatsApp (com DDD)" required style="width: 100%; height: 40px; border-radius: 5px; padding: 0 12px; font-size: 13px; background: rgba(255,255,255,0.9); border: none; color: #111;">
-                </div>
-                <button type="submit" class="btn btn-secondary" style="width: 100%; min-height: 40px; font-size: 12px; font-weight: 800; background: #ffffff; color: var(--knn-red); border: none;">
-                    QUERO UMA CONDIÇÃO ESPECIAL ➔
-                </button>
-            </form>
-        </div>
-
-        <!-- DIVULGAÇÃO INSTAGRAM -->
-        <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 16px;">
-            <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 8px;">Siga nosso Instagram oficial:</p>
-            <a href="https://www.instagram.com/knnparaisopolis/" target="_blank" rel="noopener noreferrer" style="color: #ffffff; font-weight: 700; font-size: 13px; text-decoration: underline;">
-                @knnparaisopolis
-            </a>
-        </div>
-
+        <p class="admin-login-note">Sistema restrito. Não compartilhe suas credenciais de acesso.</p>
     </div>
 </section>
-
-<script>
-    const telLead = document.getElementById('lead_whatsapp');
-    if (telLead) {
-        telLead.addEventListener('input', () => {
-            const numeros = telLead.value.replace(/\D/g, '').slice(0, 11);
-            telLead.value = numeros.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
-        });
-    }
-</script>
-
 {% endblock %}

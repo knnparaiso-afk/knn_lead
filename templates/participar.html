@@ -1,44 +1,54 @@
 {% extends "base.html" %}
 
-{% block title %}
-Participar | Inglês Secreto
-{% endblock %}
-
+{% block title %}Participar | Inglês Secreto{% endblock %}
 {% block body_class %}public-page public-lead{% endblock %}
 
 {% block content %}
-
 <section class="lead-shell">
-    <header class="experience-header"><a class="wordmark" href="{{ url_for('index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a><span class="mission-tag is-unlocked">DESBLOQUEADO</span></header>
-    <div class="mission-progress" aria-label="Etapa 2 de 2"><span class="active"></span><span class="active"></span></div>
-    <div class="lead-intro"><h1>Sua conquista<br>começa <em>agora.</em></h1><p>Complete seu cadastro para contabilizar a missão e entrar na trilha de prêmios.</p></div>
-    
+    <header class="experience-header">
+        <a class="wordmark" href="{{ url_for('index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a>
+        <span class="mission-tag is-unlocked">DESBLOQUEADO</span>
+    </header>
+
+    <div class="mission-progress" aria-label="Etapa 2 de 2">
+        <span class="active"></span><span class="active"></span>
+    </div>
+
+    <div class="lead-intro">
+        <h1>Sua conquista<br>começa <em>agora.</em></h1>
+        <p>Complete seu cadastro para contabilizar a missão e entrar na trilha de prêmios.</p>
+    </div>
+
     <form method="POST" class="lead-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         <div class="field">
-            <input id="nome" type="text" name="nome" autocomplete="name" placeholder="Nome" required>
+            <label for="nome" class="sr-only">Nome</label>
+            <input id="nome" type="text" name="nome" maxlength="120" autocomplete="name" placeholder="Nome" required>
         </div>
 
         <div class="field">
-            <label for="whatsapp" style="display: block; font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 6px;">Número de celular</label>
-            <input id="whatsapp" type="tel" name="whatsapp" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" required>
+            <label for="whatsapp">Número de celular</label>
+            <input id="whatsapp" type="tel" name="whatsapp" maxlength="32" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" required>
         </div>
 
         <div class="lead-grid">
             <div class="field">
+                <label for="idade" class="sr-only">Idade</label>
                 <input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" placeholder="Idade" required>
             </div>
             <div class="field">
-                <input id="email" type="email" name="email" autocomplete="email" placeholder="example@gmail.com" required>
+                <label for="email" class="sr-only">E-mail</label>
+                <input id="email" type="email" name="email" maxlength="254" autocomplete="email" placeholder="example@gmail.com" required>
             </div>
         </div>
 
-        <div class="consent" style="display: flex; align-items: flex-start; gap: 8px; margin: 12px 0 20px;">
-            <input type="checkbox" id="consentimento" name="consentimento" required style="margin-top: 3px; accent-color: var(--knn-red); cursor: pointer;">
-            <span style="font-size: 11px; color: #6b7280; line-height: 1.4;">Autorizo o contato da KNN sobre esta campanha e oportunidades relacionadas ao meu aprendizado de inglês.</span>
+        <div class="consent participation-confirmation">
+            <input type="checkbox" id="participacao_confirmada" name="participacao_confirmada" required>
+            <label for="participacao_confirmada">Concordo em participar da campanha e autorizo a unidade KNN responsável a entrar em contato comigo por WhatsApp ou e-mail, inclusive para enviar mensagens sobre a campanha, novidades, promoções e oportunidades relacionadas aos cursos da unidade. Se a pessoa participante tiver menos de 18 anos, declaro ser pai, mãe ou responsável legal e autorizo sua participação e esses contatos.</label>
         </div>
 
         <button type="submit" class="btn btn-primary lead-submit">CONTABILIZAR MISSÃO <span>→</span></button>
-        <p class="form-note">Seus dados são usados exclusivamente para esta experiência e contato da unidade KNN.</p>
     </form>
 </section>
 
@@ -49,5 +59,4 @@ Participar | Inglês Secreto
         telefone.value = numeros.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
     });
 </script>
-
 {% endblock %}

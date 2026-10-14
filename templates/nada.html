@@ -23,7 +23,7 @@ Missão Concluída | KNN Idiomas
             {% endif %}
         </h1>
         <p style="font-size: 16px; color: #4b5563; line-height: 1.6; max-width: 520px; margin: 0 auto;">
-            Sua participação foi registrada no <strong>Inglês Secreto da KNN Paraisópolis</strong>. Em breve nossa equipe entrará em contato com você pelo WhatsApp!
+            Sua participação foi registrada no <strong>Inglês Secreto da KNN Paraisópolis</strong>. {% if contato_autorizado %}Em breve nossa equipe poderá entrar em contato com você pelos canais informados.{% else %}Você não autorizou contato comercial; sua participação nesta experiência foi registrada normalmente.{% endif %}
         </p>
     </div>
 

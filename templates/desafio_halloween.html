@@ -767,12 +767,12 @@ body.halloween-theme {
             feedback.textContent = "Verificando resposta...";
 
             try {
-                const formData = new FormData();
-                formData.append("resposta", letra);
-
-                const response = await fetch("/e/{{ codigo }}/responder", {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                const response = await fetch("{{ url_for('responder_desafio', codigo=codigo) }}", {
                     method: "POST",
-                    body: formData
+                    headers: { "X-CSRFToken": csrfToken || "" },
+                    body: formData,
+                    credentials: "same-origin"
                 });
 
                 const data = await response.json();

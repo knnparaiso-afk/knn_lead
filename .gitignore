@@ -1,8 +1,25 @@
-﻿venv/
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Virtual environments
 .venv/
+venv/
+env/
+
+# Local secrets
 .env
 .env.*
 !.env.example
-__pycache__/
-*.py[cod]
-.git/
+
+# Local database and generated QR artifacts
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Test/cache artifacts
+.pytest_cache/
+.coverage
+htmlcov/

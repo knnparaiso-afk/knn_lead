@@ -5,48 +5,146 @@
 {% block content %}
 {% if campanha_qr %}
 <div class="admin-header qr-page-heading">
-    <div><h1>QR Codes da semana {{ campanha_qr.semana }}</h1><p>Vincule um QR Code a cada ponto. Assim, cada lead chega à sua origem correta.</p></div>
+    <div>
+        <h1>QR Codes da semana {{ campanha_qr.semana }}</h1>
+        <p>Vincule um QR Code a cada ponto. Assim, cada lead chega à sua origem correta.</p>
+    </div>
     <a href="{{ url_for('campanhas') }}" class="btn btn-secondary">VOLTAR PARA CAMPANHAS</a>
 </div>
 
 <section class="qr-context"><span>CAMPANHA</span><strong>{{ campanha_qr.nome or campanha_qr.frase }}</strong><p>Cada leitura deste QR Code sorteará aleatoriamente um dos desafios de Halloween da categoria selecionada.</p></section>
 
-<section class="point-section"><div class="section-heading"><div><h2>Escolha onde a missão estará.</h2></div><span class="point-counter">{{ qrs|length }} / {{ locais|length }} vinculados</span></div>
+<section class="point-section">
+    <div class="section-heading">
+        <div>
+            <h2>Escolha onde a missão estará.</h2>
+        </div><span class="point-counter">{{ qrs|length }} / {{ locais|length }} vinculados</span>
+    </div>
     <div class="qr-local-grid">
         {% for local in locais %}
         {% set qr_local = (qrs | selectattr('local_id', 'equalto', local.id) | list | first) %}
         <article class="qr-local-card {% if qr_local %}is-linked{% endif %}">
             <span class="point-status">{% if qr_local %}QR VINCULADO{% else %}DISPONÍVEL{% endif %}</span>
-            <h3>{{ local.nome }}</h3><p>{{ local.parceiro or 'Parceiro não informado' }}</p><small>{{ local.endereco or 'Endereço não informado' }}</small>
+            <h3>{{ local.nome }}</h3>
+            </p><small>{{ local.endereco or 'Endereço não informado' }}</small>
             {% if qr_local %}
-                <div class="linked-code">
-                    <span>CÓDIGO</span>
-                    <strong>{{ qr_local.codigo }}</strong>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
-                    <a href="{{ url_for('imprimir_qr', codigo=qr_local.codigo) }}" target="_blank" class="btn btn-secondary" style="width: 100%; min-height: 36px; font-size: 11px; justify-content: center;">
-                        IMPRIMIR / VISUALIZAR
-                    </a>
-                    <a href="{{ url_for('download_qr', codigo=qr_local.codigo) }}" class="btn btn-primary" style="width: 100%; min-height: 36px; font-size: 11px; justify-content: center;">
-                        BAIXAR ARTE (PNG)
-                    </a>
-                    <form method="POST" action="{{ url_for('excluir_qr', qr_id=qr_local.id) }}" onsubmit="return confirm('Tem certeza que deseja excluir este QR Code?');">
-                        <button type="submit" class="btn btn-danger" style="width: 100%; min-height: 34px; font-size: 10px; justify-content: center;">EXCLUIR QR</button>
-                    </form>
-                </div>
+            <div class="linked-code">
+                <span>CÓDIGO</span>
+                <strong>{{ qr_local.codigo }}</strong>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+                <a href="{{ url_for('imprimir_qr', codigo=qr_local.codigo) }}" target="_blank" class="btn btn-secondary"
+                    style="width: 100%; min-height: 36px; font-size: 11px; justify-content: center;">
+                    IMPRIMIR / VISUALIZAR
+                </a>
+                <a href="{{ url_for('download_qr', codigo=qr_local.codigo) }}" class="btn btn-primary"
+                    style="width: 100%; min-height: 36px; font-size: 11px; justify-content: center;">
+                    BAIXAR ARTE (PNG)
+                </a>
+                <form method="POST" action="{{ url_for('excluir_qr', qr_id=qr_local.id) }}"
+                    onsubmit="return confirm('Tem certeza que deseja excluir este QR Code?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger"
+                        style="width: 100%; min-height: 34px; font-size: 10px; justify-content: center;">EXCLUIR
+                        QR</button>
+                </form>
+            </div>
             {% else %}
-                <a href="{{ url_for('gerar_qr', campanha_id=campanha_qr.id, local_id=local.id) }}" class="btn btn-primary">GERAR QR <span>→</span></a>
+            <form method="POST" action="{{ url_for('gerar_qr', campanha_id=campanha_qr.id, local_id=local.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-primary">GERAR QR <span>→</span></button>
+            </form>
             {% endif %}
         </article>
-        {% else %}<div class="empty-points"><strong>Você ainda não cadastrou locais.</strong><p>Crie os pontos parceiros antes de gerar QR Codes.</p><a href="{{ url_for('novo_local') }}" class="btn btn-primary">CADASTRAR LOCAL</a></div>{% endfor %}
+        {% else %}<div class="empty-points"><strong>Você ainda não cadastrou locais.</strong>
+            <p>Crie os pontos parceiros antes de gerar QR Codes.</p><a href="{{ url_for('novo_local') }}"
+                class="btn btn-primary">CADASTRAR LOCAL</a>
+        </div>{% endfor %}
     </div>
 </section>
 
 {% if qrs %}
-<section class="admin-section generated-section"><div class="section-header"><div><h2>QR Codes em circulação</h2></div></div><div class="table-container"><table><thead><tr><th>Código</th><th>Local</th><th>Parceiro</th><th>Rota pública</th><th>Ações</th></tr></thead><tbody>{% for qr in qrs %}<tr><td><strong>{{ qr.codigo }}</strong></td><td>{{ qr.local_nome }}</td><td>{{ qr.parceiro or '—' }}</td><td><code>/e/{{ qr.codigo }}</code></td><td><div style="display: flex; gap: 10px; align-items: center;"><a href="{{ url_for('imprimir_qr', codigo=qr.codigo) }}" target="_blank" class="table-link" style="color: var(--knn-red); font-weight: 700;">Imprimir</a><a href="{{ url_for('download_qr', codigo=qr.codigo) }}" class="table-link">Baixar</a><form method="POST" action="{{ url_for('excluir_qr', qr_id=qr.id) }}" onsubmit="return confirm('Tem certeza que deseja excluir este QR Code?');" style="display: inline;"><button type="submit" class="table-button" style="color: var(--knn-red-dark);">Excluir</button></form></div></td></tr>{% endfor %}</tbody></table></div></section>
+<section class="admin-section generated-section">
+    <div class="section-header">
+        <div>
+            <h2>QR Codes em circulação</h2>
+        </div>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Local</th>
+                    <th>Parceiro</th>
+                    <th>Rota pública</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>{% for qr in qrs %}<tr>
+                    <td><strong>{{ qr.codigo }}</strong></td>
+                    <td>{{ qr.local_nome }}</td>
+                    <td>{{ qr.parceiro or '—' }}</td>
+                    <td><code>/e/{{ qr.codigo }}</code></td>
+                    <td>
+                        <div style="display: flex; gap: 10px; align-items: center;"><a
+                                href="{{ url_for('imprimir_qr', codigo=qr.codigo) }}" target="_blank" class="table-link"
+                                style="color: var(--knn-red); font-weight: 700;">Imprimir</a><a
+                                href="{{ url_for('download_qr', codigo=qr.codigo) }}" class="table-link">Baixar</a>
+                            <form method="POST" action="{{ url_for('excluir_qr', qr_id=qr.id) }}"
+                                onsubmit="return confirm('Tem certeza que deseja excluir este QR Code?');"
+                                style="display: inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="table-button"
+                                    style="color: var(--knn-red-dark);">Excluir</button></form>
+                        </div>
+                    </td>
+                </tr>{% endfor %}</tbody>
+        </table>
+    </div>
+</section>
 {% endif %}
 {% else %}
-<div class="admin-header"><div><h1>Locais da campanha</h1><p>Cadastre os pontos onde os QR Codes serão encontrados.</p></div><a href="{{ url_for('novo_local') }}" class="btn btn-primary">NOVO LOCAL <span>→</span></a></div>
-<section class="admin-section"><div class="section-header"><div><h2>Seus locais ativos</h2></div><span class="location-count">{{ locais|length }} cadastrados</span></div><div class="table-container"><table><thead><tr><th>Local</th><th>Parceiro</th><th>Endereço</th><th>QR Codes emitidos</th><th>Ações</th></tr></thead><tbody>{% for local in locais %}<tr><td><strong>{{ local.nome }}</strong></td><td>{{ local.parceiro or '—' }}</td><td>{{ local.endereco or '—' }}</td><td><span class="location-qr-total">{{ local.total_qr }}</span></td><td><form method="POST" action="{{ url_for('excluir_local', local_id=local.id) }}" onsubmit="return confirm('Tem certeza que deseja excluir este local?');"><button type="submit" class="table-button" style="color: var(--knn-red-dark);">Excluir</button></form></td></tr>{% else %}<tr><td colspan="5" class="empty-table">Nenhum local cadastrado. Crie o primeiro ponto parceiro para iniciar.</td></tr>{% endfor %}</tbody></table></div></section>
+<div class="admin-header">
+    <div>
+        <h1>Locais da campanha</h1>
+        <p>Cadastre os pontos onde os QR Codes serão encontrados.</p>
+    </div><a href="{{ url_for('novo_local') }}" class="btn btn-primary">NOVO LOCAL <span>→</span></a>
+</div>
+<section class="admin-section">
+    <div class="section-header">
+        <div>
+            <h2>Seus locais ativos</h2>
+        </div><span class="location-count">{{ locais|length }} cadastrados</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Local</th>
+                    <th>Parceiro</th>
+                    <th>Endereço</th>
+                    <th>QR Codes emitidos</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>{% for local in locais %}<tr>
+                    <td><strong>{{ local.nome }}</strong></td>
+                    <td>{{ local.parceiro or '—' }}</td>
+                    <td>{{ local.endereco or '—' }}</td>
+                    <td><span class="location-qr-total">{{ local.total_qr }}</span></td>
+                    <td>
+                        <form method="POST" action="{{ url_for('excluir_local', local_id=local.id) }}"
+                            onsubmit="return confirm('Tem certeza que deseja excluir este local?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button
+                                type="submit" class="table-button" style="color: var(--knn-red-dark);">Excluir</button>
+                        </form>
+                    </td>
+                </tr>{% else %}<tr>
+                    <td colspan="5" class="empty-table">Nenhum local cadastrado. Crie o primeiro ponto parceiro para
+                        iniciar.</td>
+                </tr>{% endfor %}</tbody>
+        </table>
+    </div>
+</section>
 {% endif %}
 {% endblock %}

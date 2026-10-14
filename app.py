@@ -1,8 +1,10 @@
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
-import random
+import secrets
+import hmac
 import string
+import time
 
 import qrcode
 from PIL import Image, ImageDraw, ImageFont
@@ -16,7 +18,8 @@ from flask import (
     session,
     flash,
     send_file,
-    jsonify
+    jsonify,
+    make_response
 )
 
 from config import (
@@ -24,17 +27,160 @@ from config import (
     ADMIN_USERNAME,
     ADMIN_PASSWORD,
     BASE_URL,
-    ENGLISH_PASS_REQUIRED
+    ENGLISH_PASS_REQUIRED,
+    IS_PRODUCTION,
+    PRIVACY_CONTROLLER_NAME,
+    PRIVACY_CONTROLLER_CNPJ,
+    PRIVACY_CONTACT_EMAIL
 )
 
 from database import get_connection, init_db
 from desafios import CATEGORIAS, DESAFIOS, sortear_desafio, obter_desafio_por_id
+from flask_wtf.csrf import CSRFProtect, CSRFError
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+app.config.update(
+    MAX_CONTENT_LENGTH=64 * 1024,
+    SESSION_COOKIE_NAME="__Host-inglessecreto" if IS_PRODUCTION else "inglessecreto_session",
+    SESSION_COOKIE_SECURE=IS_PRODUCTION,
+    SESSION_COOKIE_PATH="/",
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=4),
+    SESSION_REFRESH_EACH_REQUEST=False,
+    WTF_CSRF_TIME_LIMIT=7200,
+)
+
+# Render fica atrás de um proxy reverso. Só confiamos um salto e não confiamos
+# X-Forwarded-Host, para não aceitar hostnames arbitrários nas URLs geradas.
+if IS_PRODUCTION:
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=0, x_port=0)
+
+csrf = CSRFProtect(app)
 
 init_db()
+
+PRIVACY_NOTICE_VERSION = "2026-10-13-v1"
+CONSENT_TEXT_VERSION = "2026-10-13-v3"
+PARTICIPATION_CONSENT_TEXT = (
+    "Concordo em participar da campanha e autorizo a unidade KNN responsável "
+    "a entrar em contato comigo por WhatsApp ou e-mail, inclusive para enviar mensagens "
+    "sobre a campanha, novidades, promoções e oportunidades relacionadas aos cursos da unidade. "
+    "Se a pessoa participante tiver menos de 18 anos, declaro ser pai, mãe ou responsável legal "
+    "e autorizo sua participação e esses contatos."
+)
+GUARDIAN_CONSENT_TEXT = (
+    "Declaro ser pai, mãe ou responsável legal pela pessoa menor de 18 anos e "
+    "autorizo sua participação na campanha e o contato por WhatsApp ou e-mail, "
+    "incluindo mensagens relacionadas, novidades, promoções e oportunidades da unidade."
+)
+
+FIELD_MAX_LENGTHS = {
+    "username": 100, "password": 256,
+    "nome": 120,
+    "whatsapp": 32,
+    "email": 254,
+    "idade": 3, "frase": 500, "traducao": 1000,
+    "opcao_a": 400, "opcao_b": 400, "opcao_c": 400,
+    "resposta_correta": 1, "semana": 4,
+    "data_inicio": 10, "data_fim": 10,
+    "endereco": 250, "parceiro": 150, "descricao": 500,
+    "resposta": 500, "codigo": 64,
+}
+
+
+def registrar_consentimento(connection, usuario_id, tipo, texto, versao=None):
+    """Grava a versão e o texto exato da declaração afirmada no formulário."""
+    connection.execute(
+        """
+        INSERT INTO registros_consentimento (usuario_id, tipo, versao, texto)
+        VALUES (?, ?, ?, ?)
+        """,
+        (usuario_id, tipo, versao or CONSENT_TEXT_VERSION, texto),
+    )
+
+
+def permitir_requisicao(scope, max_requests, window_seconds):
+    """Rate limit persistente no banco, compartilhado por todos os workers."""
+    now = int(time.time())
+    window_start = (now // window_seconds) * window_seconds
+    ip = request.remote_addr or "unknown"
+    # Pseudonimiza o IP para não manter o endereço em texto simples na tabela.
+    fingerprint = hmac.new(SECRET_KEY.encode("utf-8"), ip.encode("utf-8"), "sha256").hexdigest()[:24]
+    bucket_key = f"{scope}:{fingerprint}:{window_start}"
+    connection = get_connection()
+    try:
+        connection.execute(
+            """
+            INSERT INTO rate_limit_buckets (bucket_key, window_start, request_count)
+            VALUES (?, ?, 1)
+            ON CONFLICT(bucket_key) DO UPDATE
+              SET request_count = rate_limit_buckets.request_count + 1
+            """,
+            (bucket_key, window_start),
+        )
+        row = connection.execute(
+            "SELECT request_count FROM rate_limit_buckets WHERE bucket_key = ?",
+            (bucket_key,),
+        ).fetchone()
+        # Limpeza ocasional dos buckets antigos para a tabela não crescer sem limite.
+        if int(row["request_count"]) == 1:
+            connection.execute(
+                "DELETE FROM rate_limit_buckets WHERE window_start < ?",
+                (now - 172800,),
+            )
+        connection.commit()
+        return int(row["request_count"]) <= max_requests
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
+@app.before_request
+def validar_tamanho_de_entrada():
+    # MAX_CONTENT_LENGTH limita o tamanho total; estes limites são por campo.
+    for field, value in request.form.items():
+        limit = FIELD_MAX_LENGTHS.get(field, 2000)
+        if len(value) > limit:
+            return make_response("Um dos campos excede o tamanho permitido.", 413)
+
+
+@app.after_request
+def adicionar_cabecalhos_de_seguranca(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; base-uri 'self'; object-src 'none'; "
+        "frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; "
+        "font-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline'; connect-src 'self'",
+    )
+    if request.path.startswith(("/admin", "/participar", "/nada")):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+    if IS_PRODUCTION and request.is_secure:
+        response.headers.setdefault(
+            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+        )
+    return response
+
+
+@app.errorhandler(CSRFError)
+def csrf_error(_error):
+    return (
+        "Esta página expirou ou a solicitação não pôde ser validada. "
+        "Atualize a página e tente novamente.",
+        400,
+    )
 
 
 @app.before_request
@@ -61,12 +207,12 @@ def desativar_campanhas_expiradas():
 # UTILITÁRIOS
 # =========================================================
 
-def gerar_codigo(tamanho=4):
+def gerar_codigo(tamanho=12):
     caracteres = string.ascii_uppercase + string.digits
 
     while True:
         codigo = "".join(
-            random.choice(caracteres)
+            secrets.choice(caracteres)
             for _ in range(tamanho)
         )
 
@@ -216,7 +362,7 @@ def index():
     )
 
 
-@app.route("/e/<codigo>", methods=["GET", "POST"])
+@app.route("/e/<codigo>")
 def mensagem(codigo):
 
     connection = get_connection()
@@ -237,6 +383,8 @@ def mensagem(codigo):
         LEFT JOIN locais
             ON locais.id = qr_codes.local_id
         WHERE qr_codes.codigo = ?
+          AND campanhas.ativa = 1
+          AND locais.ativo = 1
         """,
         (codigo,)
     ).fetchone()
@@ -279,6 +427,11 @@ def mensagem(codigo):
 @app.route("/participar/<codigo>", methods=["GET", "POST"])
 def participar(codigo):
 
+    if request.method == "POST" and not permitir_requisicao("participacao", 60, 600):
+        return make_response(
+            "Muitas tentativas de cadastro. Aguarde alguns minutos e tente novamente.", 429
+        )
+
     connection = get_connection()
 
     qr = connection.execute(
@@ -297,6 +450,8 @@ def participar(codigo):
         INNER JOIN locais
             ON locais.id = qr_codes.local_id
         WHERE qr_codes.codigo = ?
+          AND campanhas.ativa = 1
+          AND locais.ativo = 1
         """,
         (codigo,)
     ).fetchone()
@@ -320,13 +475,14 @@ def participar(codigo):
         whatsapp = request.form.get("whatsapp", "").strip()
         email = request.form.get("email", "").strip()
         idade = request.form.get("idade", "").strip()
-        consentimento = request.form.get("consentimento")
+        participacao_confirmada = request.form.get("participacao_confirmada")
 
-        if not nome or not whatsapp or not email or not idade or not consentimento:
+        if (not nome or not whatsapp or not email or not idade
+                or not participacao_confirmada):
             connection.close()
 
             flash(
-                "Preencha todos os campos e autorize o contato para continuar.",
+                "Preencha os campos obrigatórios e confirme sua participação e autorização de contato para continuar.",
                 "error"
             )
 
@@ -342,6 +498,11 @@ def participar(codigo):
         except ValueError:
             connection.close()
             flash("Informe uma idade válida.", "error")
+            return render_template("participar.html", qr=qr)
+
+        if len(nome) > 120 or len(whatsapp) > 32 or len(email) > 254:
+            connection.close()
+            flash("Revise os campos: um dos valores excede o limite permitido.", "error")
             return render_template("participar.html", qr=qr)
 
         digitos_whatsapp = "".join(caractere for caractere in whatsapp if caractere.isdigit())
@@ -388,6 +549,7 @@ def participar(codigo):
                 INSERT INTO usuarios
                 (nome, whatsapp, email, idade)
                 VALUES (?, ?, ?, ?)
+                RETURNING id
                 """,
                 (
                     nome,
@@ -397,7 +559,9 @@ def participar(codigo):
                 )
             )
 
-            usuario_id = cursor.lastrowid
+            # RETURNING id funciona em SQLite moderno e PostgreSQL; evita depender
+            # do cursor.lastrowid, que não é equivalente nos dois drivers.
+            usuario_id = cursor.fetchone()["id"]
 
         # Verifica se já encontrou essa campanha
         ja_encontrou = connection.execute(
@@ -434,6 +598,16 @@ def participar(codigo):
                 )
             )
 
+        registrar_consentimento(
+            connection, usuario_id, "participacao_e_mensagens", PARTICIPATION_CONSENT_TEXT,
+            versao=CONSENT_TEXT_VERSION,
+        )
+        if idade < 18:
+            registrar_consentimento(
+                connection, usuario_id, "responsavel_legal", GUARDIAN_CONSENT_TEXT,
+                versao=CONSENT_TEXT_VERSION,
+            )
+
         connection.commit()
         connection.close()
 
@@ -441,7 +615,9 @@ def participar(codigo):
 
         total = quantidade_descobertas(usuario_id)
 
-        session["ultimo_lead_nome"] = nome
+        # Não guardar nome/telefone/e-mail no cookie assinado do navegador.
+        session.pop("ultimo_lead_nome", None)
+        session["contato_autorizado"] = True
 
         return redirect(
             url_for("nada")
@@ -458,6 +634,12 @@ def participar(codigo):
 @app.route("/e/<codigo>/responder", methods=["POST"])
 def responder_desafio(codigo):
     """Valida o desafio usando o desafio sorteado na sessão."""
+    if not permitir_requisicao("desafio", 120, 300):
+        response = jsonify({"ok": False, "mensagem": "Muitas tentativas. Aguarde e tente novamente."})
+        response.status_code = 429
+        response.headers["Retry-After"] = "300"
+        return response
+
     session_key = f"desafio_sorteado_{codigo}"
     desafio_id = session.get(session_key)
 
@@ -471,7 +653,8 @@ def responder_desafio(codigo):
         SELECT campanhas.categoria
         FROM qr_codes
         INNER JOIN campanhas ON campanhas.id = qr_codes.campanha_id
-        WHERE qr_codes.codigo = ? AND campanhas.ativa = 1
+        INNER JOIN locais ON locais.id = qr_codes.local_id
+        WHERE qr_codes.codigo = ? AND campanhas.ativa = 1 AND locais.ativo = 1
         """,
         (codigo,)
     ).fetchone()
@@ -501,49 +684,25 @@ def responder_desafio(codigo):
 
 @app.route("/nada")
 def nada():
-    nome = session.get("ultimo_lead_nome", "")
+    contato_autorizado = bool(session.pop("contato_autorizado", False))
+    session.pop("ultimo_lead_nome", None)
     return render_template(
         "nada.html",
-        nome=nome,
+        nome="",
+        contato_autorizado=contato_autorizado,
         instagram_url="https://www.instagram.com/knnparaisopolis/"
     )
 
 
-@app.route("/admin/capturar-lead", methods=["POST"])
-def capturar_lead_login():
-    nome = request.form.get("lead_nome", "").strip()
-    whatsapp = request.form.get("lead_whatsapp", "").strip()
-    email = request.form.get("lead_email", "").strip()
-
-    if not nome or not whatsapp:
-        flash("Informe seu nome e WhatsApp para receber as novidades.", "error")
-        return redirect(url_for("admin_login"))
-
-    digitos_whatsapp = "".join(caractere for caractere in whatsapp if caractere.isdigit())
-    if len(digitos_whatsapp) not in (10, 11):
-        flash("Informe um WhatsApp válido com DDD.", "error")
-        return redirect(url_for("admin_login"))
-
-    connection = get_connection()
-    usuario = connection.execute(
-        "SELECT id FROM usuarios WHERE whatsapp = ?",
-        (whatsapp,)
-    ).fetchone()
-
-    if not usuario:
-        connection.execute(
-            """
-            INSERT INTO usuarios (nome, whatsapp, email, idade)
-            VALUES (?, ?, ?, NULL)
-            """,
-            (nome, whatsapp, email)
-        )
-        connection.commit()
-    connection.close()
-
-    session["ultimo_lead_nome"] = nome
-    flash("Contato recebido! A equipe da KNN Paraisópolis vai falar com você no WhatsApp.", "success")
-    return redirect(url_for("nada"))
+@app.route("/privacidade")
+def privacidade():
+    return render_template(
+        "privacidade.html",
+        controller_name=PRIVACY_CONTROLLER_NAME,
+        controller_cnpj=PRIVACY_CONTROLLER_CNPJ,
+        privacy_contact_email=PRIVACY_CONTACT_EMAIL,
+        privacy_notice_version=PRIVACY_NOTICE_VERSION,
+    )
 
 
 # =========================================================
@@ -552,6 +711,10 @@ def capturar_lead_login():
 
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
+
+    if request.method == "POST" and not permitir_requisicao("admin_login", 8, 900):
+        flash("Muitas tentativas de acesso. Aguarde 15 minutos e tente novamente.", "error")
+        return make_response(render_template("admin/login.html"), 429)
 
     if session.get("admin_logged"):
         return redirect(
@@ -571,9 +734,12 @@ def admin_login():
         )
 
         if (
-            username == ADMIN_USERNAME
-            and password == ADMIN_PASSWORD
+            hmac.compare_digest(username, ADMIN_USERNAME)
+            and hmac.compare_digest(password, ADMIN_PASSWORD)
         ):
+            # Rotaciona o conteúdo da sessão ao autenticar para reduzir fixation.
+            session.clear()
+            session.permanent = True
             session["admin_logged"] = True
 
             return redirect(
@@ -590,7 +756,7 @@ def admin_login():
     )
 
 
-@app.route("/admin/logout")
+@app.route("/admin/logout", methods=["POST"])
 def admin_logout():
 
     session.clear()
@@ -718,8 +884,8 @@ def nova_campanha():
         data_fim = request.form.get("data_fim", "")
         ativa = 1 if request.form.get("ativa") else 0
 
-        if not nome:
-            flash("Preencha o nome da campanha.", "error")
+        if not nome or len(nome) > 150:
+            flash("Preencha um nome válido para a campanha.", "error")
             return render_template(
                 "admin/campanha_form.html",
                 campanha=None,
@@ -826,9 +992,9 @@ def editar_campanha(campanha_id):
         data_fim = request.form.get("data_fim", "")
         ativa = 1 if request.form.get("ativa") else 0
 
-        if not nome:
+        if not nome or len(nome) > 150:
             connection.close()
-            flash("Preencha o nome da campanha.", "error")
+            flash("Preencha um nome válido para a campanha.", "error")
             return render_template(
                 "admin/campanha_form.html",
                 campanha=campanha,
@@ -963,9 +1129,9 @@ def novo_local():
             ""
         ).strip()
 
-        if not nome:
+        if not nome or len(nome) > 120 or len(endereco) > 250 or len(parceiro) > 150:
             flash(
-                "Informe o nome do local.",
+                "Informe o nome do local e respeite os limites dos campos.",
                 "error"
             )
 
@@ -1043,16 +1209,71 @@ def excluir_local(local_id):
 # =========================================================
 
 def carregar_fonte(nomes, tamanho):
-    windir = os.environ.get("WINDIR", "C:\\Windows")
-    fonts_dir = os.path.join(windir, "Fonts")
-    for nome in nomes:
-        caminho = os.path.join(fonts_dir, nome)
-        if os.path.exists(caminho):
-            try:
-                return ImageFont.truetype(caminho, tamanho)
-            except Exception:
-                pass
-    return ImageFont.load_default()
+    """Carrega fontes legíveis no Windows local e no Linux do Render.
+
+    O código antigo procurava fontes apenas no diretório do Windows. No Render,
+    isso falhava e o fallback do Pillow tinha tamanho padrão muito pequeno,
+    ignorando o tamanho solicitado para a arte do QR Code.
+    """
+    fontes = []
+
+    # Caminho de fontes do Windows (ambiente local de desenvolvimento).
+    windir = os.environ.get("WINDIR")
+    if windir:
+        fontes.append(os.path.join(windir, "Fonts"))
+    elif os.name == "nt":
+        fontes.append(os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "Fonts"))
+
+    # Caminhos mais comuns em imagens Linux/Debian, como as usadas na hospedagem.
+    fontes.extend([
+        "/usr/share/fonts/truetype/dejavu",
+        "/usr/share/fonts/truetype/liberation2",
+        "/usr/share/fonts/truetype/liberation",
+        "/usr/share/fonts/truetype/msttcorefonts",
+        "/usr/local/share/fonts",
+    ])
+
+    # Primeiro tenta exatamente os nomes originalmente solicitados.
+    for pasta in fontes:
+        for nome in nomes:
+            caminho = os.path.join(pasta, nome)
+            if os.path.isfile(caminho):
+                try:
+                    return ImageFont.truetype(caminho, tamanho)
+                except (OSError, ValueError):
+                    continue
+
+    # Se o servidor Linux não tiver Arial/Segoe UI, usa fontes equivalentes.
+    nomes_lower = " ".join(nomes).lower()
+    negrito = any(marca in nomes_lower for marca in ("bd", "bold", "segoeuib"))
+    alternativas = (
+        [
+            "DejaVuSans-Bold.ttf",
+            "LiberationSans-Bold.ttf",
+            "Lato-Bold.ttf",
+        ] if negrito else [
+            "DejaVuSans.ttf",
+            "LiberationSans-Regular.ttf",
+            "Lato-Regular.ttf",
+        ]
+    )
+    for pasta in fontes:
+        for nome in alternativas:
+            caminho = os.path.join(pasta, nome)
+            if os.path.isfile(caminho):
+                try:
+                    return ImageFont.truetype(caminho, tamanho)
+                except (OSError, ValueError):
+                    continue
+
+    # Pillow >= 10.1 aceita tamanho no fallback interno. Isso evita que o
+    # texto caia para a fonte bitmap minúscula padrão de aproximadamente 10 px.
+    try:
+        return ImageFont.load_default(size=tamanho)
+    except TypeError:
+        # Compatibilidade com ambientes locais antigos; o requirements.txt
+        # da aplicação instala uma versão recente do Pillow no deploy.
+        return ImageFont.load_default()
 
 
 def quebrar_texto(texto, fonte, max_largura, draw):
@@ -1228,9 +1449,12 @@ def gerar_arte_qrcode(codigo, campanha, local):
     return caminho
 
 
-@app.route("/admin/qr/<int:campanha_id>/<int:local_id>/gerar")
+@app.route("/admin/qr/<int:campanha_id>/<int:local_id>/gerar", methods=["POST"])
 @admin_required
 def gerar_qr(campanha_id, local_id):
+
+    if not permitir_requisicao("gerar_qr", 30, 600):
+        return make_response("Muitas solicitações. Aguarde e tente novamente.", 429)
 
     connection = get_connection()
 
@@ -1643,7 +1867,7 @@ def utilizar_premio(premio_id):
 if __name__ == "__main__":
 
     app.run(
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=5000,
-        debug=True
+        debug=os.getenv("FLASK_DEBUG", "").lower() == "true" and not IS_PRODUCTION,
     )
