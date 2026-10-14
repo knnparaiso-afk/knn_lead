@@ -767,6 +767,9 @@ body.halloween-theme {
             feedback.textContent = "Verificando resposta...";
 
             try {
+                const formData = new FormData();
+                formData.append("resposta", letra);
+
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
                 const response = await fetch("{{ url_for('responder_desafio', codigo=codigo) }}", {
                     method: "POST",

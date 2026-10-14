@@ -193,8 +193,8 @@ def desativar_campanhas_expiradas():
         UPDATE campanhas
         SET ativa = 0
         WHERE ativa = 1
-          AND data_fim != ''
           AND data_fim IS NOT NULL
+          AND TRIM(data_fim) != ''
           AND data_fim < ?
         """,
         (hoje,)
@@ -880,8 +880,8 @@ def nova_campanha():
 
         nome = request.form.get("nome", "").strip()
         categoria = request.form.get("categoria", "frases").strip()
-        data_inicio = request.form.get("data_inicio", "")
-        data_fim = request.form.get("data_fim", "")
+        data_inicio = request.form.get("data_inicio", "").strip() or None
+        data_fim = request.form.get("data_fim", "").strip() or None
         ativa = 1 if request.form.get("ativa") else 0
 
         if not nome or len(nome) > 150:
@@ -984,8 +984,8 @@ def editar_campanha(campanha_id):
 
         nome = request.form.get("nome", "").strip()
         categoria = request.form.get("categoria", "frases").strip()
-        data_inicio = request.form.get("data_inicio", "")
-        data_fim = request.form.get("data_fim", "")
+        data_inicio = request.form.get("data_inicio", "").strip() or None
+        data_fim = request.form.get("data_fim", "").strip() or None
         ativa = 1 if request.form.get("ativa") else 0
 
         if not nome or len(nome) > 150:
