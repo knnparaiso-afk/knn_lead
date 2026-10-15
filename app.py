@@ -5,6 +5,8 @@ import secrets
 import hmac
 import string
 import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import qrcode
 from PIL import Image, ImageDraw, ImageFont
@@ -54,6 +56,9 @@ app.config.update(
     SESSION_REFRESH_EACH_REQUEST=False,
     WTF_CSRF_TIME_LIMIT=7200,
 )
+
+
+hoje = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
 
 # Render fica atrás de um proxy reverso. Só confiamos um salto e não confiamos
 # X-Forwarded-Host, para não aceitar hostnames arbitrários nas URLs geradas.
@@ -382,6 +387,8 @@ def mensagem(codigo):
             campanhas.semana,
             campanhas.categoria,
             campanhas.ativa,
+            campanhas.data_inicio,
+            campanhas.data_fim,
             locais.nome AS local_nome,
             locais.parceiro
         FROM qr_codes
@@ -390,40 +397,88 @@ def mensagem(codigo):
         LEFT JOIN locais
             ON locais.id = qr_codes.local_id
         WHERE qr_codes.codigo = ?
-          AND campanhas.ativa = 1
-          AND locais.ativo = 1
+          AND (
+              qr_codes.local_id IS NULL
+              OR locais.ativo = 1
+          )
         """,
         (codigo,)
     ).fetchone()
 
     connection.close()
 
+    # QR Code inexistente ou local inativo
     if not qr:
         return render_template(
             "mensagem.html",
             erro="Mensagem não encontrada."
         ), 404
 
-    if not qr["ativa"]:
+    # Data atual no horário de Brasília
+    hoje = datetime.now().date()
+
+    # Converte as datas do banco
+    data_inicio = (
+        datetime.strptime(
+            qr["data_inicio"], "%Y-%m-%d"
+        ).date()
+        if qr["data_inicio"] else None
+    )
+
+    data_fim = (
+        datetime.strptime(
+            qr["data_fim"], "%Y-%m-%d"
+        ).date()
+        if qr["data_fim"] else None
+    )
+
+    # Verifica se a campanha está encerrada,
+    # ainda não começou ou foi desativada manualmente.
+    encerrada = (
+        not qr["ativa"]
+        or (data_fim is not None and hoje > data_fim)
+    )
+
+    ainda_nao_iniciou = (
+        data_inicio is not None
+        and hoje < data_inicio
+    )
+
+    if encerrada or ainda_nao_iniciou:
         return render_template(
             "campanha_inativa.html",
             qr=qr
         )
 
-    # Sorteia um desafio aleatório ou recupera o que já foi sorteado nesta sessão
+    # Sorteia um desafio aleatório ou recupera
+    # o que já foi sorteado nesta sessão.
     categoria = qr["categoria"] or "frases"
     session_key = f"desafio_sorteado_{codigo}"
 
     desafio_id = session.get(session_key)
     desafio = None
+
     if desafio_id:
-        desafio = obter_desafio_por_id(desafio_id, categoria)
+        desafio = obter_desafio_por_id(
+            desafio_id, categoria
+        )
 
     if not desafio:
         desafio = sortear_desafio(categoria)
+
+        if not desafio:
+            return render_template(
+                "mensagem.html",
+                erro="Nenhum desafio disponível."
+            ), 404
+
         session[session_key] = desafio["id"]
 
-    template_name = desafio.get("template", "desafio_halloween.html")
+    template_name = desafio.get(
+        "template",
+        "desafio_halloween.html"
+    )
+
     return render_template(
         template_name,
         qr=qr,
@@ -699,17 +754,6 @@ def nada():
         nome="",
         contato_autorizado=contato_autorizado,
         instagram_url="https://www.instagram.com/knnparaisopolis/"
-    )
-
-
-@app.route("/privacidade")
-def privacidade():
-    return render_template(
-        "privacidade.html",
-        controller_name=PRIVACY_CONTROLLER_NAME,
-        controller_cnpj=PRIVACY_CONTROLLER_CNPJ,
-        privacy_contact_email=PRIVACY_CONTACT_EMAIL,
-        privacy_notice_version=PRIVACY_NOTICE_VERSION,
     )
 
 

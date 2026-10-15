@@ -22,7 +22,8 @@
 
     <header class="topbar">
 
-        <a class="brand" href="{% if session.get('admin_logged') %}{{ url_for('admin_dashboard') }}{% else %}{{ url_for('index') }}{% endif %}">
+        <a class="brand"
+            href="{% if session.get('admin_logged') %}{{ url_for('admin_dashboard') }}{% else %}{{ url_for('index') }}{% endif %}">
             <span class="brand-knn">KNN</span>
             <span class="brand-secret">INGLÊS SECRETO</span>
         </a>
@@ -57,7 +58,8 @@
 
             <form method="POST" action="{{ url_for('admin_logout') }}" style="display:inline; margin:0;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="admin-logout-btn" style="background: rgba(229, 27, 43, 0.08); border: 1px solid rgba(229, 27, 43, 0.25); color: var(--admin-red, #e51b2b); font-size: 11px; font-weight: 800; cursor: pointer; padding: 6px 14px; border-radius: 6px; letter-spacing: 0.05em; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;">
+                <button type="submit" class="admin-logout-btn"
+                    style="background: rgba(229, 27, 43, 0.08); border: 1px solid rgba(229, 27, 43, 0.25); color: var(--admin-red, #e51b2b); font-size: 11px; font-weight: 800; cursor: pointer; padding: 6px 14px; border-radius: 6px; letter-spacing: 0.05em; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;">
                     <span style="font-size: 13px;">🚪</span> Sair
                 </button>
             </form>
@@ -93,14 +95,6 @@
 
     </main>
 
-
-    <footer class="footer">
-
-        <p>
-            Inglês Secreto · KNN · <a href="{{ url_for('privacidade') }}">Aviso de Privacidade</a>
-        </p>
-
-    </footer>
 
 </body>
 
