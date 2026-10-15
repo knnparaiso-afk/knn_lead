@@ -950,7 +950,8 @@ def nova_campanha():
         "admin/campanha_form.html",
         campanha=None,
         categorias=CATEGORIAS,
-        desafios_preview=DESAFIOS.get(categoria_default, [])
+        desafios_preview=DESAFIOS.get(categoria_default, []),
+        todos_desafios=DESAFIOS
     )
 
 
@@ -1039,7 +1040,8 @@ def editar_campanha(campanha_id):
         "admin/campanha_form.html",
         campanha=campanha,
         categorias=CATEGORIAS,
-        desafios_preview=DESAFIOS.get(categoria_atual, DESAFIOS["frases"])
+        desafios_preview=DESAFIOS.get(categoria_atual, DESAFIOS["frases"]),
+        todos_desafios=DESAFIOS
     )
 
 

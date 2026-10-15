@@ -6,14 +6,14 @@ Editar Campanha
 {% else %}
 Nova Campanha
 {% endif %}
-| Inglês Secreto
+| KNN Idiomas
 {% endblock %}
 
 {% block content %}
 
 <div class="admin-header" style="margin-bottom: 24px;">
     <div>
-        <h1 style="font-size: 32px; font-weight: 800; color: #111827; margin-bottom: 4px;">
+        <h1 style="font-size: 30px; font-weight: 900; color: #111827; margin-bottom: 4px; letter-spacing: -0.02em;">
             {% if campanha %}
             Editar Campanha
             {% else %}
@@ -21,111 +21,383 @@ Nova Campanha
             {% endif %}
         </h1>
         <p style="color: #6b7280; font-size: 14px;">
-            Configure a campanha. O conteúdo dos desafios é sorteado automaticamente pela categoria.
+            Configure a campanha e selecione a modalidade de conteúdo sorteado para os participantes.
         </p>
     </div>
 </div>
 
-<form method="POST" class="admin-form" style="max-width: 820px; background: #ffffff; border: 1px solid var(--border); border-radius: 16px; padding: 36px 32px; box-shadow: var(--shadow-sm);">
+<form method="POST" class="admin-form" style="max-width: 860px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     {% if campanha %}
     <input type="hidden" name="semana" value="{{ campanha.semana }}">
     {% endif %}
 
-    <!-- SEÇÃO 1: DADOS BÁSICOS -->
-    <div style="margin-bottom: 30px;">
-        <div style="font-size: 16px; font-weight: 800; color: #111827; margin-bottom: 16px; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px;">
-            Identificação
-        </div>
-
-        <div style="margin-bottom: 18px;">
-            <label for="nome" style="display: block; font-size: 13px; font-weight: 700; color: #1f2937; margin-bottom: 6px;">
-                Nome da campanha
-            </label>
-            <input id="nome" type="text" name="nome" value="{{ campanha.nome if campanha else '' }}"
-                placeholder="Ex: Halloween 2026" required style="width: 100%; height: 48px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 16px; font-size: 15px; background: #fff;">
-        </div>
-
-        <div>
-            <label for="categoria" style="display: block; font-size: 13px; font-weight: 700; color: #1f2937; margin-bottom: 6px;">
-                Categoria
-            </label>
-            <select id="categoria" name="categoria" style="width: 100%; height: 48px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; font-weight: 700; background: #fff;">
-                {% for cat_id, cat_nome in categorias.items() %}
-                <option value="{{ cat_id }}" {% if campanha and campanha.categoria == cat_id %}selected{% elif not campanha and cat_id == 'frases' %}selected{% endif %}>
-                    {{ cat_nome }}
-                </option>
-                {% endfor %}
-            </select>
-            <span style="display: block; margin-top: 6px; font-size: 12px; color: #9ca3af;">
-                O conteúdo dos desafios será sorteado automaticamente com base na categoria selecionada.
-            </span>
-        </div>
+    <!-- SEÇÃO 1: IDENTIFICAÇÃO E NOME -->
+    <div style="margin-bottom: 28px;">
+        <label for="nome" style="display: block; font-size: 13px; font-weight: 800; color: #1f2937; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em;">
+            Nome da campanha
+        </label>
+        <input id="nome" type="text" name="nome" value="{{ campanha.nome if campanha else '' }}"
+            placeholder="Ex: Halloween KNN 2026" required
+            style="width: 100%; height: 50px; border-radius: 10px; border: 1.5px solid #d1d5db; padding: 0 16px; font-size: 15px; font-weight: 600; color: #111827; background: #fafafa; transition: all 0.2s;">
     </div>
 
-    <!-- SEÇÃO 2: PREVIEW DOS DESAFIOS -->
-    <div style="margin-bottom: 30px; background: #fbfbfc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
-        <div style="font-size: 16px; font-weight: 800; color: #111827; margin-bottom: 16px;">
-            Desafios disponíveis nesta categoria
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-            {% for d in desafios_preview %}
-            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px;">
-                <span style="font-size: 20px;">{{ d.emoji }}</span>
-                <span style="font-weight: 600; color: #374151;">{{ d.frase }}</span>
+    <!-- SEÇÃO 2: SELETOR VISUAL DE CATEGORIA -->
+    <div style="margin-bottom: 28px;">
+        <label style="display: block; font-size: 13px; font-weight: 800; color: #1f2937; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em;">
+            Modalidade da Atividade
+        </label>
+
+        <!-- Hidden input mantido para o POST -->
+        <input type="hidden" id="categoria_input" name="categoria" value="{{ campanha.categoria if campanha and campanha.categoria else 'frases' }}">
+
+        <!-- Cards Visuais para Seleção -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 16px;">
+            
+            <!-- Opção Frases -->
+            <div class="cat-card {% if not campanha or campanha.categoria == 'frases' %}active{% endif %}" 
+                 onclick="selecionarCategoria('frases')" id="card-cat-frases">
+                <div class="cat-card-header">
+                    <span class="cat-icon-badge" style="background: rgba(124, 58, 237, 0.1); color: #7c3aed;">🎃</span>
+                    <span class="cat-check-badge">✓</span>
+                </div>
+                <div class="cat-card-title">Frases em Inglês</div>
+                <div class="cat-card-desc">10 desafios temáticos com charadas assustadoras e quiz de múltipla escolha.</div>
+                <div class="cat-card-tag">10 Telas Sorteáveis</div>
             </div>
-            {% endfor %}
+
+            <!-- Opção Jogos -->
+            <div class="cat-card {% if campanha and campanha.categoria == 'jogos' %}active{% endif %}" 
+                 onclick="selecionarCategoria('jogos')" id="card-cat-jogos">
+                <div class="cat-card-header">
+                    <span class="cat-icon-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">🧪</span>
+                    <span class="cat-check-badge">✓</span>
+                </div>
+                <div class="cat-card-title">Jogos Interativos</div>
+                <div class="cat-card-desc">Minijogos interativos dinâmicos com caldeirão animado e aprendizado de vocabulário.</div>
+                <div class="cat-card-tag" style="background: rgba(16, 185, 129, 0.12); color: #047857;">Minijogo Interativo</div>
+            </div>
+
         </div>
-        <p style="margin-top: 12px; font-size: 12px; color: #9ca3af;">
-            Cada pessoa que escanear o QR Code receberá um desafio aleatório dentre estes.
-        </p>
     </div>
 
-    <!-- SEÇÃO 3: PERÍODO DE VIGÊNCIA -->
-    <div style="margin-bottom: 30px;">
-        <div style="font-size: 16px; font-weight: 800; color: #111827; margin-bottom: 16px; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px;">
-            Período da Campanha
+    <!-- SEÇÃO 3: PREVIEW DINÂMICO DOS DESAFIOS/JOGOS -->
+    <div style="margin-bottom: 32px; background: #0f0c1b; border: 1px solid #2d264a; border-radius: 14px; padding: 22px; color: #fff; box-shadow: 0 10px 25px -5px rgba(15, 12, 27, 0.4);">
+        
+        <!-- Conteúdo para Categoria: FRASES -->
+        <div id="preview-frases" style="{% if campanha and campanha.categoria == 'jogos' %}display: none;{% endif %}">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">👻</span>
+                    <span style="font-weight: 800; font-size: 15px; color: #f3f4f6; letter-spacing: 0.02em;">Desafios Disponíveis para Sorteio</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; background: rgba(124, 58, 237, 0.3); color: #c4b5fd; padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(124, 58, 237, 0.4);">
+                    10 Desafios Cadastrados
+                </span>
+            </div>
+            
+            <p style="font-size: 12px; color: #9ca3af; margin-top: 0; margin-bottom: 14px;">
+                Quando o visitante escanear o QR Code, a tela sorteará automaticamente um dos seguintes desafios:
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px;">
+                {% if todos_desafios and todos_desafios.frases %}
+                    {% for d in todos_desafios.frases %}
+                    <div class="preview-item-phrase">
+                        <span class="preview-item-emoji">{{ d.emoji }}</span>
+                        <div style="overflow: hidden;">
+                            <div class="preview-item-name">{{ d.tema }}</div>
+                            <div class="preview-item-sub">"{{ d.frase }}"</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Conteúdo para Categoria: JOGOS -->
+        <div id="preview-jogos" style="{% if not campanha or campanha.categoria != 'jogos' %}display: none;{% endif %}">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">🧙‍♀️</span>
+                    <span style="font-weight: 800; font-size: 15px; color: #f3f4f6; letter-spacing: 0.02em;">Jogo Interativo Disponível</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.25); color: #6ee7b7; padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.35);">
+                    Pronto para jogar
+                </span>
+            </div>
+
+            <p style="font-size: 12px; color: #9ca3af; margin-top: 0; margin-bottom: 16px;">
+                O participante entrará direto no minijogo interativo abaixo com gamificação e captação de lead:
+            </p>
+
+            <!-- Card Destaque do Jogo Witch's Potion -->
+            <div class="preview-game-hero">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="preview-game-icon">
+                        <span style="font-size: 38px;">🧪</span>
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #39ff14; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.04em; text-transform: uppercase;">
+                                Witch's Potion (Poção da Bruxa)
+                            </h3>
+                            <span style="font-size: 11px; background: rgba(57, 255, 20, 0.15); color: #39ff14; font-weight: 800; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(57, 255, 20, 0.3);">
+                                NOVO
+                            </span>
+                        </div>
+                        <p style="margin: 4px 0 8px; font-size: 13px; color: #d1d5db; line-height: 1.4;">
+                            O jogador ajuda uma bruxa simpática a preparar 3 receitas mágicas adicionando ingredientes ao caldeirão borbulhante.
+                        </p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <span class="preview-pill">🍲 Caldeirão Borbulhante</span>
+                            <span class="preview-pill">✨ Efeitos & Partículas</span>
+                            <span class="preview-pill">📜 3 Receitas Progressivas</span>
+                            <span class="preview-pill">🏆 Placar & Conquistas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SEÇÃO 4: PERÍODO DE VIGÊNCIA -->
+    <div style="margin-bottom: 28px;">
+        <div style="font-size: 13px; font-weight: 800; color: #1f2937; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em;">
+            Período de Vigência
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
-                <label for="data_inicio" style="display: block; font-size: 13px; font-weight: 700; color: #1f2937; margin-bottom: 6px;">
+                <label for="data_inicio" style="display: block; font-size: 12px; font-weight: 700; color: #4b5563; margin-bottom: 6px;">
                     Data de início
                 </label>
-                <input id="data_inicio" type="date" name="data_inicio" value="{{ campanha.data_inicio if campanha else '' }}" style="width: 100%; height: 48px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; background: #fff;">
+                <input id="data_inicio" type="date" name="data_inicio" value="{{ campanha.data_inicio if campanha and campanha.data_inicio else '' }}" 
+                       style="width: 100%; height: 46px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; background: #fff;">
             </div>
 
             <div>
-                <label for="data_fim" style="display: block; font-size: 13px; font-weight: 700; color: #1f2937; margin-bottom: 6px;">
+                <label for="data_fim" style="display: block; font-size: 12px; font-weight: 700; color: #4b5563; margin-bottom: 6px;">
                     Data de término
                 </label>
-                <input id="data_fim" type="date" name="data_fim" value="{{ campanha.data_fim if campanha else '' }}" style="width: 100%; height: 48px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; background: #fff;">
+                <input id="data_fim" type="date" name="data_fim" value="{{ campanha.data_fim if campanha and campanha.data_fim else '' }}" 
+                       style="width: 100%; height: 46px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; background: #fff;">
             </div>
         </div>
+        <span style="display: block; margin-top: 6px; font-size: 11px; color: #9ca3af;">
+            Deixe em branco para manter a campanha sem expiração automática.
+        </span>
     </div>
 
-    <!-- SEÇÃO 4: STATUS -->
-    <div style="margin-bottom: 32px; padding: 16px 20px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; display: flex; align-items: center; justify-content: space-between;">
+    <!-- SEÇÃO 5: STATUS ATIVO -->
+    <div style="margin-bottom: 32px; padding: 16px 20px; background: #f9fafb; border: 1.5px solid #e5e7eb; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
         <div>
-            <label for="ativa" style="font-size: 14px; font-weight: 800; color: #111827; cursor: pointer; display: block; margin-bottom: 2px;">
-                Campanha ativa
+            <label for="ativa" style="font-size: 15px; font-weight: 800; color: #111827; cursor: pointer; display: block; margin-bottom: 2px;">
+                Campanha Ativa
             </label>
-            <span style="font-size: 12px; color: #6b7280;">Habilita a campanha para participação na cidade.</span>
+            <span style="font-size: 12px; color: #6b7280;">Quando ativa, o QR Code exibe a experiência imediatamente ao ser escaneado.</span>
         </div>
-        <input type="checkbox" id="ativa" name="ativa" {% if not campanha or campanha.ativa %}checked{% endif %} style="width: 22px; height: 22px; accent-color: var(--knn-red); cursor: pointer;">
+        <input type="checkbox" id="ativa" name="ativa" {% if not campanha or campanha.ativa %}checked{% endif %} 
+               style="width: 22px; height: 22px; accent-color: #ED1B2F; cursor: pointer;">
     </div>
 
-    <!-- SEÇÃO 5: AÇÕES -->
-    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding-top: 16px; border-top: 1px solid #f3f4f6;">
-        <a href="{{ url_for('campanhas') }}" class="btn btn-secondary" style="height: 48px; padding: 0 24px; font-size: 13px; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center;">
+    <!-- SEÇÃO 6: BOTÕES DE AÇÃO -->
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding-top: 20px; border-top: 1px solid #f3f4f6;">
+        <a href="{{ url_for('campanhas') }}" class="btn btn-secondary" 
+           style="height: 48px; padding: 0 24px; font-size: 13px; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; text-decoration: none; color: #4b5563; border: 1px solid #d1d5db; background: #fff;">
             CANCELAR
         </a>
-        <button type="submit" class="btn btn-primary" style="height: 48px; padding: 0 32px; font-size: 14px; font-weight: 800; border-radius: 8px; letter-spacing: 0.5px;">
+        <button type="submit" class="btn btn-primary" 
+                style="height: 48px; padding: 0 32px; font-size: 14px; font-weight: 800; border-radius: 8px; letter-spacing: 0.5px; background: #ED1B2F; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(237, 27, 47, 0.25);">
             SALVAR CAMPANHA
         </button>
     </div>
 
 </form>
+
+<style>
+/* Estilos dos Cards de Categoria */
+.cat-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px 18px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.cat-card:hover {
+    border-color: #d1d5db;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.cat-card.active {
+    border-color: #7c3aed;
+    background: #faf7ff;
+    box-shadow: 0 0 0 1px #7c3aed, 0 8px 20px rgba(124, 58, 237, 0.12);
+}
+
+#card-cat-jogos.active {
+    border-color: #10b981;
+    background: #f0fdf4;
+    box-shadow: 0 0 0 1px #10b981, 0 8px 20px rgba(16, 185, 129, 0.12);
+}
+
+.cat-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.cat-icon-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+}
+
+.cat-check-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 900;
+    transition: all 0.2s;
+}
+
+.cat-card.active .cat-check-badge {
+    background: #7c3aed;
+}
+
+#card-cat-jogos.active .cat-check-badge {
+    background: #10b981;
+}
+
+.cat-card-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.cat-card-desc {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.cat-card-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    background: rgba(124, 58, 237, 0.1);
+    color: #7c3aed;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+/* Itens da lista de Frases */
+.preview-item-phrase {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.preview-item-phrase:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.preview-item-emoji {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.preview-item-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.preview-item-sub {
+    font-size: 11px;
+    color: #9ca3af;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Card Hero do Jogo */
+.preview-game-hero {
+    background: linear-gradient(135deg, rgba(57, 255, 20, 0.08) 0%, rgba(124, 58, 237, 0.12) 100%);
+    border: 1.5px solid rgba(57, 255, 20, 0.25);
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.preview-game-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    background: rgba(15, 12, 27, 0.8);
+    border: 1px solid rgba(57, 255, 20, 0.3);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 16px rgba(57, 255, 20, 0.15);
+}
+
+.preview-pill {
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+</style>
+
+<script>
+function selecionarCategoria(categoria) {
+    // Atualiza input escondido
+    document.getElementById('categoria_input').value = categoria;
+
+    // Alterna classes ativas nos cards
+    const cardFrases = document.getElementById('card-cat-frases');
+    const cardJogos = document.getElementById('card-cat-jogos');
+    const previewFrases = document.getElementById('preview-frases');
+    const previewJogos = document.getElementById('preview-jogos');
+
+    if (categoria === 'frases') {
+        cardFrases.classList.add('active');
+        cardJogos.classList.remove('active');
+        previewFrases.style.display = 'block';
+        previewJogos.style.display = 'none';
+    } else {
+        cardJogos.classList.add('active');
+        cardFrases.classList.remove('active');
+        previewJogos.style.display = 'block';
+        previewFrases.style.display = 'none';
+    }
+}
+</script>
 
 {% endblock %}
