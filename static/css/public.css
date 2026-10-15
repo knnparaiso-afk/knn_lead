@@ -380,3 +380,130 @@ body.public-challenge #frame-2 .options-container {
         padding-bottom: 4px;
     }
 }
+
+
+/* Aviso de privacidade visível desde o início do cadastro */
+.privacy-callout {
+    margin: 0 0 14px;
+    padding: 17px 18px;
+    border: 1px solid #ead3d5;
+    border-left: 4px solid var(--p-red);
+    border-radius: 5px;
+    background: #fff8f8;
+}
+.privacy-callout-kicker {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--p-red-dark);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .12em;
+}
+.privacy-callout h2 {
+    margin: 0 0 9px;
+    font: 800 17px/1.25 "DM Sans", Arial, sans-serif;
+    letter-spacing: -.02em;
+    color: var(--p-ink);
+}
+.privacy-callout p {
+    margin: 0 0 8px;
+    color: #4e4b4e;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.privacy-callout-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    margin-top: 2px;
+    color: var(--p-red-dark);
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.privacy-confirmation {
+    margin: 0 0 18px;
+    padding: 11px 12px;
+    border: 1px solid #e5e1dc;
+    border-radius: 4px;
+    background: #f7f5f1;
+    color: #343135;
+    font-size: 12px;
+}
+.privacy-confirmation input,
+.responsible-confirmation input,
+.marketing-confirmation input {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+    margin-top: 2px;
+    accent-color: var(--p-red);
+}
+.minor-participant-note {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--p-muted);
+}
+.public-lead .field label.sr-only,
+.admin-page .login-card .form-group label.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Mobile: distribuir a experiência QR ao longo da tela sem reativar a rolagem */
+@media (max-width: 700px) {
+    body.public-challenge .experience-shell {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    body.public-challenge #frame-1,
+    body.public-challenge #frame-2 {
+        display: flex;
+        flex-direction: column;
+    }
+
+    body.public-challenge #frame-1 .intro-discovery {
+        justify-content: space-evenly;
+        gap: clamp(4px, 1dvh, 9px);
+        padding-top: clamp(5px, 1dvh, 9px);
+        padding-bottom: clamp(5px, 1dvh, 9px);
+    }
+
+    body.public-challenge #frame-1 .discovery-title {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    body.public-challenge #frame-1 .discovery-desc {
+        margin-bottom: 0;
+    }
+
+    body.public-challenge #frame-1 .discovery-tips {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 560px) {
+    .privacy-callout {
+        padding: 14px;
+    }
+
+    .privacy-callout h2 {
+        font-size: 16px;
+    }
+
+    .privacy-callout p {
+        font-size: 11.5px;
+    }
+}

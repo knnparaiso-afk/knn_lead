@@ -18,6 +18,7 @@ from flask import (
     session,
     flash,
     send_file,
+    send_from_directory,
     jsonify,
     make_response
 )
@@ -159,9 +160,9 @@ def adicionar_cabecalhos_de_seguranca(response):
     response.headers.setdefault(
         "Content-Security-Policy",
         "default-src 'self'; base-uri 'self'; object-src 'none'; "
-        "frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; "
+        "frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob:; "
         "font-src 'self' data:; style-src 'self' 'unsafe-inline'; "
-        "script-src 'self' 'unsafe-inline'; connect-src 'self'",
+        "script-src 'self' 'unsafe-inline'; connect-src 'self' blob: data:",
     )
     if request.path.startswith(("/admin", "/participar", "/nada")):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
@@ -172,6 +173,12 @@ def adicionar_cabecalhos_de_seguranca(response):
             "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
         )
     return response
+
+
+@app.route("/models/<path:filename>")
+def servir_modelos(filename):
+    """Serve modelos 3D da pasta models com cache e MIME type apropriado."""
+    return send_from_directory("models", filename)
 
 
 @app.errorhandler(CSRFError)
