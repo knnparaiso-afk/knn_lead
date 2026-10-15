@@ -167,6 +167,21 @@ DESAFIOS = {
             ],
             "resposta_correta": "C"
         }
+    ],
+    "jogos": [
+        {
+            "id": "witchs_potion",
+            "tema": "Witch's Potion",
+            "emoji": "🧙",
+            "tipo": "jogo",
+            "template": "jogo_witchs_potion.html",
+            "frase": "Help me prepare my magic potion!",
+            "cor_bg": "#1a0a2e",
+            "cor_accent": "#39ff14",
+            "descricao_visual": "Bruxa preparando poção mágica com caldeirão borbulhante e ingredientes mágicos",
+            "opcoes": [],
+            "resposta_correta": "GAME_COMPLETE"
+        }
     ]
 }
 

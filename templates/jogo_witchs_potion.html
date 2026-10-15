@@ -1,0 +1,1485 @@
+{% extends "base.html" %}
+
+{% block title %}Witch's Potion | KNN Halloween{% endblock %}
+{% block body_class %}public-page public-game halloween-theme wp-theme{% endblock %}
+
+{% block content %}
+
+<!-- Atmospheric Background -->
+<div class="wp-bg-stars" aria-hidden="true">
+    <div class="wp-star s1"></div><div class="wp-star s2"></div><div class="wp-star s3"></div>
+    <div class="wp-star s4"></div><div class="wp-star s5"></div><div class="wp-star s6"></div>
+    <div class="wp-star s7"></div><div class="wp-star s8"></div><div class="wp-star s9"></div>
+</div>
+<div class="wp-cobweb wp-cobweb-left" aria-hidden="true"></div>
+<div class="wp-cobweb wp-cobweb-right" aria-hidden="true"></div>
+<div class="wp-fog" aria-hidden="true"></div>
+
+<div class="wp-shell" id="game-container">
+
+    <!-- HEADER -->
+    <header class="wp-header">
+        <a class="wp-brand" href="{{ url_for('index') }}">
+            <strong class="wp-brand-knn">KNN</strong>
+            <span class="wp-brand-hw">HALLOWEEN</span>
+        </a>
+        <div class="wp-score-box" id="score-box" style="display:none;">
+            <span class="wp-score-icon">⭐</span>
+            <span class="wp-score-val" id="score-display">0</span>
+        </div>
+        <div class="wp-header-emoji">🧙</div>
+    </header>
+
+    <!-- ===== INTRO SCREEN ===== -->
+    <section class="wp-screen" id="screen-intro">
+        <div class="wp-intro-witch">
+            <div class="witch-avatar">
+                <span class="witch-emoji">🧙‍♀️</span>
+                <div class="witch-glow"></div>
+            </div>
+            <div class="witch-speech-bubble">
+                <p class="speech-en">Help me prepare<br><strong>my magic potion!</strong></p>
+                <p class="speech-pt">Me ajude a preparar<br>minha poção mágica!</p>
+            </div>
+        </div>
+
+        <div class="wp-cauldron-wrap" id="cauldron-intro">
+            <div class="cauldron-smoke-zone">
+                <div class="cld-smoke cs1"></div>
+                <div class="cld-smoke cs2"></div>
+                <div class="cld-smoke cs3"></div>
+            </div>
+            <div class="cauldron">
+                <div class="cauldron-rim"></div>
+                <div class="cauldron-body">
+                    <div class="cauldron-liquid">
+                        <div class="cld-bubble cb1"></div>
+                        <div class="cld-bubble cb2"></div>
+                        <div class="cld-bubble cb3"></div>
+                        <div class="cld-bubble cb4"></div>
+                        <div class="cld-bubble cb5"></div>
+                    </div>
+                </div>
+                <div class="cauldron-legs">
+                    <span></span><span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="wp-intro-info">
+            <h2 class="wp-game-title">Witch's Potion <span>🧪</span></h2>
+            <p class="wp-game-desc">Learn English words while brewing 3 magical recipes! Tap the correct ingredients to complete each potion.</p>
+            <div class="wp-recipe-preview">
+                <div class="rp-item"><span class="rp-num">1</span><span class="rp-name">Beginner's Brew</span></div>
+                <div class="rp-item"><span class="rp-num">2</span><span class="rp-name">Moonlight Mixture</span></div>
+                <div class="rp-item"><span class="rp-num">3</span><span class="rp-name">Dragon's Breath</span></div>
+            </div>
+        </div>
+
+        <button class="btn-brew" id="btn-start" type="button">
+            <span class="btn-brew-text">START BREWING</span>
+            <span class="btn-brew-icon">🧪</span>
+        </button>
+        <p class="wp-hint">🔮 Tap the right ingredients to help the witch!</p>
+    </section>
+
+    <!-- ===== GAME SCREEN ===== -->
+    <section class="wp-screen" id="screen-game" style="display:none;">
+        <div class="wp-recipe-bar">
+            <div class="recipe-label">
+                <span class="recipe-icon" id="recipe-icon">📜</span>
+                <span class="recipe-name" id="recipe-name">Beginner's Brew</span>
+            </div>
+            <div class="recipe-progress-wrap">
+                <div class="recipe-progress-bar">
+                    <div class="recipe-progress-fill" id="progress-fill"></div>
+                </div>
+                <span class="recipe-step-count" id="step-counter">Step 1/2</span>
+            </div>
+        </div>
+
+        <div class="wp-instruction-card" id="instruction-card">
+            <div class="inst-tag">🧙‍♀️ THE WITCH SAYS:</div>
+            <p class="inst-en" id="inst-en">Add the Eye of Newt</p>
+            <p class="inst-pt" id="inst-pt">Adicione o Olho de Salamandra</p>
+        </div>
+
+        <div class="wp-cauldron-game-wrap">
+            <div class="cauldron-smoke-zone csg-mini">
+                <div class="cld-smoke cs1"></div>
+                <div class="cld-smoke cs2"></div>
+            </div>
+            <div class="cauldron cauldron-mini" id="cauldron-game">
+                <div class="cauldron-rim"></div>
+                <div class="cauldron-body">
+                    <div class="cauldron-liquid" id="cauldron-liquid-game">
+                        <div class="cld-bubble cb1"></div>
+                        <div class="cld-bubble cb2"></div>
+                        <div class="cld-bubble cb3"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="cauldron-splash-zone" id="splash-zone"></div>
+        </div>
+
+        <div class="wp-ingredients-grid" id="ingredients-grid">
+            <!-- Populated by JS -->
+        </div>
+
+        <div class="wp-feedback" id="game-feedback" aria-live="polite"></div>
+    </section>
+
+    <!-- ===== RECIPE TRANSITION ===== -->
+    <section class="wp-screen" id="screen-recipe-done" style="display:none;">
+        <div class="wp-recipe-complete">
+            <div class="rc-sparkles">✨</div>
+            <h2 class="rc-title">Recipe Complete!</h2>
+            <p class="rc-recipe-name" id="rc-recipe-name">Beginner's Brew</p>
+            <div class="rc-score-badge" id="rc-score-badge">
+                <span class="rc-score-label">Recipe Score</span>
+                <span class="rc-score-value" id="rc-score-value">+250</span>
+            </div>
+            <div class="rc-perfect" id="rc-perfect" style="display:none;">🌟 PERFECT! No mistakes! +150 bonus</div>
+
+            <div class="wp-cauldron-wrap rc-cauldron">
+                <div class="cauldron-smoke-zone">
+                    <div class="cld-smoke cs1 cs-success"></div>
+                    <div class="cld-smoke cs2 cs-success"></div>
+                </div>
+                <div class="cauldron cauldron-success">
+                    <div class="cauldron-rim"></div>
+                    <div class="cauldron-body">
+                        <div class="cauldron-liquid cl-success">
+                            <div class="cld-bubble cb1"></div>
+                            <div class="cld-bubble cb2"></div>
+                            <div class="cld-bubble cb3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-brew" id="btn-next-recipe" type="button">
+                <span class="btn-brew-text">NEXT RECIPE</span>
+                <span class="btn-brew-icon">➔</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ===== VICTORY SCREEN ===== -->
+    <section class="wp-screen" id="screen-victory" style="display:none;">
+        <div class="wp-victory">
+            <div class="victory-badge" id="victory-badge">🏆</div>
+            <h1 class="victory-title" id="victory-title">POTION MASTER!</h1>
+            <div class="victory-score-box">
+                <span class="vs-label">Final Score</span>
+                <span class="vs-value" id="victory-score">0</span>
+            </div>
+            <div class="victory-rating" id="victory-rating">
+                <span class="vr-stars">⭐⭐⭐</span>
+                <span class="vr-text">Master Brewer</span>
+            </div>
+
+            <div class="wp-cauldron-wrap victory-cauldron">
+                <div class="cauldron-smoke-zone">
+                    <div class="cld-smoke cs1 cs-rainbow"></div>
+                    <div class="cld-smoke cs2 cs-rainbow"></div>
+                    <div class="cld-smoke cs3 cs-rainbow"></div>
+                </div>
+                <div class="cauldron cauldron-victory">
+                    <div class="cauldron-rim"></div>
+                    <div class="cauldron-body">
+                        <div class="cauldron-liquid cl-rainbow">
+                            <div class="cld-bubble cb1"></div>
+                            <div class="cld-bubble cb2"></div>
+                            <div class="cld-bubble cb3"></div>
+                            <div class="cld-bubble cb4"></div>
+                            <div class="cld-bubble cb5"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wp-witch-congrats">
+                <span class="witch-emoji-small">🧙‍♀️</span>
+                <div class="witch-congrats-speech">
+                    <p id="witch-final-msg">Parabéns! Você é um verdadeiro mestre das poções! 🎉</p>
+                    <p class="witch-cta-text">Quer mais desafios de inglês?<br>A KNN tem uma <strong>atividade gratuita</strong> para você!</p>
+                </div>
+            </div>
+
+            <button class="btn-brew btn-cta" id="btn-participate" type="button">
+                <span class="btn-brew-text">QUERO PARTICIPAR!</span>
+                <span class="btn-brew-icon">🎃</span>
+            </button>
+        </div>
+    </section>
+
+</div>
+
+<!-- ===== PARTICLES LAYER ===== -->
+<div class="wp-particles-layer" id="particles-layer" aria-hidden="true"></div>
+
+<style>
+/* ============================================
+   WITCH'S POTION — CSS
+   ============================================ */
+
+:root {
+    --wp-bg: #1a0a2e;
+    --wp-bg2: #0d0618;
+    --wp-purple: #7c3aed;
+    --wp-green: #39ff14;
+    --wp-green-dark: #0fa00f;
+    --wp-orange: #ff6b35;
+    --wp-gold: #ffd700;
+    --wp-lime: #84cc16;
+    --wp-cauldron: #2d2d3f;
+    --wp-cauldron-rim: #3f3f55;
+    --wp-card: rgba(30, 20, 50, 0.88);
+    --wp-card-border: rgba(255,255,255,0.08);
+}
+
+/* ---------- Base ---------- */
+body.wp-theme {
+    background: radial-gradient(ellipse at 50% 10%, #2a1050 0%, var(--wp-bg) 40%, var(--wp-bg2) 100%) fixed !important;
+    color: #f0f0f0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+body.wp-theme .topbar,
+body.wp-theme .footer { display: none !important; }
+
+body.wp-theme .main-container { padding: 0; max-width: 100%; margin: 0; }
+
+.wp-shell {
+    position: relative;
+    z-index: 5;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 12px 16px 32px;
+    min-height: 100vh;
+}
+
+.wp-screen { animation: wpFadeIn 0.5s ease; }
+
+@keyframes wpFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Stars ---------- */
+.wp-bg-stars {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    pointer-events: none; z-index: 0;
+}
+.wp-star {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite alternate;
+}
+.s1 { top: 5%; left: 12%; --dur: 2.5s; }
+.s2 { top: 8%; left: 78%; --dur: 4s; width: 2px; height: 2px; }
+.s3 { top: 15%; left: 45%; --dur: 3s; }
+.s4 { top: 22%; left: 88%; --dur: 3.5s; width: 4px; height: 4px; }
+.s5 { top: 30%; left: 25%; --dur: 2.8s; }
+.s6 { top: 12%; left: 62%; --dur: 4.2s; width: 2px; height: 2px; }
+.s7 { top: 42%; left: 8%; --dur: 3.3s; }
+.s8 { top: 35%; left: 92%; --dur: 2.6s; }
+.s9 { top: 48%; left: 55%; --dur: 3.8s; width: 2px; height: 2px; }
+
+@keyframes twinkle {
+    0% { opacity: 0.2; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1.3); }
+}
+
+/* ---------- Cobwebs ---------- */
+.wp-cobweb {
+    position: fixed; top: 0; width: 120px; height: 120px;
+    pointer-events: none; z-index: 1; opacity: 0.15;
+}
+.wp-cobweb-left {
+    left: 0;
+    background:
+        radial-gradient(circle at 0 0, transparent 20px, rgba(255,255,255,0.45) 21px, transparent 22px, transparent 45px, rgba(255,255,255,0.3) 46px, transparent 47px),
+        linear-gradient(to bottom right, transparent 49%, rgba(255,255,255,0.25) 50%, transparent 51%);
+    border-bottom-right-radius: 100%;
+}
+.wp-cobweb-right {
+    right: 0;
+    background:
+        radial-gradient(circle at 100% 0, transparent 20px, rgba(255,255,255,0.45) 21px, transparent 22px, transparent 45px, rgba(255,255,255,0.3) 46px, transparent 47px),
+        linear-gradient(to bottom left, transparent 49%, rgba(255,255,255,0.25) 50%, transparent 51%);
+    border-bottom-left-radius: 100%;
+}
+
+/* ---------- Fog ---------- */
+.wp-fog {
+    position: fixed; bottom: 0; left: 0; width: 100%; height: 160px;
+    background: linear-gradient(to top, rgba(57,255,20,0.06) 0%, rgba(57,255,20,0.02) 40%, transparent 100%);
+    pointer-events: none; z-index: 2;
+    animation: fogDrift 6s ease-in-out infinite alternate;
+}
+@keyframes fogDrift {
+    0% { opacity: 0.6; transform: translateY(0); }
+    100% { opacity: 1; transform: translateY(-6px); }
+}
+
+/* ---------- Header ---------- */
+.wp-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; margin-bottom: 16px;
+    background: rgba(26,10,46,0.85);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+}
+.wp-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.wp-brand-knn {
+    color: #ED1B2F;
+    font: italic 900 28px/0.85 "Barlow Condensed", Impact, sans-serif;
+    letter-spacing: -1px;
+}
+.wp-brand-hw {
+    padding-left: 8px; border-left: 1px solid rgba(255,255,255,0.2);
+    color: #fff; font: 900 11px/1 "Barlow Condensed", sans-serif;
+    letter-spacing: 0.18em;
+}
+.wp-score-box {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px;
+    background: rgba(255,215,0,0.12); border: 1px solid rgba(255,215,0,0.25);
+}
+.wp-score-icon { font-size: 16px; }
+.wp-score-val {
+    font: 800 18px "Barlow Condensed", sans-serif;
+    color: var(--wp-gold);
+    min-width: 30px; text-align: center;
+}
+.wp-header-emoji { font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); }
+
+/* ============================================
+   CAULDRON SYSTEM
+   ============================================ */
+.wp-cauldron-wrap {
+    position: relative;
+    display: flex; justify-content: center; align-items: flex-end;
+    margin: 0 auto 16px;
+    height: 180px;
+    width: 240px;
+}
+
+.cauldron {
+    position: relative;
+    width: 180px;
+    z-index: 2;
+}
+.cauldron-rim {
+    width: 190px; height: 24px;
+    margin: 0 auto;
+    background: linear-gradient(to bottom, #5a5a70, var(--wp-cauldron-rim), #4a4a5f);
+    border-radius: 50%;
+    position: relative; z-index: 3;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.08);
+}
+.cauldron-body {
+    width: 180px; height: 110px;
+    margin: -8px auto 0;
+    background: linear-gradient(135deg, #3a3a50, var(--wp-cauldron), #25253a);
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    position: relative; z-index: 2;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6), inset 0 -15px 30px rgba(0,0,0,0.3);
+}
+.cauldron-liquid {
+    position: absolute;
+    bottom: 0; left: 8px; right: 8px;
+    height: 75px;
+    background: linear-gradient(to bottom, var(--wp-green), #00aa00, #007700);
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    animation: liquidWobble 3s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(57,255,20,0.3);
+}
+@keyframes liquidWobble {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.04); }
+}
+
+.cauldron-legs {
+    display: flex; justify-content: center; gap: 100px;
+    position: relative; z-index: 1; margin-top: -3px;
+}
+.cauldron-legs span {
+    display: block; width: 14px; height: 24px;
+    background: linear-gradient(to bottom, #3a3a50, #2a2a3a);
+    border-radius: 0 0 6px 6px;
+}
+
+/* Bubbles */
+.cld-bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(57,255,20,0.35);
+    box-shadow: 0 0 6px rgba(57,255,20,0.4), inset 0 -2px 4px rgba(0,0,0,0.2);
+    animation: bubbleUp var(--dur, 2.5s) ease-in-out infinite;
+}
+.cb1 { width: 12px; height: 12px; left: 25%; bottom: 10px; --dur: 2.2s; animation-delay: 0s; }
+.cb2 { width: 8px; height: 8px; left: 55%; bottom: 15px; --dur: 2.8s; animation-delay: 0.6s; }
+.cb3 { width: 14px; height: 14px; left: 40%; bottom: 5px; --dur: 3.1s; animation-delay: 1.2s; }
+.cb4 { width: 6px; height: 6px; left: 70%; bottom: 20px; --dur: 2.5s; animation-delay: 0.3s; }
+.cb5 { width: 10px; height: 10px; left: 15%; bottom: 8px; --dur: 2.9s; animation-delay: 0.9s; }
+
+@keyframes bubbleUp {
+    0% { transform: translateY(0) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-30px) scale(1.15); opacity: 0.9; }
+    100% { transform: translateY(-55px) scale(0.4); opacity: 0; }
+}
+
+/* Smoke */
+.cauldron-smoke-zone {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    width: 180px; height: 100px;
+    pointer-events: none; z-index: 4;
+}
+.cld-smoke {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(57,255,20,0.18) 0%, transparent 70%);
+    animation: smokeRise var(--dur, 4s) ease-out infinite;
+}
+.cs1 { width: 80px; height: 80px; left: 20%; bottom: 0; --dur: 4.5s; }
+.cs2 { width: 60px; height: 60px; left: 50%; bottom: 10px; --dur: 3.5s; animation-delay: 1.5s; }
+.cs3 { width: 50px; height: 50px; left: 10%; bottom: 5px; --dur: 5s; animation-delay: 2.5s; }
+
+@keyframes smokeRise {
+    0% { transform: translateY(0) scale(0.6); opacity: 0; }
+    20% { opacity: 0.6; }
+    100% { transform: translateY(-90px) scale(1.8); opacity: 0; }
+}
+
+/* Success cauldron */
+.cauldron-success .cauldron-liquid,
+.cl-success {
+    background: linear-gradient(to bottom, var(--wp-gold), #ffaa00, #cc8800) !important;
+    box-shadow: 0 0 30px rgba(255,215,0,0.5) !important;
+}
+.cs-success { background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%) !important; }
+
+/* Victory rainbow cauldron */
+.cauldron-victory .cauldron-liquid,
+.cl-rainbow {
+    background: linear-gradient(to bottom, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #9b59b6) !important;
+    box-shadow: 0 0 40px rgba(155,89,182,0.5) !important;
+    animation: rainbowShift 3s ease infinite, liquidWobble 2s ease-in-out infinite !important;
+}
+@keyframes rainbowShift {
+    0%   { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
+.cs-rainbow { background: radial-gradient(circle, rgba(155,89,182,0.2) 0%, transparent 70%) !important; }
+
+/* Cauldron splash (on correct answer) */
+.cauldron-splash { animation: cauldronSplash 0.5s ease-out; }
+@keyframes cauldronSplash {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.08) translateY(-4px); }
+    60% { transform: scale(0.96); }
+    100% { transform: scale(1); }
+}
+
+/* Cauldron fumble (on wrong answer) */
+.cauldron-fumble .cauldron-liquid {
+    background: linear-gradient(to bottom, #ff4444, #cc0000, #880000) !important;
+    box-shadow: 0 0 25px rgba(255,0,0,0.4) !important;
+}
+.cauldron-fumble { animation: cauldronShake 0.5s ease; }
+@keyframes cauldronShake {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    20% { transform: translateX(-6px) rotate(-2deg); }
+    40% { transform: translateX(6px) rotate(2deg); }
+    60% { transform: translateX(-4px) rotate(-1deg); }
+    80% { transform: translateX(4px) rotate(1deg); }
+}
+
+/* Mini cauldron for game screen */
+.wp-cauldron-game-wrap {
+    position: relative;
+    display: flex; justify-content: center;
+    margin: 0 auto 12px;
+    height: 120px; width: 200px;
+}
+.wp-cauldron-game-wrap .cauldron { width: 130px; }
+.wp-cauldron-game-wrap .cauldron-rim { width: 140px; height: 18px; }
+.wp-cauldron-game-wrap .cauldron-body { width: 130px; height: 80px; }
+.wp-cauldron-game-wrap .cauldron-liquid { height: 55px; }
+.csg-mini { width: 130px; height: 70px; }
+.csg-mini .cld-smoke { width: 50px; height: 50px; }
+
+.cauldron-splash-zone {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 160px; height: 100px; pointer-events: none; z-index: 10;
+}
+
+/* ============================================
+   INTRO SCREEN
+   ============================================ */
+.wp-intro-witch {
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: 10px;
+}
+.witch-avatar {
+    position: relative;
+    width: 80px; height: 80px;
+    display: grid; place-items: center;
+}
+.witch-emoji {
+    font-size: 56px; position: relative; z-index: 2;
+    animation: witchBob 3s ease-in-out infinite;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+}
+@keyframes witchBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+.witch-glow {
+    position: absolute; inset: -20px;
+    background: radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: glowPulse 3s ease-in-out infinite alternate;
+}
+@keyframes glowPulse {
+    0% { opacity: 0.4; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1.1); }
+}
+
+.witch-speech-bubble {
+    background: var(--wp-card);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 14px;
+    padding: 12px 20px;
+    margin-top: 8px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.witch-speech-bubble::before {
+    content: '';
+    position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid rgba(124,58,237,0.3);
+}
+.speech-en {
+    font: 700 18px/1.3 "Barlow Condensed", sans-serif;
+    color: #fff; margin: 0 0 4px;
+    letter-spacing: 0.01em;
+}
+.speech-en strong { color: var(--wp-green); }
+.speech-pt {
+    font-size: 13px; color: #a1a1aa; margin: 0;
+    font-style: italic;
+}
+
+.wp-intro-info { text-align: center; margin: 12px 0; }
+.wp-game-title {
+    font: 900 30px/1 "Barlow Condensed", Impact, sans-serif;
+    color: #fff; margin: 0 0 8px;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.wp-game-title span { font-size: 26px; }
+.wp-game-desc {
+    font-size: 14px; color: #c4c4cc; margin: 0 0 14px;
+    line-height: 1.5; max-width: 360px;
+    margin-left: auto; margin-right: auto;
+}
+
+.wp-recipe-preview {
+    display: flex; flex-direction: column; gap: 6px;
+    max-width: 260px; margin: 0 auto;
+}
+.rp-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+}
+.rp-num {
+    width: 24px; height: 24px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background: var(--wp-purple);
+    color: #fff;
+    font: 800 13px "Barlow Condensed", sans-serif;
+    flex-shrink: 0;
+}
+.rp-name { font-size: 14px; color: #d4d4dc; font-weight: 600; }
+
+/* ---------- Brew Button ---------- */
+.btn-brew {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; max-width: 320px;
+    margin: 20px auto 10px; padding: 16px 28px;
+    border: none; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, var(--wp-green-dark), #0d8a0d);
+    color: #fff;
+    font: 900 20px "Barlow Condensed", Impact, sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 6px 20px rgba(57,255,20,0.25), 0 2px 4px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+.btn-brew::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 50%);
+    border-radius: 12px;
+    pointer-events: none;
+}
+.btn-brew:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(57,255,20,0.35), 0 3px 6px rgba(0,0,0,0.3);
+}
+.btn-brew:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 3px 10px rgba(57,255,20,0.2);
+}
+.btn-brew-icon { font-size: 22px; }
+
+.btn-cta {
+    background: linear-gradient(135deg, #ED1B2F, #c41222) !important;
+    box-shadow: 0 6px 20px rgba(237,27,47,0.3), 0 2px 4px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.15) !important;
+}
+.btn-cta:hover {
+    box-shadow: 0 10px 28px rgba(237,27,47,0.4), 0 3px 6px rgba(0,0,0,0.3) !important;
+}
+
+.wp-hint {
+    text-align: center; font-size: 13px;
+    color: #8b8b99; margin: 0;
+}
+
+/* ============================================
+   GAME SCREEN
+   ============================================ */
+.wp-recipe-bar {
+    padding: 10px 14px;
+    background: var(--wp-card);
+    border: 1px solid var(--wp-card-border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+.recipe-label {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+}
+.recipe-icon { font-size: 18px; }
+.recipe-name {
+    font: 800 16px "Barlow Condensed", sans-serif;
+    color: #fff; letter-spacing: 0.01em;
+}
+.recipe-progress-wrap {
+    display: flex; align-items: center; gap: 10px;
+}
+.recipe-progress-bar {
+    flex: 1; height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 100px; overflow: hidden;
+}
+.recipe-progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--wp-green), var(--wp-lime));
+    border-radius: 100px;
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 8px rgba(57,255,20,0.3);
+}
+.recipe-step-count {
+    font: 700 13px "Barlow Condensed", sans-serif;
+    color: #a1a1aa; white-space: nowrap;
+}
+
+/* Instruction Card */
+.wp-instruction-card {
+    padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(57,255,20,0.05));
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    text-align: center;
+    animation: instPulse 0.5s ease;
+}
+@keyframes instPulse {
+    0% { transform: scale(0.95); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.inst-tag {
+    font: 700 11px "Barlow Condensed", sans-serif;
+    color: var(--wp-purple); letter-spacing: 0.1em;
+    margin-bottom: 6px; text-transform: uppercase;
+}
+.inst-en {
+    font: 800 22px/1.2 "Barlow Condensed", sans-serif;
+    color: #fff; margin: 0 0 4px;
+    text-transform: uppercase; letter-spacing: -0.01em;
+}
+.inst-pt {
+    font-size: 13px; color: #8b8b99; margin: 0;
+    font-style: italic;
+}
+
+/* Ingredients Grid */
+.wp-ingredients-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+    animation: gridSlide 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes gridSlide {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ingredient-card {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 16px 8px;
+    background: var(--wp-card);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+    min-height: 110px;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+.ingredient-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.04) 0%, transparent 50%);
+    border-radius: 14px; pointer-events: none;
+}
+.ingredient-card:hover {
+    border-color: rgba(124,58,237,0.4);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 15px rgba(124,58,237,0.15);
+}
+.ingredient-card:active {
+    transform: scale(0.93);
+    transition-duration: 0.1s;
+}
+.ing-emoji {
+    font-size: 42px; line-height: 1;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
+    margin-bottom: 8px;
+    transition: transform 0.3s ease;
+}
+.ingredient-card:hover .ing-emoji { transform: scale(1.15) rotate(-5deg); }
+
+.ing-name {
+    font: 700 13px "Barlow Condensed", sans-serif;
+    color: #c4c4cc; text-align: center;
+    letter-spacing: 0.02em;
+}
+
+/* Ingredient states */
+.ingredient-card.ing-correct {
+    border-color: var(--wp-green) !important;
+    background: rgba(57,255,20,0.1) !important;
+    box-shadow: 0 0 20px rgba(57,255,20,0.3) !important;
+    pointer-events: none;
+}
+.ingredient-card.ing-correct .ing-emoji { animation: correctBounce 0.4s ease; }
+@keyframes correctBounce {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.ingredient-card.ing-wrong {
+    border-color: #ff4444 !important;
+    background: rgba(255,0,0,0.1) !important;
+    animation: cardShake 0.4s ease;
+    pointer-events: none;
+}
+@keyframes cardShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+.ingredient-card.ing-fly {
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    z-index: 50;
+    pointer-events: none;
+}
+
+/* Feedback */
+.wp-feedback {
+    min-height: 28px;
+    text-align: center;
+    font: 700 14px "Barlow Condensed", sans-serif;
+    color: #8b8b99;
+    margin-top: 4px;
+    transition: color 0.3s;
+}
+.wp-feedback.fb-correct { color: var(--wp-green); }
+.wp-feedback.fb-wrong { color: #ff6b6b; }
+
+/* ============================================
+   RECIPE COMPLETE
+   ============================================ */
+.wp-recipe-complete {
+    text-align: center;
+    padding: 20px 0;
+}
+.rc-sparkles {
+    font-size: 48px;
+    animation: sparkleFloat 2s ease-in-out infinite;
+}
+@keyframes sparkleFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.1); }
+}
+.rc-title {
+    font: 900 32px "Barlow Condensed", Impact, sans-serif;
+    color: var(--wp-gold); margin: 8px 0;
+    text-shadow: 0 2px 10px rgba(255,215,0,0.3);
+}
+.rc-recipe-name {
+    font: 700 18px "Barlow Condensed", sans-serif;
+    color: #c4c4cc; margin-bottom: 16px;
+}
+.rc-score-badge {
+    display: inline-flex; flex-direction: column; align-items: center;
+    padding: 12px 28px; border-radius: 12px;
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.2);
+    margin-bottom: 10px;
+}
+.rc-score-label { font-size: 12px; color: #8b8b99; text-transform: uppercase; letter-spacing: 0.1em; }
+.rc-score-value {
+    font: 900 28px "Barlow Condensed", sans-serif;
+    color: var(--wp-gold);
+}
+.rc-perfect {
+    font: 700 15px "Barlow Condensed", sans-serif;
+    color: var(--wp-gold); margin-bottom: 12px;
+    animation: perfectGlow 1.5s ease-in-out infinite alternate;
+}
+@keyframes perfectGlow {
+    0% { text-shadow: 0 0 5px rgba(255,215,0,0.3); }
+    100% { text-shadow: 0 0 20px rgba(255,215,0,0.6); }
+}
+.rc-cauldron {
+    height: 140px; width: 180px; margin: 10px auto 0;
+}
+.rc-cauldron .cauldron { width: 130px; }
+.rc-cauldron .cauldron-rim { width: 140px; height: 18px; }
+.rc-cauldron .cauldron-body { width: 130px; height: 80px; }
+
+/* ============================================
+   VICTORY SCREEN
+   ============================================ */
+.wp-victory {
+    text-align: center;
+    padding: 10px 0;
+}
+.victory-badge {
+    font-size: 64px;
+    animation: badgeBounce 1s ease-in-out infinite;
+}
+@keyframes badgeBounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-12px) scale(1.08); }
+}
+.victory-title {
+    font: 900 38px/1 "Barlow Condensed", Impact, sans-serif;
+    color: var(--wp-gold); margin: 8px 0 12px;
+    text-shadow: 0 3px 12px rgba(255,215,0,0.4);
+    letter-spacing: -0.02em;
+}
+.victory-score-box {
+    display: inline-flex; flex-direction: column; align-items: center;
+    padding: 10px 30px; border-radius: 12px;
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.2);
+    margin-bottom: 10px;
+}
+.vs-label { font-size: 12px; color: #8b8b99; text-transform: uppercase; letter-spacing: 0.1em; }
+.vs-value {
+    font: 900 36px "Barlow Condensed", sans-serif;
+    color: var(--wp-gold);
+}
+.victory-rating {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; margin-bottom: 12px;
+}
+.vr-stars { font-size: 24px; letter-spacing: 4px; }
+.vr-text {
+    font: 800 16px "Barlow Condensed", sans-serif;
+    color: var(--wp-purple); letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.victory-cauldron {
+    height: 130px; width: 170px; margin: 0 auto 10px;
+}
+.victory-cauldron .cauldron { width: 120px; }
+.victory-cauldron .cauldron-rim { width: 130px; height: 16px; }
+.victory-cauldron .cauldron-body { width: 120px; height: 70px; }
+
+/* Witch congrats */
+.wp-witch-congrats {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 16px; margin: 12px 0;
+    background: var(--wp-card);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 14px;
+    text-align: left;
+}
+.witch-emoji-small { font-size: 36px; flex-shrink: 0; }
+.witch-congrats-speech p { margin: 0 0 6px; font-size: 14px; color: #c4c4cc; line-height: 1.5; }
+.witch-congrats-speech p:last-child { margin-bottom: 0; }
+.witch-cta-text strong { color: var(--wp-green); }
+
+/* ============================================
+   PARTICLES
+   ============================================ */
+.wp-particles-layer {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 100;
+}
+.magic-particle {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleFly 0.7s ease-out forwards;
+}
+@keyframes particleFly {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+}
+.splash-drop {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--wp-green);
+    animation: splashArc 0.5s ease-out forwards;
+}
+@keyframes splashArc {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--sx), var(--sy)) scale(0.3); opacity: 0; }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (min-width: 420px) {
+    .wp-ingredients-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 360px) {
+    .wp-game-title { font-size: 26px; }
+    .inst-en { font-size: 19px; }
+    .ingredient-card { min-height: 95px; padding: 12px 6px; }
+    .ing-emoji { font-size: 34px; }
+    .ing-name { font-size: 11px; }
+    .btn-brew { font-size: 17px; padding: 14px 22px; }
+}
+</style>
+
+<script>
+(function(){
+    /* ============================================
+       GAME DATA
+       ============================================ */
+    const RECIPES = [
+        {
+            name: "Beginner's Brew",
+            icon: "📜",
+            steps: [
+                {
+                    en: "Add the Eye of Newt",
+                    pt: "Adicione o Olho de Salamandra",
+                    correct: { emoji: "👁️", name: "Eye of Newt" },
+                    wrong: [
+                        { emoji: "🍄", name: "Mushroom" },
+                        { emoji: "🦴", name: "Bone" },
+                        { emoji: "🐍", name: "Snake" }
+                    ]
+                },
+                {
+                    en: "Now add Spider Silk",
+                    pt: "Agora adicione Teia de Aranha",
+                    correct: { emoji: "🕷️", name: "Spider Silk" },
+                    wrong: [
+                        { emoji: "🐸", name: "Frog" },
+                        { emoji: "🌙", name: "Moon Crystal" },
+                        { emoji: "🔥", name: "Fire Ember" }
+                    ]
+                }
+            ]
+        },
+        {
+            name: "Moonlight Mixture",
+            icon: "🌙",
+            steps: [
+                {
+                    en: "Find the Bat Wing",
+                    pt: "Encontre a Asa de Morcego",
+                    correct: { emoji: "🦇", name: "Bat Wing" },
+                    wrong: [
+                        { emoji: "🐈‍⬛", name: "Cat Hair" },
+                        { emoji: "💀", name: "Skull" },
+                        { emoji: "🪱", name: "Worm" },
+                        { emoji: "🍄", name: "Mushroom" }
+                    ]
+                },
+                {
+                    en: "Add the Purple Potion",
+                    pt: "Adicione a Poção Roxa",
+                    correct: { emoji: "🟣", name: "Purple Potion" },
+                    wrong: [
+                        { emoji: "🧪", name: "Green Bottle" },
+                        { emoji: "🔥", name: "Fire Ember" },
+                        { emoji: "💎", name: "Crystal" },
+                        { emoji: "🦴", name: "Bone" }
+                    ]
+                },
+                {
+                    en: "Drop in the Toad",
+                    pt: "Coloque o Sapo",
+                    correct: { emoji: "🐸", name: "Toad" },
+                    wrong: [
+                        { emoji: "🐍", name: "Snake" },
+                        { emoji: "🕷️", name: "Spider" },
+                        { emoji: "🐺", name: "Wolf" },
+                        { emoji: "👻", name: "Ghost" }
+                    ]
+                }
+            ]
+        },
+        {
+            name: "Dragon's Breath",
+            icon: "🐉",
+            steps: [
+                {
+                    en: "Choose the Wolf Fang",
+                    pt: "Escolha a Presa de Lobo",
+                    correct: { emoji: "🐺", name: "Wolf Fang" },
+                    wrong: [
+                        { emoji: "🦇", name: "Bat Wing" },
+                        { emoji: "💀", name: "Skull" },
+                        { emoji: "🌙", name: "Moon Crystal" },
+                        { emoji: "🐍", name: "Snake Scale" }
+                    ]
+                },
+                {
+                    en: "Add the Ghost Tear",
+                    pt: "Adicione a Lágrima de Fantasma",
+                    correct: { emoji: "👻", name: "Ghost Tear" },
+                    wrong: [
+                        { emoji: "💎", name: "Crystal" },
+                        { emoji: "🟣", name: "Purple Potion" },
+                        { emoji: "🔥", name: "Dragon Fire" },
+                        { emoji: "⭐", name: "Star Dust" }
+                    ]
+                },
+                {
+                    en: "Finish with Dragon Scale",
+                    pt: "Finalize com Escama de Dragão",
+                    correct: { emoji: "🐉", name: "Dragon Scale" },
+                    wrong: [
+                        { emoji: "🦴", name: "Bone" },
+                        { emoji: "🪱", name: "Worm" },
+                        { emoji: "🕷️", name: "Spider Web" },
+                        { emoji: "🍄", name: "Toadstool" },
+                        { emoji: "🐸", name: "Toad Eye" }
+                    ]
+                }
+            ]
+        }
+    ];
+
+    /* ============================================
+       STATE
+       ============================================ */
+    let state = {
+        recipe: 0,
+        step: 0,
+        score: 0,
+        attempts: 0,
+        recipeMistakes: 0,
+        totalSteps: 0,
+        busy: false
+    };
+
+    // Count total steps
+    RECIPES.forEach(r => state.totalSteps += r.steps.length);
+
+    /* ============================================
+       DOM REFS
+       ============================================ */
+    const $ = id => document.getElementById(id);
+    const screens = {
+        intro:      $('screen-intro'),
+        game:       $('screen-game'),
+        recipeDone: $('screen-recipe-done'),
+        victory:    $('screen-victory')
+    };
+
+    /* ============================================
+       SCREEN TRANSITIONS
+       ============================================ */
+    function showScreen(name) {
+        Object.values(screens).forEach(s => s.style.display = 'none');
+        const s = screens[name];
+        s.style.display = '';
+        s.style.animation = 'none';
+        void s.offsetHeight; // trigger reflow
+        s.style.animation = 'wpFadeIn 0.5s ease';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ============================================
+       PARTICLES
+       ============================================ */
+    function spawnParticles(x, y, count, color) {
+        const layer = $('particles-layer');
+        for (let i = 0; i < count; i++) {
+            const p = document.createElement('div');
+            p.className = 'magic-particle';
+            const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+            const dist = 30 + Math.random() * 60;
+            const size = 4 + Math.random() * 6;
+            p.style.cssText = `
+                left: ${x}px; top: ${y}px;
+                width: ${size}px; height: ${size}px;
+                background: ${color};
+                box-shadow: 0 0 ${size}px ${color};
+                --dx: ${Math.cos(angle) * dist}px;
+                --dy: ${Math.sin(angle) * dist}px;
+            `;
+            layer.appendChild(p);
+            setTimeout(() => p.remove(), 750);
+        }
+    }
+
+    function spawnSplash() {
+        const zone = $('splash-zone');
+        if (!zone) return;
+        for (let i = 0; i < 6; i++) {
+            const d = document.createElement('div');
+            d.className = 'splash-drop';
+            const angle = Math.random() * Math.PI;
+            const dist = 20 + Math.random() * 40;
+            d.style.cssText = `
+                left: 50%; top: 10%;
+                --sx: ${Math.cos(angle) * dist}px;
+                --sy: ${-Math.abs(Math.sin(angle) * dist)}px;
+                background: ${['#39ff14','#00ff41','#84cc16','#ffd700'][Math.floor(Math.random()*4)]};
+            `;
+            zone.appendChild(d);
+            setTimeout(() => d.remove(), 550);
+        }
+    }
+
+    /* ============================================
+       SCORE
+       ============================================ */
+    function updateScoreDisplay() {
+        $('score-display').textContent = state.score;
+        const box = $('score-box');
+        box.style.animation = 'none';
+        void box.offsetHeight;
+        box.style.animation = 'instPulse 0.3s ease';
+    }
+
+    /* ============================================
+       GAME LOGIC
+       ============================================ */
+    function startGame() {
+        state.recipe = 0;
+        state.step = 0;
+        state.score = 0;
+        state.attempts = 0;
+        state.recipeMistakes = 0;
+        $('score-box').style.display = 'flex';
+        updateScoreDisplay();
+        showScreen('game');
+        renderStep();
+    }
+
+    function renderStep() {
+        const recipe = RECIPES[state.recipe];
+        const step = recipe.steps[state.step];
+        state.attempts = 0;
+
+        // Recipe bar
+        $('recipe-icon').textContent = recipe.icon;
+        $('recipe-name').textContent = recipe.name;
+        $('step-counter').textContent = `Step ${state.step + 1}/${recipe.steps.length}`;
+
+        // Progress bar
+        const pct = (state.step / recipe.steps.length) * 100;
+        $('progress-fill').style.width = pct + '%';
+
+        // Instruction
+        const instCard = $('instruction-card');
+        instCard.style.animation = 'none';
+        void instCard.offsetHeight;
+        instCard.style.animation = 'instPulse 0.5s ease';
+        $('inst-en').textContent = step.en;
+        $('inst-pt').textContent = step.pt;
+
+        // Build ingredients
+        const grid = $('ingredients-grid');
+        grid.innerHTML = '';
+        const items = shuffleArray([
+            { ...step.correct, isCorrect: true },
+            ...step.wrong.map(w => ({ ...w, isCorrect: false }))
+        ]);
+
+        items.forEach((item, idx) => {
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'ingredient-card';
+            card.innerHTML = `
+                <span class="ing-emoji">${item.emoji}</span>
+                <span class="ing-name">${item.name}</span>
+            `;
+            card.style.animationDelay = (idx * 0.06) + 's';
+            card.addEventListener('click', () => onIngredientClick(card, item));
+            grid.appendChild(card);
+        });
+
+        // Reset feedback
+        const fb = $('game-feedback');
+        fb.textContent = 'Tap the correct ingredient!';
+        fb.className = 'wp-feedback';
+
+        // Reset cauldron
+        const cg = $('cauldron-game');
+        cg.classList.remove('cauldron-fumble', 'cauldron-splash');
+        const liq = $('cauldron-liquid-game');
+        if (liq) {
+            liq.style.background = '';
+            liq.style.boxShadow = '';
+        }
+    }
+
+    function onIngredientClick(card, item) {
+        if (state.busy) return;
+        state.busy = true;
+
+        const rect = card.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        if (item.isCorrect) {
+            onCorrect(card, cx, cy);
+        } else {
+            onWrong(card, item, cx, cy);
+        }
+    }
+
+    function onCorrect(card, cx, cy) {
+        card.classList.add('ing-correct');
+        spawnParticles(cx, cy, 10, '#39ff14');
+
+        // Points: first try = 100, second = 50, third+ = 25
+        const pts = state.attempts === 0 ? 100 : state.attempts === 1 ? 50 : 25;
+        state.score += pts;
+        updateScoreDisplay();
+
+        const fb = $('game-feedback');
+        fb.textContent = state.attempts === 0
+            ? '🎯 Perfect! +' + pts + ' points!'
+            : '✅ Correct! +' + pts + ' points';
+        fb.className = 'wp-feedback fb-correct';
+
+        // Fly to cauldron
+        const cauldron = $('cauldron-game');
+        const cRect = cauldron.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
+        const dx = (cRect.left + cRect.width / 2) - (cardRect.left + cardRect.width / 2);
+        const dy = (cRect.top + cRect.height / 2) - (cardRect.top + cardRect.height / 2);
+
+        card.classList.add('ing-fly');
+        card.style.transform = `translate(${dx}px, ${dy}px) scale(0.25)`;
+        card.style.opacity = '0';
+
+        setTimeout(() => {
+            cauldron.classList.add('cauldron-splash');
+            spawnSplash();
+            setTimeout(() => cauldron.classList.remove('cauldron-splash'), 600);
+        }, 400);
+
+        setTimeout(() => {
+            // Progress fill
+            const recipe = RECIPES[state.recipe];
+            const pct = ((state.step + 1) / recipe.steps.length) * 100;
+            $('progress-fill').style.width = pct + '%';
+
+            setTimeout(() => {
+                state.step++;
+                if (state.step >= recipe.steps.length) {
+                    completeRecipe();
+                } else {
+                    renderStep();
+                }
+                state.busy = false;
+            }, 300);
+        }, 700);
+    }
+
+    function onWrong(card, item, cx, cy) {
+        state.attempts++;
+        state.recipeMistakes++;
+
+        card.classList.add('ing-wrong');
+        spawnParticles(cx, cy, 6, '#ff4444');
+
+        // Cauldron reacts
+        const cauldron = $('cauldron-game');
+        cauldron.classList.add('cauldron-fumble');
+
+        const fb = $('game-feedback');
+        fb.textContent = `❌ That's "${item.name}"! Try again!`;
+        fb.className = 'wp-feedback fb-wrong';
+
+        setTimeout(() => {
+            card.classList.remove('ing-wrong');
+            card.style.opacity = '0.4';
+            card.style.pointerEvents = 'none';
+            cauldron.classList.remove('cauldron-fumble');
+            state.busy = false;
+        }, 700);
+    }
+
+    function completeRecipe() {
+        const recipe = RECIPES[state.recipe];
+        const perfect = state.recipeMistakes === 0;
+        if (perfect) {
+            state.score += 150;
+            updateScoreDisplay();
+        }
+
+        // Show recipe done screen
+        $('rc-recipe-name').textContent = recipe.name;
+        const recipeScore = recipe.steps.length * 100 + (perfect ? 150 : 0);
+        $('rc-score-value').textContent = '+' + state.score;
+        const perfEl = $('rc-perfect');
+        perfEl.style.display = perfect ? '' : 'none';
+
+        showScreen('recipeDone');
+
+        // Determine if last recipe
+        const isLast = state.recipe >= RECIPES.length - 1;
+        const btn = $('btn-next-recipe');
+        btn.querySelector('.btn-brew-text').textContent = isLast ? 'SEE RESULTS' : 'NEXT RECIPE';
+        btn.querySelector('.btn-brew-icon').textContent = isLast ? '🏆' : '➔';
+    }
+
+    function nextRecipe() {
+        state.recipe++;
+        state.step = 0;
+        state.recipeMistakes = 0;
+
+        if (state.recipe >= RECIPES.length) {
+            showVictory();
+        } else {
+            showScreen('game');
+            renderStep();
+        }
+    }
+
+    function showVictory() {
+        showScreen('victory');
+        $('victory-score').textContent = state.score;
+
+        // Rating
+        let badge, title, stars, ratingText, witchMsg;
+        if (state.score >= 1000) {
+            badge = '🏆'; title = 'POTION MASTER!';
+            stars = '⭐⭐⭐'; ratingText = 'Master Brewer';
+            witchMsg = 'Incrível! Você é um verdadeiro Mestre das Poções! A bruxa está impressionada! 🎉';
+        } else if (state.score >= 700) {
+            badge = '🧙'; title = 'SKILLED BREWER!';
+            stars = '⭐⭐'; ratingText = 'Skilled Brewer';
+            witchMsg = 'Muito bem! Você tem talento para poções! A bruxa adorou ajudar você! 🌟';
+        } else if (state.score >= 400) {
+            badge = '📚'; title = 'APPRENTICE!';
+            stars = '⭐'; ratingText = 'Apprentice';
+            witchMsg = 'Bom trabalho! Continue praticando e logo será um mestre! A bruxa acredita em você! ✨';
+        } else {
+            badge = '🌟'; title = 'BEGINNER WITCH!';
+            stars = '⭐'; ratingText = 'Beginner';
+            witchMsg = 'Todo mestre começou como aprendiz! Continue praticando seu inglês com a KNN! 💪';
+        }
+
+        $('victory-badge').textContent = badge;
+        $('victory-title').textContent = title;
+        $('victory-rating').querySelector('.vr-stars').textContent = stars;
+        $('victory-rating').querySelector('.vr-text').textContent = ratingText;
+        $('witch-final-msg').textContent = witchMsg;
+
+        // Submit completion to backend
+        submitCompletion();
+    }
+
+    async function submitCompletion() {
+        try {
+            const formData = new FormData();
+            formData.append('resposta', 'GAME_COMPLETE');
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            await fetch("{{ url_for('responder_desafio', codigo=codigo) }}", {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrfToken || '' },
+                body: formData,
+                credentials: 'same-origin'
+            });
+        } catch (e) {
+            // Silently fail — the participate button will still work
+        }
+    }
+
+    /* ============================================
+       UTILS
+       ============================================ */
+    function shuffleArray(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    /* ============================================
+       EVENT LISTENERS
+       ============================================ */
+    $('btn-start').addEventListener('click', startGame);
+    $('btn-next-recipe').addEventListener('click', nextRecipe);
+    $('btn-participate').addEventListener('click', () => {
+        window.location.href = "{{ url_for('participar', codigo=codigo) }}";
+    });
+
+})();
+</script>
+
+{% endblock %}

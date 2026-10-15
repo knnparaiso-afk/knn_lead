@@ -416,8 +416,9 @@ def mensagem(codigo):
         desafio = sortear_desafio(categoria)
         session[session_key] = desafio["id"]
 
+    template_name = desafio.get("template", "desafio_halloween.html")
     return render_template(
-        "desafio_halloween.html",
+        template_name,
         qr=qr,
         desafio=desafio,
         codigo=codigo
