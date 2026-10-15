@@ -1,64 +1,413 @@
 {% extends "base.html" %}
 
 {% block title %}
-Inglês Secreto | KNN Idiomas
+🎃 Inglês Secreto | KNN Idiomas Halloween
 {% endblock %}
 
-{% block body_class %}public-page public-home{% endblock %}
+{% block body_class %}public-page public-home halloween-theme home-theme{% endblock %}
 
 {% block content %}
 
-<section class="landing-shell-knn" style="max-width: 840px; margin: 40px auto; padding: 48px 32px; background: #ffffff; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-md); text-align: center;">
+<!-- Efeitos de Fundo de Halloween -->
+<div class="home-cobweb home-cobweb-left" aria-hidden="true"></div>
+<div class="home-cobweb home-cobweb-right" aria-hidden="true"></div>
 
-    <!-- MARCA KNN EM VERMELHO -->
-    <div style="margin-bottom: 24px;">
-        <div style="display: inline-block; font-size: clamp(54px, 8vw, 84px); font-weight: 900; color: #ed1b2f; line-height: 0.9; letter-spacing: -2px;">
-            KNN
+<div class="home-particles" aria-hidden="true">
+    <div class="hp p1">🦇</div>
+    <div class="hp p2">🎃</div>
+    <div class="hp p3">👻</div>
+    <div class="hp p4">✨</div>
+    <div class="hp p5">🧙‍♀️</div>
+</div>
+
+<div class="home-fog" aria-hidden="true"></div>
+
+<section class="landing-shell-knn home-halloween-card">
+
+    <!-- CABEÇALHO / MARCA KNN COM TEMA HALLOWEEN -->
+    <div class="home-brand-wrap">
+        <div class="home-logo-row">
+            <span class="home-logo-knn">KNN</span>
+            <div class="home-badge-tag">HALLOWEEN EDITION 🎃</div>
         </div>
-        <div style="font-size: 20px; font-weight: 800; color: #111827; letter-spacing: 2px; margin-top: 6px;">
+        <div class="home-subbrand">
             INGLÊS SECRETO · PARAISÓPOLIS
         </div>
     </div>
 
-    <!-- TÍTULO PRINCIPAL -->
-    <div style="margin-bottom: 32px;">
-        <h1 style="font-size: clamp(28px, 4.5vw, 42px); font-weight: 800; color: #111827; line-height: 1.15; margin-bottom: 14px;">
-            ENCONTRE. DECIFRE. <span style="color: #ed1b2f;">CONQUISTE.</span>
+    <!-- TÍTULO PRINCIPAL HERO -->
+    <div class="home-hero-text">
+        <h1 class="home-main-title">
+            ENCONTRE. DECIFRE. <span class="text-gradient">CONQUISTE!</span>
         </h1>
-        <p style="font-size: 16px; color: #4b5563; max-width: 580px; margin: 0 auto; line-height: 1.6;">
-            O inglês está escondido em estabelecimentos parceiros pela cidade. Escaneie os QR Codes, descubra as frases secretas e concorra ao seu <strong>English Pass</strong> na KNN!
+        <p class="home-hero-desc">
+            Mistérios em inglês foram espalhados por estabelecimentos parceiros em Paraisópolis. 
+            Escaneie os QR Codes, desvende os enigmas e concorra ao seu <strong>English Pass</strong> da KNN!
         </p>
     </div>
 
-    <!-- 3 PASSOS -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 36px 0; text-align: left;">
-        <div style="background: #fbfbfb; border: 1px solid #f3f4f6; border-radius: 12px; padding: 20px;">
-            <div style="font-size: 26px; font-weight: 800; color: #ed1b2f; margin-bottom: 6px;">01</div>
-            <strong style="display: block; font-size: 15px; color: #111827; margin-bottom: 4px;">Encontre o QR Code</strong>
-            <p style="font-size: 13px; color: #6b7280; line-height: 1.4;">Procure os displays nos pontos parceiros da cidade.</p>
+    <!-- 3 PASSOS DA JORNADA -->
+    <div class="home-steps-grid">
+        <div class="home-step-card">
+            <div class="step-badge">
+                <span class="step-num">01</span>
+                <span class="step-icon">📍</span>
+            </div>
+            <strong class="step-title">Encontre o QR Code</strong>
+            <p class="step-desc">Procure os totens e displays temáticos de Halloween nos locais parceiros da cidade.</p>
         </div>
 
-        <div style="background: #fbfbfb; border: 1px solid #f3f4f6; border-radius: 12px; padding: 20px;">
-            <div style="font-size: 26px; font-weight: 800; color: #ed1b2f; margin-bottom: 6px;">02</div>
-            <strong style="display: block; font-size: 15px; color: #111827; margin-bottom: 4px;">Decifre a Frase</strong>
-            <p style="font-size: 13px; color: #6b7280; line-height: 1.4;">Aponte sua câmera, descubra a tradução e cadastre seu lead.</p>
+        <div class="home-step-card">
+            <div class="step-badge">
+                <span class="step-num">02</span>
+                <span class="step-icon">⚡</span>
+            </div>
+            <strong class="step-title">Decifre o Enigma</strong>
+            <p class="step-desc">Aponte sua câmera, encare desafios e minijogos interativos para testar seu inglês.</p>
         </div>
 
-        <div style="background: #fbfbfb; border: 1px solid #f3f4f6; border-radius: 12px; padding: 20px;">
-            <div style="font-size: 26px; font-weight: 800; color: #ed1b2f; margin-bottom: 6px;">03</div>
-            <strong style="display: block; font-size: 15px; color: #111827; margin-bottom: 4px;">Ganhe Prêmios</strong>
-            <p style="font-size: 13px; color: #6b7280; line-height: 1.4;">Junte descobertas e desbloqueie vantagens exclusivas na KNN.</p>
+        <div class="home-step-card">
+            <div class="step-badge">
+                <span class="step-num">03</span>
+                <span class="step-icon">🏆</span>
+            </div>
+            <strong class="step-title">Ganhe Prêmios</strong>
+            <p class="step-desc">Acumule conquistas na KNN Paraisópolis e desbloqueie recompensas exclusivas.</p>
         </div>
     </div>
 
-    <!-- DIVULGAÇÃO INSTAGRAM -->
-    <div style="background: #fff0f2; border: 1px solid #fecdd3; border-radius: 14px; padding: 24px; margin-top: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
-        <span style="font-size: 14px; font-weight: 700; color: #111827;">Acompanhe as frases e dicas no Instagram:</span>
-        <a href="https://www.instagram.com/knnparaisopolis/" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background: #ed1b2f; padding: 12px 28px; font-size: 14px; font-weight: 800; border-radius: 8px;">
-            @knnparaisopolis ➔
+    <!-- CARD MODERNO DO INSTAGRAM OFICIAL -->
+    <div class="home-instagram-box">
+        <div class="insta-box-content">
+            <div class="insta-badge-chip">
+                <svg viewBox="0 0 24 24" class="insta-box-icon" aria-hidden="true">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                <span>COMUNIDADE KNN</span>
+            </div>
+            <h2 class="insta-box-title">Siga @knnparaisopolis no Instagram</h2>
+            <p class="insta-box-desc">
+                Acompanhe as revelações das frases semanais, pistas dos pontos com QR Code e sorteios de bolsas e brindes!
+            </p>
+        </div>
+
+        <a href="https://www.instagram.com/knnparaisopolis/" target="_blank" rel="noopener noreferrer" class="btn-insta-action">
+            <span>SEGUIR NO INSTAGRAM</span>
+            <span class="btn-insta-arrow">➔</span>
         </a>
     </div>
 
 </section>
+
+<style>
+/* Tema Halloween para a Home */
+body.home-theme {
+    background: radial-gradient(circle at 50% 10%, #250f44 0%, #120724 60%, #07030e 100%) fixed !important;
+    color: #f3f4f6;
+    min-height: 100vh;
+}
+
+.home-halloween-card {
+    max-width: 860px;
+    margin: 40px auto;
+    padding: 48px 36px;
+    background: rgba(26, 15, 48, 0.88);
+    border-radius: 22px;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(124, 58, 237, 0.12);
+    backdrop-filter: blur(12px);
+    text-align: center;
+    position: relative;
+    z-index: 5;
+    animation: homeFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes homeFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Marca KNN */
+.home-brand-wrap {
+    margin-bottom: 26px;
+}
+
+.home-logo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 4px;
+}
+
+.home-logo-knn {
+    font-family: "Barlow Condensed", Impact, sans-serif;
+    font-size: clamp(58px, 9vw, 88px);
+    font-weight: 900;
+    font-style: italic;
+    color: #ED1B2F;
+    line-height: 0.85;
+    letter-spacing: -2px;
+    text-shadow: 0 0 25px rgba(237, 27, 47, 0.35);
+}
+
+.home-badge-tag {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    background: rgba(249, 115, 22, 0.15);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.35);
+    padding: 6px 12px;
+    border-radius: 100px;
+}
+
+.home-subbrand {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    color: #cbd5e1;
+}
+
+/* Hero Text */
+.home-hero-text {
+    margin-bottom: 36px;
+}
+
+.home-main-title {
+    font-family: "Barlow Condensed", Impact, sans-serif;
+    font-size: clamp(34px, 5.5vw, 52px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin: 0 0 14px;
+    color: #ffffff;
+}
+
+.text-gradient {
+    color: #f97316;
+    text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+}
+
+.home-hero-desc {
+    font-size: 16px;
+    color: #cbd5e1;
+    max-width: 620px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.home-hero-desc strong {
+    color: #fff;
+}
+
+/* 3 Passos */
+.home-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 40px 0;
+    text-align: left;
+}
+
+.home-step-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 24px 20px;
+    transition: all 0.25s ease;
+}
+
+.home-step-card:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(168, 85, 247, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.step-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.step-num {
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #ED1B2F;
+}
+
+.step-icon {
+    font-size: 22px;
+}
+
+.step-title {
+    display: block;
+    font-size: 16px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 6px;
+}
+
+.step-desc {
+    font-size: 13.5px;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Box do Instagram na Home */
+.home-instagram-box {
+    background: linear-gradient(135deg, rgba(225, 29, 72, 0.12) 0%, rgba(147, 51, 234, 0.16) 100%);
+    border: 1.5px solid rgba(225, 29, 72, 0.35);
+    border-radius: 16px;
+    padding: 28px 24px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    text-align: left;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.insta-badge-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 10px;
+}
+
+.insta-box-icon {
+    width: 14px;
+    height: 14px;
+    fill: #f43f5e;
+}
+
+.insta-badge-chip span {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #fca5a5;
+}
+
+.insta-box-title {
+    font-family: "Barlow Condensed", Impact, sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 6px;
+    letter-spacing: 0.02em;
+}
+
+.insta-box-desc {
+    font-size: 13.5px;
+    color: #cbd5e1;
+    margin: 0;
+    max-width: 440px;
+    line-height: 1.45;
+}
+
+.btn-insta-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 26px;
+    background: linear-gradient(135deg, #ED1B2F 0%, #be123c 100%);
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 6px 18px rgba(237, 27, 47, 0.4);
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-insta-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(237, 27, 47, 0.6);
+}
+
+/* Partículas e Neblina */
+.home-cobweb {
+    position: fixed;
+    top: 0;
+    width: 120px;
+    height: 120px;
+    pointer-events: none;
+    opacity: 0.15;
+    z-index: 1;
+}
+
+.home-cobweb-left {
+    left: 0;
+    background: radial-gradient(circle at 0 0, transparent 20px, rgba(255,255,255,0.4) 21px, transparent 22px, transparent 45px, rgba(255,255,255,0.3) 46px, transparent 47px);
+    border-bottom-right-radius: 100%;
+}
+
+.home-cobweb-right {
+    right: 0;
+    background: radial-gradient(circle at 100% 0, transparent 20px, rgba(255,255,255,0.4) 21px, transparent 22px, transparent 45px, rgba(255,255,255,0.3) 46px, transparent 47px);
+    border-bottom-left-radius: 100%;
+}
+
+.home-particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.hp {
+    position: absolute;
+    opacity: 0.15;
+    user-select: none;
+}
+.p1 { top: 12%; left: 8%; font-size: 26px; animation: hpFloat 9s infinite alternate ease-in-out; }
+.p2 { top: 22%; right: 10%; font-size: 30px; animation: hpFloat 7s infinite alternate ease-in-out; }
+.p3 { bottom: 25%; left: 12%; font-size: 24px; animation: hpFloat 8s infinite alternate ease-in-out; }
+.p4 { bottom: 35%; right: 14%; font-size: 20px; animation: hpFloat 6s infinite alternate ease-in-out; }
+.p5 { top: 48%; left: 88%; font-size: 28px; animation: hpFloat 10s infinite alternate ease-in-out; }
+
+@keyframes hpFloat {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(-18px) rotate(8deg); }
+}
+
+.home-fog {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 160px;
+    background: linear-gradient(to top, rgba(147, 51, 234, 0.08) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+@media (max-width: 700px) {
+    .home-instagram-box {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    .insta-box-desc {
+        margin: 0 auto;
+    }
+    .btn-insta-action {
+        width: 100%;
+    }
+}
+</style>
 
 {% endblock %}

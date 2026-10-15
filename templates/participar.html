@@ -48,9 +48,22 @@
             <label for="participacao_confirmada">Concordo em participar da campanha e autorizo a unidade KNN responsável a entrar em contato comigo por WhatsApp ou e-mail, inclusive para enviar mensagens sobre a campanha, novidades, promoções e oportunidades relacionadas aos cursos da unidade. Se a pessoa participante tiver menos de 18 anos, declaro ser pai, mãe ou responsável legal e autorizo sua participação e esses contatos.</label>
         </div>
 
-        <button type="submit" class="btn btn-primary lead-submit">CONTABILIZAR MISSÃO <span>→</span></button>
+        <button type="submit" id="btn-submit-lead" class="btn btn-primary lead-submit">CONTABILIZAR MISSÃO <span>→</span></button>
     </form>
 </section>
+
+<div id="submitting-overlay" style="display:none; position:fixed; inset:0; background:rgba(19,9,36,0.92); z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; backdrop-filter:blur(8px);">
+    <div style="font-size:56px; margin-bottom:16px; animation:bounceIcon 1.5s infinite;">🎃</div>
+    <h2 style="font-family:'Barlow Condensed', sans-serif; font-size:32px; font-weight:900; color:#fff; margin:0 0 8px; letter-spacing:0.02em;">REGISTRANDO SUA CONQUISTA...</h2>
+    <p style="color:#d1d5db; font-size:15px; margin:0; max-width:320px;">Aguarde um instante enquanto preparamos seu resultado secreto!</p>
+</div>
+
+<style>
+@keyframes bounceIcon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px) scale(1.1); }
+}
+</style>
 
 <script>
     const telefone = document.getElementById('whatsapp');
@@ -58,5 +71,22 @@
         const numeros = telefone.value.replace(/\D/g, '').slice(0, 11);
         telefone.value = numeros.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
     });
+
+    const form = document.querySelector('.lead-form');
+    const overlay = document.getElementById('submitting-overlay');
+    const btnSubmit = document.getElementById('btn-submit-lead');
+
+    if (form) {
+        form.addEventListener('submit', () => {
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.style.opacity = '0.7';
+                btnSubmit.innerHTML = 'ENVIANDO... <span>⏳</span>';
+            }
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        });
+    }
 </script>
 {% endblock %}

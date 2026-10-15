@@ -1,62 +1,377 @@
 {% extends "base.html" %}
 
 {% block title %}
-Missão Concluída | KNN Idiomas
+🎃 Missão Concluída | KNN Idiomas Halloween
 {% endblock %}
 
-{% block body_class %}public-page public-nada{% endblock %}
+{% block body_class %}public-page public-nada halloween-theme nada-theme{% endblock %}
 
 {% block content %}
 
-<section class="experience-shell" style="max-width: 680px; margin: 40px auto; padding: 40px 28px; text-align: center; background: #ffffff; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-md);">
+<!-- Elementos atmosféricos de Halloween -->
+<div class="nada-cobweb nada-cobweb-left" aria-hidden="true"></div>
+<div class="nada-cobweb nada-cobweb-right" aria-hidden="true"></div>
 
-    <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: #fff0f2; border-radius: 50%; margin-bottom: 24px; border: 2px solid #fecdd3;">
-        <span style="font-size: 38px;">🎉</span>
-    </div>
+<div class="nada-particles" aria-hidden="true">
+    <div class="nada-p np1">🦇</div>
+    <div class="nada-p np2">✨</div>
+    <div class="nada-p np3">🎃</div>
+    <div class="nada-p np4">👻</div>
+    <div class="nada-p np5">⭐</div>
+</div>
 
-    <div style="margin-bottom: 28px;">
-        <h1 style="font-size: clamp(28px, 4vw, 40px); font-weight: 800; color: #111827; line-height: 1.15; margin-bottom: 12px;">
-            {% if nome %}
-                Parabéns, <span style="color: var(--knn-red);">{{ nome }}</span>!
-            {% else %}
-                Missão <span style="color: var(--knn-red);">Concluída!</span>
-            {% endif %}
-        </h1>
-        <p style="font-size: 16px; color: #4b5563; line-height: 1.6; max-width: 520px; margin: 0 auto;">
-            Sua participação foi registrada no <strong>Inglês Secreto da KNN Paraisópolis</strong>. {% if contato_autorizado %}Em breve nossa equipe poderá entrar em contato com você pelos canais informados.{% else %}Você não autorizou contato comercial; sua participação nesta experiência foi registrada normalmente.{% endif %}
-        </p>
-    </div>
+<div class="nada-fog" aria-hidden="true"></div>
 
-    <!-- CARD INSTAGRAM KNN PARAISÓPOLIS -->
-    <div style="background: linear-gradient(135deg, #fff5f5 0%, #fff0f2 100%); border: 2px solid #fed7aa; border-color: #fecdd3; border-radius: 16px; padding: 32px 24px; margin: 32px 0 24px; text-align: center; box-shadow: 0 4px 15px rgba(237, 27, 47, 0.08);">
+<!-- Container Centralizado Completo -->
+<div class="nada-wrapper">
+    <section class="nada-card">
         
-        <div style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; padding: 6px 14px; border-radius: 999px; margin-bottom: 16px; border: 1px solid #fee2e2;">
-            <svg style="width: 18px; height: 18px; fill: #ed1b2f;" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-            </svg>
-            <span style="font-size: 12px; font-weight: 800; color: #ed1b2f; letter-spacing: 0.5px;">INSTAGRAM OFICIAL</span>
+        <!-- Header / Emblema de Sucesso -->
+        <div class="nada-badge-wrap">
+            <div class="nada-badge-glow"></div>
+            <div class="nada-badge-icon">
+                <span>🎃</span>
+            </div>
         </div>
 
-        <h2 style="font-size: 22px; font-weight: 800; color: #111827; margin-bottom: 8px;">
-            Siga @knnparaisopolis
-        </h2>
+        <!-- Título e Mensagem de Conquista -->
+        <div class="nada-header-text">
+            <div class="nada-tag">ENIGMA DESVENDADO</div>
+            <h1 class="nada-title">
+                {% if nome %}
+                    Parabéns, <span class="highlight">{{ nome }}</span>!
+                {% else %}
+                    Missão <span class="highlight">Concluída!</span>
+                {% endif %}
+            </h1>
+            <p class="nada-desc">
+                Sua participação foi registrada com sucesso no <strong>Inglês Secreto KNN Paraisópolis</strong>. 
+                {% if contato_autorizado %}
+                    Nossa equipe entrará em contato em breve para liberar seus benefícios e vantagens exclusivas!
+                {% else %}
+                    Sua conquista nesta experiência de Halloween foi salva com sucesso.
+                {% endif %}
+            </p>
+        </div>
 
-        <p style="font-size: 14px; color: #4b5563; margin-bottom: 22px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.5;">
-            Acompanhe a revelação das frases secretas, dicas semanais de inglês e veja os ganhadores do <strong>English Pass</strong>!
-        </p>
+        <!-- CARD DESTACADO PARA O INSTAGRAM -->
+        <div class="nada-instagram-card">
+            <div class="insta-glow"></div>
+            
+            <div class="insta-header">
+                <div class="insta-badge-pill">
+                    <svg class="insta-svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    <span>INSTAGRAM OFICIAL</span>
+                </div>
+            </div>
 
-        <a href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 28px; font-size: 15px; font-weight: 800; border-radius: 10px; background: #ed1b2f; color: #ffffff; text-decoration: none; box-shadow: 0 4px 14px rgba(237, 27, 47, 0.35);">
-            SEGUIR NO INSTAGRAM ➔
-        </a>
+            <h2 class="insta-title">@knnparaisopolis</h2>
+            
+            <p class="insta-desc">
+                Siga nosso perfil para acompanhar as próximas frases secretas, dicas semanais e o sorteio de prêmios do <strong>English Pass</strong>!
+            </p>
 
-    </div>
+            <a href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer" class="btn-insta-cta">
+                <span class="btn-insta-icon">📸</span>
+                <span>SEGUIR NO INSTAGRAM</span>
+                <span class="btn-arrow">➔</span>
+            </a>
+        </div>
 
-    <div>
-        <a href="{{ url_for('index') }}" class="btn btn-secondary" style="font-size: 13px; font-weight: 600; padding: 10px 20px;">
-            Voltar para o início
-        </a>
-    </div>
+        <!-- Ação de Retorno -->
+        <div class="nada-footer-actions">
+            <a href="{{ url_for('index') }}" class="btn-voltar">
+                Voltar à Página Inicial
+            </a>
+        </div>
 
-</section>
+    </section>
+</div>
+
+<style>
+/* Estilos Tematizados Roxos/Halloween para /nada */
+:root {
+    --nada-bg: #130924;
+    --nada-card-bg: rgba(26, 16, 48, 0.88);
+    --nada-border: rgba(168, 85, 247, 0.25);
+    --nada-purple: #9333ea;
+    --nada-purple-light: #c084fc;
+    --nada-orange: #f97316;
+    --nada-green: #39ff14;
+}
+
+body.nada-theme {
+    background: radial-gradient(circle at 50% 15%, #2a114f 0%, #150927 60%, #0a0414 100%) fixed !important;
+    color: #f3f4f6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body.nada-theme .main-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    max-width: 100%;
+}
+
+.nada-wrapper {
+    width: 100%;
+    max-width: 580px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 5;
+    animation: nadaFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes nadaFadeIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.nada-card {
+    background: var(--nada-card-bg);
+    border: 1px solid var(--nada-border);
+    border-radius: 20px;
+    padding: 40px 28px;
+    text-align: center;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), 0 0 30px rgba(147, 51, 234, 0.15);
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Badge Superior Animado */
+.nada-badge-wrap {
+    position: relative;
+    width: 86px;
+    height: 86px;
+    margin: 0 auto 20px;
+    display: grid;
+    place-items: center;
+}
+
+.nada-badge-icon {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    display: grid;
+    place-items: center;
+    font-size: 38px;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
+    animation: nadaBounce 2.5s ease-in-out infinite;
+}
+
+@keyframes nadaBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.nada-badge-glow {
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.35) 0%, transparent 70%);
+    animation: nadaPulse 2s infinite alternate;
+}
+
+@keyframes nadaPulse {
+    from { transform: scale(0.9); opacity: 0.5; }
+    to { transform: scale(1.15); opacity: 0.9; }
+}
+
+/* Textos */
+.nada-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--nada-orange);
+    letter-spacing: 0.14em;
+    margin-bottom: 8px;
+}
+
+.nada-title {
+    font-family: "Barlow Condensed", Impact, sans-serif;
+    font-size: clamp(32px, 7vw, 46px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 12px;
+    color: #ffffff;
+}
+
+.nada-title .highlight {
+    color: #f97316;
+    text-shadow: 0 0 14px rgba(249, 115, 22, 0.4);
+}
+
+.nada-desc {
+    font-size: 14.5px;
+    color: #cbd5e1;
+    line-height: 1.55;
+    margin: 0 auto;
+    max-width: 460px;
+}
+
+.nada-desc strong {
+    color: #fff;
+}
+
+/* Card do Instagram */
+.nada-instagram-card {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(237, 27, 47, 0.12) 100%);
+    border: 1.5px solid rgba(168, 85, 247, 0.35);
+    border-radius: 16px;
+    padding: 26px 20px;
+    margin: 28px 0 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.insta-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+}
+
+.insta-svg {
+    width: 16px;
+    height: 16px;
+    fill: #f43f5e;
+}
+
+.insta-badge-pill span {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #fca5a5;
+}
+
+.insta-title {
+    font-family: "Barlow Condensed", Impact, sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 8px;
+    letter-spacing: 0.02em;
+}
+
+.insta-desc {
+    font-size: 13.5px;
+    color: #d1d5db;
+    margin: 0 auto 20px;
+    max-width: 420px;
+    line-height: 1.45;
+}
+
+.btn-insta-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #e11d48 0%, #be123c 50%, #9333ea 100%);
+    border-radius: 10px;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(225, 29, 72, 0.4);
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-insta-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(225, 29, 72, 0.55);
+}
+
+.btn-voltar {
+    display: inline-block;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: color 0.2s;
+}
+
+.btn-voltar:hover {
+    color: #f1f5f9;
+}
+
+/* Teias e Partículas */
+.nada-cobweb {
+    position: fixed;
+    top: 0;
+    width: 110px;
+    height: 110px;
+    pointer-events: none;
+    opacity: 0.18;
+    z-index: 1;
+}
+
+.nada-cobweb-left {
+    left: 0;
+    background: radial-gradient(circle at 0 0, transparent 20px, rgba(255,255,255,0.4) 21px, transparent 22px, transparent 45px, rgba(255,255,255,0.3) 46px, transparent 47px);
+    border-bottom-right-radius: 100%;
+}
+
+.nada-cobweb-right {
+    right: 0;
+    background: radial-gradient(circle at 100% 0, transparent 20px, rgba(255,255,255,0.4) 21px, transparent 22px, transparent 45px, rgba(255,255,255,0.3) 46px, transparent 47px);
+    border-bottom-left-radius: 100%;
+}
+
+.nada-particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.nada-p {
+    position: absolute;
+    opacity: 0.18;
+    user-select: none;
+}
+.np1 { top: 15%; left: 10%; font-size: 26px; animation: floatParticle 8s infinite alternate ease-in-out; }
+.np2 { top: 25%; right: 12%; font-size: 20px; animation: floatParticle 6s infinite alternate ease-in-out; }
+.np3 { bottom: 20%; left: 14%; font-size: 28px; animation: floatParticle 9s infinite alternate ease-in-out; }
+.np4 { bottom: 28%; right: 16%; font-size: 24px; animation: floatParticle 7s infinite alternate ease-in-out; }
+.np5 { top: 45%; left: 85%; font-size: 18px; animation: floatParticle 5s infinite alternate ease-in-out; }
+
+@keyframes floatParticle {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(-16px) rotate(10deg); }
+}
+
+.nada-fog {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(to top, rgba(147, 51, 234, 0.08) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 2;
+}
+</style>
 
 {% endblock %}
