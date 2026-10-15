@@ -1,411 +1,637 @@
 {% extends "base.html" %}
 
-{% block title %}
-🎃 Inglês Secreto | KNN Idiomas Halloween
-{% endblock %}
+{% block title %}Inglês Secreto | KNN Idiomas — Halloween Edition{% endblock %}
 
-{% block body_class %}public-page public-home halloween-theme home-theme{% endblock %}
+{% block body_class %}public-page public-home halloween-landing{% endblock %}
 
 {% block content %}
 
-<!-- Efeitos de Fundo de Halloween -->
-<div class="home-cobweb home-cobweb-left" aria-hidden="true"></div>
-<div class="home-cobweb home-cobweb-right" aria-hidden="true"></div>
+<!-- Atmospheric Artwork Layer (Pure SVG & Vector Art, No Emojis) -->
+<div class="art-layer" aria-hidden="true">
+    <!-- Ambient Light Fields -->
+    <div class="ambient-glow glow-top"></div>
+    <div class="ambient-glow glow-bottom"></div>
 
-<div class="home-particles" aria-hidden="true">
-    <div class="hp p1">🦇</div>
-    <div class="hp p2">🎃</div>
-    <div class="hp p3">👻</div>
-    <div class="hp p4">✨</div>
-    <div class="hp p5">🧙‍♀️</div>
+    <!-- Geometric Moon Artwork -->
+    <svg class="bg-vector-moon" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="200" cy="200" r="160" stroke="rgba(249, 115, 22, 0.08)" stroke-width="1.5" stroke-dasharray="4 6"/>
+        <circle cx="200" cy="200" r="130" stroke="rgba(237, 27, 47, 0.12)" stroke-width="1"/>
+        <path d="M260 90C220 100 190 140 190 190C190 240 220 280 260 290C195 285 145 240 145 190C145 140 195 95 260 90Z" 
+              fill="url(#moonGrad)" opacity="0.3"/>
+        <defs>
+            <linearGradient id="moonGrad" x1="145" y1="90" x2="260" y2="290" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#F97316" stop-opacity="0.7"/>
+                <stop offset="100%" stop-color="#ED1B2F" stop-opacity="0.1"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- Stylized Silhouette Bats -->
+    <svg class="bg-vector-bats" viewBox="0 0 500 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Bat 1 -->
+        <path class="bat-shape bat-1" d="M120 40 C112 32 98 30 85 45 C80 32 65 30 50 38 C56 50 64 56 70 65 C78 70 85 64 88 56 C95 62 104 60 112 50 C116 46 118 42 120 40 Z" fill="rgba(255, 255, 255, 0.1)"/>
+        <!-- Bat 2 -->
+        <path class="bat-shape bat-2" d="M380 90 C374 84 362 82 350 94 C346 84 334 82 320 88 C325 98 332 102 338 110 C344 114 350 110 353 102 C359 108 366 106 373 98 C377 94 378 92 380 90 Z" fill="rgba(255, 255, 255, 0.08)"/>
+        <!-- Bat 3 -->
+        <path class="bat-shape bat-3" d="M460 30 C456 26 448 24 440 32 C437 25 428 24 418 28 C422 35 426 38 430 44 C435 47 439 44 441 38 C445 42 450 41 455 35 C458 32 459 31 460 30 Z" fill="rgba(255, 255, 255, 0.06)"/>
+    </svg>
+
+    <!-- Base Fog Vignette -->
+    <div class="cinematic-fog"></div>
 </div>
 
-<div class="home-fog" aria-hidden="true"></div>
+<main class="page-container">
+    <section class="campaign-card">
 
-<section class="landing-shell-knn home-halloween-card">
-
-    <!-- CABEÇALHO / MARCA KNN COM TEMA HALLOWEEN -->
-    <div class="home-brand-wrap">
-        <div class="home-logo-row">
-            <span class="home-logo-knn">KNN</span>
-            <div class="home-badge-tag">HALLOWEEN EDITION 🎃</div>
-        </div>
-        <div class="home-subbrand">
-            INGLÊS SECRETO · PARAISÓPOLIS
-        </div>
-    </div>
-
-    <!-- TÍTULO PRINCIPAL HERO -->
-    <div class="home-hero-text">
-        <h1 class="home-main-title">
-            ENCONTRE. DECIFRE. <span class="text-gradient">CONQUISTE!</span>
-        </h1>
-        <p class="home-hero-desc">
-            Mistérios em inglês foram espalhados por estabelecimentos parceiros em Paraisópolis. 
-            Escaneie os QR Codes, desvende os enigmas e concorra ao seu <strong>English Pass</strong> da KNN!
-        </p>
-    </div>
-
-    <!-- 3 PASSOS DA JORNADA -->
-    <div class="home-steps-grid">
-        <div class="home-step-card">
-            <div class="step-badge">
-                <span class="step-num">01</span>
-                <span class="step-icon">📍</span>
+        <!-- BRANDING HEADER -->
+        <header class="card-header">
+            <div class="brand-cluster">
+                <span class="knn-wordmark">KNN</span>
+                <span class="edition-pill">
+                    <svg class="pill-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    </svg>
+                    HALLOWEEN EDITION
+                </span>
             </div>
-            <strong class="step-title">Encontre o QR Code</strong>
-            <p class="step-desc">Procure os totens e displays temáticos de Halloween nos locais parceiros da cidade.</p>
-        </div>
-
-        <div class="home-step-card">
-            <div class="step-badge">
-                <span class="step-num">02</span>
-                <span class="step-icon">⚡</span>
+            <div class="territory-label">
+                INGLÊS SECRETO <span class="bullet" aria-hidden="true">•</span> PARAISÓPOLIS
             </div>
-            <strong class="step-title">Decifre o Enigma</strong>
-            <p class="step-desc">Aponte sua câmera, encare desafios e minijogos interativos para testar seu inglês.</p>
-        </div>
+        </header>
 
-        <div class="home-step-card">
-            <div class="step-badge">
-                <span class="step-num">03</span>
-                <span class="step-icon">🏆</span>
-            </div>
-            <strong class="step-title">Ganhe Prêmios</strong>
-            <p class="step-desc">Acumule conquistas na KNN Paraisópolis e desbloqueie recompensas exclusivas.</p>
-        </div>
-    </div>
-
-    <!-- CARD MODERNO DO INSTAGRAM OFICIAL -->
-    <div class="home-instagram-box">
-        <div class="insta-box-content">
-            <div class="insta-badge-chip">
-                <svg viewBox="0 0 24 24" class="insta-box-icon" aria-hidden="true">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-                <span>COMUNIDADE KNN</span>
-            </div>
-            <h2 class="insta-box-title">Siga @knnparaisopolis no Instagram</h2>
-            <p class="insta-box-desc">
-                Acompanhe as revelações das frases semanais, pistas dos pontos com QR Code e sorteios de bolsas e brindes!
+        <!-- HERO INTRO -->
+        <div class="hero-block">
+            <h1 class="hero-headline">
+                ENCONTRE. DECIFRE. <span class="highlight-conquer">CONQUISTE!</span>
+            </h1>
+            <p class="hero-summary">
+                Mistérios em inglês foram espalhados por estabelecimentos parceiros em Paraisópolis. 
+                Escaneie os QR Codes, desvende os enigmas e concorra ao seu <strong>English Pass</strong> da KNN!
             </p>
         </div>
 
-        <a href="https://www.instagram.com/knnparaisopolis/" target="_blank" rel="noopener noreferrer" class="btn-insta-action">
-            <span>SEGUIR NO INSTAGRAM</span>
-            <span class="btn-insta-arrow">➔</span>
-        </a>
-    </div>
+        <!-- 3-STEP SYSTEM -->
+        <div class="steps-container" role="list">
+            
+            <!-- Step 01 -->
+            <article class="step-card" role="listitem">
+                <div class="step-meta">
+                    <span class="step-number">01</span>
+                    <div class="step-icon-frame" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="3" rx="2"/>
+                            <path d="M7 7h.01M17 7h.01M7 17h.01M17 17h.01"/>
+                            <path d="M7 12h10M12 7v10"/>
+                        </svg>
+                    </div>
+                </div>
+                <h2 class="step-heading">Encontre o QR Code</h2>
+                <p class="step-description">
+                    Procure os totens e displays temáticos de Halloween nos estabelecimentos parceiros da cidade.
+                </p>
+            </article>
 
-</section>
+            <!-- Step 02 -->
+            <article class="step-card" role="listitem">
+                <div class="step-meta">
+                    <span class="step-number">02</span>
+                    <div class="step-icon-frame" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="m4.93 4.93 4.24 4.24M14.83 14.83l4.24 4.24M14.83 9.17l4.24-4.24M4.93 19.07l4.24-4.24"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </div>
+                </div>
+                <h2 class="step-heading">Decifre o Enigma</h2>
+                <p class="step-description">
+                    Aponte sua câmera, encare desafios e minijogos interativos para testar e expandir seu inglês.
+                </p>
+            </article>
+
+            <!-- Step 03 -->
+            <article class="step-card" role="listitem">
+                <div class="step-meta">
+                    <span class="step-number">03</span>
+                    <div class="step-icon-frame" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                            <path d="M4 22h16"/>
+                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h2 class="step-heading">Ganhe Prêmios</h2>
+                <p class="step-description">
+                    Acumule conquistas na unidade KNN Paraisópolis e desbloqueie vantagens e bolsas de estudo exclusivas.
+                </p>
+            </article>
+
+        </div>
+
+        <!-- INSTAGRAM CAMPAIGN BANNER -->
+        <section class="marketing-card">
+            <div class="marketing-content">
+                <div class="marketing-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+                    </svg>
+                    <span>CONECTE-SE COM A ESCOLA</span>
+                </div>
+                <h2 class="marketing-title">Siga @knnparaisopolis no Instagram</h2>
+                <p class="marketing-description">
+                    Acompanhe as revelações das frases secretas, dicas semanais e o anúncio dos ganhadores do <strong>English Pass</strong>.
+                </p>
+            </div>
+
+            <div class="marketing-cta-wrap">
+                <a href="https://www.instagram.com/knnparaisopolis/" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="btn-campaign">
+                    <span>SEGUIR NO INSTAGRAM</span>
+                    <svg class="cta-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+        </section>
+
+    </section>
+</main>
 
 <style>
-/* Tema Halloween para a Home */
-body.home-theme {
-    background: radial-gradient(circle at 50% 10%, #250f44 0%, #120724 60%, #07030e 100%) fixed !important;
-    color: #f3f4f6;
+/* ==========================================================================
+   TYPOGRAPHY & DESIGN SYSTEM
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&family=Barlow+Condensed:ital,wght@1,900&display=swap');
+
+:root {
+    --knn-red: #ED1B2F;
+    --knn-red-hover: #D61224;
+    --halloween-orange: #F97316;
+    --halloween-amber: #EA580C;
+    --dark-canvas: #08040F;
+    --surface-card: rgba(18, 11, 30, 0.82);
+    --surface-card-border: rgba(255, 255, 255, 0.08);
+    --surface-card-hover: rgba(25, 16, 42, 0.95);
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --font-display: 'Bebas Neue', 'Barlow Condensed', sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-brand: 'Barlow Condensed', Impact, sans-serif;
+    --ease-out-cubic: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Base resets & document settings */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
     min-height: 100vh;
 }
 
-.home-halloween-card {
-    max-width: 860px;
-    margin: 40px auto;
-    padding: 48px 36px;
-    background: rgba(26, 15, 48, 0.88);
-    border-radius: 22px;
-    border: 1px solid rgba(168, 85, 247, 0.25);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(124, 58, 237, 0.12);
-    backdrop-filter: blur(12px);
-    text-align: center;
+body.halloween-landing {
+    background-color: var(--dark-canvas) !important;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
     position: relative;
-    z-index: 5;
-    animation: homeFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes homeFadeIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+/* ==========================================================================
+   ATMOSPHERIC ARTWORK (Pure CSS & SVG Vector Art)
+   ========================================================================== */
+.art-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
 }
 
-/* Marca KNN */
-.home-brand-wrap {
-    margin-bottom: 26px;
+.ambient-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.22;
 }
 
-.home-logo-row {
+.glow-top {
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 650px;
+    height: 380px;
+    background: radial-gradient(circle, #7928CA 0%, #ED1B2F 45%, transparent 70%);
+}
+
+.glow-bottom {
+    bottom: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 300px;
+    background: radial-gradient(circle, #F97316 0%, #7928CA 50%, transparent 75%);
+    opacity: 0.14;
+}
+
+.bg-vector-moon {
+    position: absolute;
+    top: -40px;
+    right: 5%;
+    width: clamp(240px, 30vw, 420px);
+    height: clamp(240px, 30vw, 420px);
+    pointer-events: none;
+    user-select: none;
+}
+
+.bg-vector-bats {
+    position: absolute;
+    top: 40px;
+    right: 8%;
+    width: clamp(280px, 35vw, 500px);
+    height: auto;
+    pointer-events: none;
+    user-select: none;
+}
+
+.bat-shape {
+    transition: transform 0.6s var(--ease-out-cubic);
+}
+
+.bat-1 { transform-origin: 85px 45px; animation: batHover 9s ease-in-out infinite; }
+.bat-2 { transform-origin: 350px 94px; animation: batHover 12s ease-in-out infinite 2s; }
+.bat-3 { transform-origin: 440px 32px; animation: batHover 8s ease-in-out infinite 4s; }
+
+@keyframes batHover {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+.cinematic-fog {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 220px;
+    background: linear-gradient(to top, rgba(8, 4, 15, 0.95) 0%, rgba(8, 4, 15, 0.4) 60%, transparent 100%);
+}
+
+/* ==========================================================================
+   PAGE LAYOUT & CONTAINER
+   ========================================================================== */
+.page-container {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    margin-bottom: 4px;
+    padding: clamp(24px, 5vw, 56px) 20px;
+    box-sizing: border-box;
 }
 
-.home-logo-knn {
-    font-family: "Barlow Condensed", Impact, sans-serif;
-    font-size: clamp(58px, 9vw, 88px);
+.campaign-card {
+    width: 100%;
+    max-width: 880px;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-card-border);
+    border-radius: 24px;
+    padding: clamp(32px, 5vw, 52px) clamp(24px, 4.5vw, 48px);
+    box-shadow: 
+        0 24px 60px -12px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(255, 255, 255, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   HEADER / BRANDING
+   ========================================================================== */
+.card-header {
+    text-align: center;
+    margin-bottom: clamp(28px, 4vw, 40px);
+}
+
+.brand-cluster {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 8px;
+}
+
+.knn-wordmark {
+    font-family: var(--font-brand);
+    font-size: clamp(52px, 8vw, 76px);
     font-weight: 900;
     font-style: italic;
-    color: #ED1B2F;
+    color: var(--knn-red);
     line-height: 0.85;
     letter-spacing: -2px;
-    text-shadow: 0 0 25px rgba(237, 27, 47, 0.35);
+    text-shadow: 0 0 35px rgba(237, 27, 47, 0.35);
 }
 
-.home-badge-tag {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    background: rgba(249, 115, 22, 0.15);
-    color: #f97316;
-    border: 1px solid rgba(249, 115, 22, 0.35);
-    padding: 6px 12px;
-    border-radius: 100px;
-}
-
-.home-subbrand {
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: 0.22em;
-    color: #cbd5e1;
-}
-
-/* Hero Text */
-.home-hero-text {
-    margin-bottom: 36px;
-}
-
-.home-main-title {
-    font-family: "Barlow Condensed", Impact, sans-serif;
-    font-size: clamp(34px, 5.5vw, 52px);
-    font-weight: 900;
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-    margin: 0 0 14px;
-    color: #ffffff;
-}
-
-.text-gradient {
-    color: #f97316;
-    text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
-}
-
-.home-hero-desc {
-    font-size: 16px;
-    color: #cbd5e1;
-    max-width: 620px;
-    margin: 0 auto;
-    line-height: 1.6;
-}
-
-.home-hero-desc strong {
-    color: #fff;
-}
-
-/* 3 Passos */
-.home-steps-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin: 40px 0;
-    text-align: left;
-}
-
-.home-step-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    padding: 24px 20px;
-    transition: all 0.25s ease;
-}
-
-.home-step-card:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(168, 85, 247, 0.4);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-
-.step-badge {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-}
-
-.step-num {
-    font-family: "Barlow Condensed", sans-serif;
-    font-size: 28px;
-    font-weight: 900;
-    color: #ED1B2F;
-}
-
-.step-icon {
-    font-size: 22px;
-}
-
-.step-title {
-    display: block;
-    font-size: 16px;
-    font-weight: 800;
-    color: #ffffff;
-    margin-bottom: 6px;
-}
-
-.step-desc {
-    font-size: 13.5px;
-    color: #94a3b8;
-    line-height: 1.5;
-    margin: 0;
-}
-
-/* Box do Instagram na Home */
-.home-instagram-box {
-    background: linear-gradient(135deg, rgba(225, 29, 72, 0.12) 0%, rgba(147, 51, 234, 0.16) 100%);
-    border: 1.5px solid rgba(225, 29, 72, 0.35);
-    border-radius: 16px;
-    padding: 28px 24px;
-    margin-top: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    text-align: left;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.insta-badge-chip {
+.edition-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 4px 12px;
+    background: rgba(249, 115, 22, 0.1);
+    color: #FDBA74;
+    border: 1px solid rgba(249, 115, 22, 0.3);
     border-radius: 100px;
-    margin-bottom: 10px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.insta-box-icon {
-    width: 14px;
-    height: 14px;
-    fill: #f43f5e;
+.pill-icon {
+    color: var(--halloween-orange);
 }
 
-.insta-badge-chip span {
-    font-size: 10.5px;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: #fca5a5;
+.territory-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: #94A3B8;
+    text-transform: uppercase;
 }
 
-.insta-box-title {
-    font-family: "Barlow Condensed", Impact, sans-serif;
-    font-size: 24px;
-    font-weight: 800;
-    color: #ffffff;
-    margin: 0 0 6px;
-    letter-spacing: 0.02em;
+.territory-label .bullet {
+    color: var(--knn-red);
+    margin: 0 4px;
 }
 
-.insta-box-desc {
+/* ==========================================================================
+   HERO HEADLINE & INTRO
+   ========================================================================== */
+.hero-block {
+    text-align: center;
+    margin-bottom: clamp(32px, 4.5vw, 44px);
+}
+
+.hero-headline {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 7vw, 68px);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    line-height: 0.95;
+    margin: 0 0 16px;
+    color: var(--text-primary);
+}
+
+.highlight-conquer {
+    color: var(--halloween-orange);
+    background: linear-gradient(135deg, #FF8A3D 0%, #ED1B2F 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-summary {
+    font-size: clamp(15px, 2vw, 17px);
+    line-height: 1.65;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    font-weight: 400;
+}
+
+.hero-summary strong {
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   3-STEP SYSTEM GRID
+   ========================================================================== */
+.steps-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: clamp(32px, 4.5vw, 44px);
+}
+
+.step-card {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    position: relative;
+    transition: all 0.28s var(--ease-out-cubic);
+}
+
+.step-card:hover {
+    background: var(--surface-card-hover);
+    border-color: rgba(237, 27, 47, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.5);
+}
+
+.step-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.step-number {
+    font-family: var(--font-display);
+    font-size: 26px;
+    color: var(--knn-red);
+    line-height: 1;
+    letter-spacing: 0.04em;
+}
+
+.step-icon-frame {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: grid;
+    place-items: center;
+    color: #E2E8F0;
+    transition: all 0.28s var(--ease-out-cubic);
+}
+
+.step-card:hover .step-icon-frame {
+    background: rgba(237, 27, 47, 0.12);
+    border-color: rgba(237, 27, 47, 0.35);
+    color: #FFFFFF;
+}
+
+.step-heading {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 8px;
+    line-height: 1.3;
+}
+
+.step-description {
     font-size: 13.5px;
-    color: #cbd5e1;
+    line-height: 1.55;
+    color: var(--text-secondary);
     margin: 0;
-    max-width: 440px;
-    line-height: 1.45;
+    font-weight: 400;
 }
 
-.btn-insta-action {
+/* ==========================================================================
+   MARKETING CAMPAIGN BANNER (INSTAGRAM)
+   ========================================================================== */
+.marketing-card {
+    background: linear-gradient(135deg, rgba(237, 27, 47, 0.08) 0%, rgba(121, 40, 202, 0.1) 100%);
+    border: 1px solid rgba(237, 27, 47, 0.22);
+    border-radius: 18px;
+    padding: clamp(24px, 3.5vw, 32px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    box-sizing: border-box;
+    box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.4);
+}
+
+.marketing-content {
+    flex: 1;
+}
+
+.marketing-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #F87171;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.marketing-title {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 3.5vw, 32px);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    color: #FFFFFF;
+    margin: 0 0 6px;
+    line-height: 1.1;
+}
+
+.marketing-description {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    margin: 0;
+    max-width: 480px;
+}
+
+.marketing-description strong {
+    color: #FFFFFF;
+}
+
+.marketing-cta-wrap {
+    flex-shrink: 0;
+}
+
+.btn-campaign {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     padding: 14px 26px;
-    background: linear-gradient(135deg, #ED1B2F 0%, #be123c 100%);
+    background: var(--knn-red);
+    color: #FFFFFF;
     border-radius: 10px;
-    color: #ffffff;
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.06em;
     text-decoration: none;
     white-space: nowrap;
-    box-shadow: 0 6px 18px rgba(237, 27, 47, 0.4);
-    transition: all 0.2s ease;
     border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 16px rgba(237, 27, 47, 0.35);
+    transition: all 0.22s var(--ease-out-cubic);
 }
 
-.btn-insta-action:hover {
+.btn-campaign:hover {
+    background: var(--knn-red-hover);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(237, 27, 47, 0.6);
+    box-shadow: 0 8px 24px rgba(237, 27, 47, 0.5);
 }
 
-/* Partículas e Neblina */
-.home-cobweb {
-    position: fixed;
-    top: 0;
-    width: 120px;
-    height: 120px;
-    pointer-events: none;
-    opacity: 0.15;
-    z-index: 1;
+.cta-arrow {
+    transition: transform 0.22s var(--ease-out-cubic);
 }
 
-.home-cobweb-left {
-    left: 0;
-    background: radial-gradient(circle at 0 0, transparent 20px, rgba(255,255,255,0.4) 21px, transparent 22px, transparent 45px, rgba(255,255,255,0.3) 46px, transparent 47px);
-    border-bottom-right-radius: 100%;
+.btn-campaign:hover .cta-arrow {
+    transform: translateX(3px);
 }
 
-.home-cobweb-right {
-    right: 0;
-    background: radial-gradient(circle at 100% 0, transparent 20px, rgba(255,255,255,0.4) 21px, transparent 22px, transparent 45px, rgba(255,255,255,0.3) 46px, transparent 47px);
-    border-bottom-left-radius: 100%;
-}
+/* ==========================================================================
+   RESPONSIVE LAYOUT
+   ========================================================================== */
+@media (max-width: 820px) {
+    .steps-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
 
-.home-particles {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-}
-
-.hp {
-    position: absolute;
-    opacity: 0.15;
-    user-select: none;
-}
-.p1 { top: 12%; left: 8%; font-size: 26px; animation: hpFloat 9s infinite alternate ease-in-out; }
-.p2 { top: 22%; right: 10%; font-size: 30px; animation: hpFloat 7s infinite alternate ease-in-out; }
-.p3 { bottom: 25%; left: 12%; font-size: 24px; animation: hpFloat 8s infinite alternate ease-in-out; }
-.p4 { bottom: 35%; right: 14%; font-size: 20px; animation: hpFloat 6s infinite alternate ease-in-out; }
-.p5 { top: 48%; left: 88%; font-size: 28px; animation: hpFloat 10s infinite alternate ease-in-out; }
-
-@keyframes hpFloat {
-    0% { transform: translateY(0) rotate(0deg); }
-    100% { transform: translateY(-18px) rotate(8deg); }
-}
-
-.home-fog {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 160px;
-    background: linear-gradient(to top, rgba(147, 51, 234, 0.08) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 2;
-}
-
-@media (max-width: 700px) {
-    .home-instagram-box {
+    .marketing-card {
         flex-direction: column;
-        align-items: stretch;
-        text-align: center;
+        align-items: flex-start;
+        gap: 20px;
     }
-    .insta-box-desc {
-        margin: 0 auto;
-    }
-    .btn-insta-action {
+
+    .marketing-cta-wrap {
         width: 100%;
+    }
+
+    .btn-campaign {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-cluster {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .territory-label {
+        font-size: 11px;
+        letter-spacing: 0.15em;
+    }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: PREFERS-REDUCED-MOTION
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }
 </style>
