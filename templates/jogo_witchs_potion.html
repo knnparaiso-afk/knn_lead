@@ -858,64 +858,79 @@
         const sound = new SoundFX();
 
         // ========================================================
-        // 2. RECEITAS E INGREDIENTES 3D DEFINIDOS
+        // 2. BANCO DE 20 INGREDIENTES E GERADOR DINÂMICO
         // ========================================================
-        const RECIPES = [
-            {
-                name: "Beginner's Brew",
-                tag: "Recipe 1/3",
-                tasks: [
-                    {
-                        target: "eye_of_newt",
-                        prefixEn: "Add the",
-                        keywordEn: "Eye of Newt",
-                        keywordPt: "Olho de Salamandra"
-                    },
-                    {
-                        target: "green_bottle",
-                        prefixEn: "Choose the",
-                        keywordEn: "Green Bottle",
-                        keywordPt: "Frasco Verde"
-                    }
-                ]
-            },
-            {
-                name: "Moonlight Mixture",
-                tag: "Recipe 2/3",
-                tasks: [
-                    {
-                        target: "magic_spider",
-                        prefixEn: "Catch the",
-                        keywordEn: "Magic Spider",
-                        keywordPt: "Aranha Mágica"
-                    },
-                    {
-                        target: "glowing_mushroom",
-                        prefixEn: "Add the",
-                        keywordEn: "Glowing Mushroom",
-                        keywordPt: "Cogumelo Brilhante"
-                    }
-                ]
-            },
-            {
-                name: "Dragon's Breath",
-                tag: "Recipe 3/3",
-                tasks: [
-                    {
-                        target: "purple_elixir",
-                        prefixEn: "Choose the",
-                        keywordEn: "Purple Elixir",
-                        keywordPt: "Elixir Roxo"
-                    },
-                    {
-                        target: "dragon_tooth",
-                        prefixEn: "Add the",
-                        keywordEn: "Dragon Tooth",
-                        keywordPt: "Dente de Dragão"
-                    }
-                ]
-            }
+        const INGREDIENTS_DATABASE = [
+            { id: "eye_of_newt", name: "Eye of Newt", namePt: "Olho de Salamandra", prefixEn: "Add the", icon: "👁️" },
+            { id: "green_bottle", name: "Green Bottle", namePt: "Frasco Verde", prefixEn: "Choose the", icon: "🧪" },
+            { id: "magic_spider", name: "Magic Spider", namePt: "Aranha Mágica", prefixEn: "Catch the", icon: "🕷️" },
+            { id: "glowing_mushroom", name: "Glowing Mushroom", namePt: "Cogumelo Brilhante", prefixEn: "Add the", icon: "🍄" },
+            { id: "purple_elixir", name: "Purple Elixir", namePt: "Elixir Roxo", prefixEn: "Pour the", icon: "🔮" },
+            { id: "dragon_tooth", name: "Dragon Tooth", namePt: "Dente de Dragão", prefixEn: "Drop the", icon: "💎" },
+            { id: "bat_wing", name: "Bat Wing", namePt: "Asa de Morcego", prefixEn: "Find the", icon: "🦇" },
+            { id: "poison_apple", name: "Poison Apple", namePt: "Maçã Envenenada", prefixEn: "Pick the", icon: "🍎" },
+            { id: "pumpkin_spice", name: "Pumpkin Spice", namePt: "Abóbora Mágica", prefixEn: "Add the", icon: "🎃" },
+            { id: "black_cat_fur", name: "Black Cat Fur", namePt: "Pelo de Gato Preto", prefixEn: "Find the", icon: "🐈‍⬛" },
+            { id: "raven_feather", name: "Raven Feather", namePt: "Pena de Corvo", prefixEn: "Choose the", icon: "🪶" },
+            { id: "crystal_shard", name: "Crystal Shard", namePt: "Cristal Mágico", prefixEn: "Select the", icon: "✨" },
+            { id: "golden_key", name: "Golden Key", namePt: "Chave Dourada", prefixEn: "Turn the", icon: "🗝️" },
+            { id: "moon_dust", name: "Moon Dust", namePt: "Pó da Lua", prefixEn: "Sprinkle the", icon: "🌙" },
+            { id: "snake_venom", name: "Snake Venom", namePt: "Veneno de Cobra", prefixEn: "Pour the", icon: "🐍" },
+            { id: "vampire_fang", name: "Vampire Fang", namePt: "Presa de Vampiro", prefixEn: "Add the", icon: "🧛" },
+            { id: "golden_bone", name: "Golden Bone", namePt: "Osso Dourado", prefixEn: "Find the", icon: "🦴" },
+            { id: "stardust_vial", name: "Stardust Vial", namePt: "Poeira Estelar", prefixEn: "Mix the", icon: "⭐" },
+            { id: "magic_clover", name: "Magic Clover", namePt: "Trevo Mágico", prefixEn: "Find the", icon: "🍀" },
+            { id: "witch_candle", name: "Magic Candle", namePt: "Vela Mágica", prefixEn: "Light the", icon: "🕯️" }
         ];
+
+        function generateDynamicRecipes() {
+            // Embaralha o catálogo para que cada partida seja inédita
+            const catalog = [...INGREDIENTS_DATABASE];
+            for (let i = catalog.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [catalog[i], catalog[j]] = [catalog[j], catalog[i]];
+            }
+
+            // Estrutura das 3 receitas (total de 6 tarefas)
+            const recipeMeta = [
+                { name: "Beginner's Brew", tag: "Recipe 1/3", steps: 2 },
+                { name: "Moonlight Mixture", tag: "Recipe 2/3", steps: 2 },
+                { name: "Dragon's Flame", tag: "Recipe 3/3", steps: 2 }
+            ];
+
+            // 6 alvos únicos retirados do início do catálogo
+            const targetPool = catalog.slice(0, 6);
+            // Distratores retirados do restante do catálogo (14 itens restantes)
+            const distractorPool = catalog.slice(6);
+
+            let distractorIdx = 0;
+            let targetIdx = 0;
+
+            return recipeMeta.map(rm => {
+                const tasks = [];
+                for (let s = 0; s < rm.steps; s++) {
+                    const targetItem = targetPool[targetIdx++];
+                    // Pega 2 distratores únicos sem repetição
+                    const d1 = distractorPool[distractorIdx % distractorPool.length];
+                    distractorIdx++;
+                    const d2 = distractorPool[distractorIdx % distractorPool.length];
+                    distractorIdx++;
+
+                    tasks.push({
+                        target: targetItem.id,
+                        prefixEn: targetItem.prefixEn,
+                        keywordEn: targetItem.name,
+                        keywordPt: targetItem.namePt,
+                        distractors: [d1.id, d2.id]
+                    });
+                }
+                return {
+                    name: rm.name,
+                    tag: rm.tag,
+                    tasks: tasks
+                };
+            });
+        }
 
         // ========================================================
         // 3. ENGINE 3D (THREE.JS) — ENQUADRAMENTO PERFEITO
@@ -1089,70 +1104,175 @@
                 // Caldeirão no lado direito, logo atrás da mesa
                 grp.position.set(0.38, 0, -0.15);
 
-                // Corpo
-                const body = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.5, 24, 20),
-                    new THREE.MeshStandardMaterial({ color: 0x181524, roughness: 0.6, metalness: 0.85 })
-                );
-                body.scale.set(1, 0.82, 1);
-                body.position.y = 0.5;
-                body.castShadow = true;
-                grp.add(body);
+                // Caldeirão procedural PBR de altíssima fidelidade
+                const procCauldron = new THREE.Group();
 
-                // Borda
-                const rim = new THREE.Mesh(
-                    new THREE.TorusGeometry(0.42, 0.05, 12, 32),
-                    body.material
-                );
+                const ironMat = new THREE.MeshStandardMaterial({
+                    color: 0x14111d,
+                    roughness: 0.5,
+                    metalness: 0.82
+                });
+                const bronzeMat = new THREE.MeshStandardMaterial({
+                    color: 0xc27803,
+                    roughness: 0.35,
+                    metalness: 0.85
+                });
+                const runeMat = new THREE.MeshBasicMaterial({
+                    color: 0x39ff14
+                });
+
+                // Barriga bojuda forjada
+                const belly = new THREE.Mesh(new THREE.SphereGeometry(0.50, 26, 22), ironMat);
+                belly.scale.set(1.05, 0.88, 1.05);
+                belly.position.y = 0.50;
+                belly.castShadow = true;
+                belly.receiveShadow = true;
+                procCauldron.add(belly);
+
+                // Colarinho / Gargalo
+                const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.40, 0.16, 26), ironMat);
+                neck.position.y = 0.80;
+                neck.castShadow = true;
+                procCauldron.add(neck);
+
+                // Borda grossa forjada
+                const rim = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.055, 14, 32), ironMat);
                 rim.rotation.x = Math.PI / 2;
-                rim.position.y = 0.82;
-                grp.add(rim);
+                rim.position.y = 0.88;
+                rim.castShadow = true;
+                procCauldron.add(rim);
 
-                // Pés
-                const footGeo = new THREE.ConeGeometry(0.065, 0.22, 8);
-                footGeo.rotateX(Math.PI);
+                // Aro dourado ornamental com detalhes
+                const band = new THREE.Mesh(new THREE.TorusGeometry(0.465, 0.016, 10, 32), bronzeMat);
+                band.rotation.x = Math.PI / 2;
+                band.position.y = 0.81;
+                procCauldron.add(band);
+
+                // 3 Pés de ferro fundido reforçados estilo garras
+                const legGeo = new THREE.CylinderGeometry(0.045, 0.075, 0.24, 8);
+                legGeo.rotateZ(0.12);
                 for (let i = 0; i < 3; i++) {
                     const a = (i * Math.PI * 2) / 3;
-                    const foot = new THREE.Mesh(footGeo, body.material);
-                    foot.position.set(Math.cos(a) * 0.34, 0.11, Math.sin(a) * 0.34);
-                    grp.add(foot);
+                    const leg = new THREE.Mesh(legGeo, ironMat);
+                    leg.position.set(Math.cos(a) * 0.35, 0.12, Math.sin(a) * 0.35);
+                    leg.rotation.y = -a;
+                    leg.castShadow = true;
+                    procCauldron.add(leg);
                 }
 
-                // Líquido verde
-                const liquidGeo = new THREE.CircleGeometry(0.38, 24);
+                // Alças laterais circulares pesadas (esquerda e direita)
+                [-0.52, 0.52].forEach(xPos => {
+                    const handleMount = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.08), ironMat);
+                    handleMount.position.set(xPos, 0.65, 0);
+                    procCauldron.add(handleMount);
+
+                    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.02, 10, 20), bronzeMat);
+                    ring.position.set(xPos + (xPos > 0 ? 0.04 : -0.04), 0.60, 0);
+                    ring.rotation.y = Math.PI / 2;
+                    ring.rotation.x = 0.2;
+                    procCauldron.add(ring);
+                });
+
+                // Símbolo rúnico mágico brilhante na frente do caldeirão
+                const runeCrescent = new THREE.Mesh(new THREE.RingGeometry(0.06, 0.095, 16, 1, 0, Math.PI * 1.5), runeMat);
+                runeCrescent.position.set(0, 0.52, 0.518);
+                runeCrescent.rotation.z = Math.PI / 4;
+                procCauldron.add(runeCrescent);
+
+                const runeDot = new THREE.Mesh(new THREE.CircleGeometry(0.02, 12), runeMat);
+                runeDot.position.set(0, 0.52, 0.519);
+                procCauldron.add(runeDot);
+
+                // Brasas incandescentes sob o caldeirão
+                const emberMat = new THREE.MeshStandardMaterial({
+                    color: 0xff3b00,
+                    emissive: 0xff4500,
+                    emissiveIntensity: 2.2,
+                    roughness: 0.6
+                });
+                for (let i = 0; i < 7; i++) {
+                    const ang = Math.random() * Math.PI * 2;
+                    const dist = Math.random() * 0.26;
+                    const ember = new THREE.Mesh(new THREE.DodecahedronGeometry(0.035 + Math.random() * 0.03), emberMat);
+                    ember.position.set(Math.cos(ang) * dist, 0.035, Math.sin(ang) * dist);
+                    procCauldron.add(ember);
+                }
+
+                // Luz do fogo sob o caldeirão
+                const fireLight = new THREE.PointLight(0xff4500, 1.4, 1.8);
+                fireLight.position.set(0, 0.08, 0);
+                procCauldron.add(fireLight);
+
+                grp.add(procCauldron);
+
+                // Superfície do Líquido Borbulhante Mágico
+                const liquidGeo = new THREE.CircleGeometry(0.40, 26);
                 liquidGeo.rotateX(-Math.PI / 2);
                 this.cauldronLiquid = new THREE.Mesh(
                     liquidGeo,
                     new THREE.MeshStandardMaterial({
-                        color: 0x22c55e,
-                        emissive: 0x39ff14,
-                        emissiveIntensity: 0.85,
-                        roughness: 0.2
+                        color: 0x15803d,
+                        emissive: 0x22c55e,
+                        emissiveIntensity: 0.95,
+                        roughness: 0.18
                     })
                 );
-                this.cauldronLiquid.position.y = 0.76;
+                this.cauldronLiquid.position.y = 0.80;
                 grp.add(this.cauldronLiquid);
 
-                // Bolhas
+                // Bolhas verdes efervescentes
                 const bMat = new THREE.MeshStandardMaterial({
                     color: 0x86efac,
                     emissive: 0x39ff14,
-                    emissiveIntensity: 1.0,
+                    emissiveIntensity: 1.2,
                     transparent: true,
                     opacity: 0.85
                 });
-                for (let i = 0; i < 6; i++) {
-                    const b = new THREE.Mesh(new THREE.SphereGeometry(0.028 + Math.random() * 0.03, 10, 8), bMat);
+                for (let i = 0; i < 7; i++) {
+                    const b = new THREE.Mesh(new THREE.SphereGeometry(0.028 + Math.random() * 0.032, 10, 8), bMat);
                     b.userData = {
-                        baseY: 0.76,
-                        speed: 0.4 + Math.random() * 0.5,
-                        maxH: 0.28 + Math.random() * 0.22,
+                        baseY: 0.80,
+                        speed: 0.35 + Math.random() * 0.55,
+                        maxH: 0.30 + Math.random() * 0.25,
                         angle: Math.random() * Math.PI * 2,
-                        dist: Math.random() * 0.24
+                        dist: Math.random() * 0.26
                     };
                     grp.add(b);
                     this.bubbles.push(b);
                 }
+
+                // Carregamento dinâmico assíncrono de modelo customizado GLB caso o usuário baixe um:
+                const cauldronLoader = new THREE.GLTFLoader();
+                cauldronLoader.load(
+                    "{{ url_for('static', filename='models/cauldron.glb') }}",
+                    (gltf) => {
+                        const m = gltf.scene;
+                        const box = new THREE.Box3().setFromObject(m);
+                        const size = box.getSize(new THREE.Vector3());
+                        const center = box.getCenter(new THREE.Vector3());
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        if (maxDim > 0) {
+                            const targetScale = 1.15 / maxDim;
+                            m.scale.set(targetScale, targetScale, targetScale);
+                            m.position.x = -center.x * targetScale;
+                            m.position.y = -box.min.y * targetScale;
+                            m.position.z = -center.z * targetScale;
+                        }
+                        m.traverse(node => {
+                            if (node.isMesh) {
+                                node.castShadow = true;
+                                node.receiveShadow = true;
+                            }
+                        });
+                        procCauldron.visible = false;
+                        grp.add(m);
+                        console.log("Caldeirão 3D GLB personalizado carregado com sucesso!");
+                    },
+                    undefined,
+                    (err) => {
+                        // Silencioso: usa o caldeirão procedural PBR de alta fidelidade
+                    }
+                );
 
                 this.cauldron = grp;
                 this.scene.add(this.cauldron);
@@ -1161,27 +1281,19 @@
             _buildIngredientsOnTable() {
                 const surfaceY = 0.55;
 
-                // Todos os 6 ingredientes possíveis no jogo
-                const items = [
-                    { id: "eye_of_newt", name: "Eye of Newt", icon: "👁️" },
-                    { id: "green_bottle", name: "Green Bottle", icon: "🧪" },
-                    { id: "magic_spider", name: "Spider", icon: "🕷️" },
-                    { id: "glowing_mushroom", name: "Mushroom", icon: "🍄" },
-                    { id: "purple_elixir", name: "Purple Elixir", icon: "🔮" },
-                    { id: "dragon_tooth", name: "Dragon Tooth", icon: "💎" }
-                ];
-
-                items.forEach(item => {
+                // Todos os 20 ingredientes do catálogo mágico
+                INGREDIENTS_DATABASE.forEach(item => {
                     const grp = new THREE.Group();
                     grp.position.set(0, surfaceY, 0.82);
                     grp.userData = {
                         id: item.id,
                         name: item.name,
+                        namePt: item.namePt,
                         basePos: new THREE.Vector3(0, surfaceY, 0.82),
                         hitMeshList: []
                     };
 
-                    // Pratinho de madeira escurecida assentado exatamente na mesa
+                    // Pratinho de madeira escurecida assentado na mesa
                     const plate = new THREE.Mesh(
                         new THREE.CylinderGeometry(0.16, 0.17, 0.025, 16),
                         new THREE.MeshStandardMaterial({ color: 0x22150a, roughness: 0.85 })
@@ -1190,27 +1302,20 @@
                     plate.receiveShadow = true;
                     grp.add(plate);
 
-                    // Modelo específico do ingrediente
-                    let model = null;
-                    if (item.id === "eye_of_newt") model = this._buildEyeModel();
-                    else if (item.id === "green_bottle") model = this._buildBottleModel(0x22c55e, 0x39ff14);
-                    else if (item.id === "magic_spider") model = this._buildSpiderModel();
-                    else if (item.id === "glowing_mushroom") model = this._buildMushroomModel();
-                    else if (item.id === "purple_elixir") model = this._buildBottleModel(0x9333ea, 0xc084fc);
-                    else if (item.id === "dragon_tooth") model = this._buildCrystalModel();
-
-                    if (model) {
-                        model.position.y = 0.025; // repousa sobre o pratinho
-                        grp.add(model);
+                    // Modelo procedural inicial de alta definição
+                    const procModel = this._buildIngredientModel(item.id);
+                    if (procModel) {
+                        procModel.position.y = 0.025;
+                        grp.add(procModel);
                     }
 
-                    // Plaquinha identificadora esculpida em madeira de alta definição
+                    // Plaquinha identificadora esculpida em madeira
                     const labelMesh = this._createWoodLabel(item.name, item.icon);
                     labelMesh.position.set(0, 0.02, 0.17);
                     labelMesh.rotation.x = -Math.PI / 4;
                     grp.add(labelMesh);
 
-                    // Hitbox cilíndrica generosa transparente mas intersectável
+                    // Hitbox cilíndrica generosa transparente para touch e clique perfeitos
                     const hitGeo = new THREE.CylinderGeometry(0.20, 0.20, 0.55, 12);
                     const hitMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.0001, depthWrite: false });
                     const hitBox = new THREE.Mesh(hitGeo, hitMat);
@@ -1218,7 +1323,6 @@
                     hitBox.userData = { ingredientId: item.id };
                     grp.add(hitBox);
 
-                    // Guarda todos os meshes clicáveis pertencentes a este ingrediente
                     grp.userData.hitMeshList.push(hitBox);
                     grp.traverse(child => {
                         if (child.isMesh) {
@@ -1226,6 +1330,39 @@
                             grp.userData.hitMeshList.push(child);
                         }
                     });
+
+                    // Suporte a carregamento de modelo 3D GLB customizado se o usuário baixar
+                    const ingLoader = new THREE.GLTFLoader();
+                    ingLoader.load(
+                        `{{ url_for('static', filename='models/ingredients/') }}${item.id}.glb`,
+                        (gltf) => {
+                            const m = gltf.scene;
+                            const box = new THREE.Box3().setFromObject(m);
+                            const size = box.getSize(new THREE.Vector3());
+                            const center = box.getCenter(new THREE.Vector3());
+                            const maxDim = Math.max(size.x, size.y, size.z);
+                            if (maxDim > 0) {
+                                const s = 0.30 / maxDim;
+                                m.scale.set(s, s, s);
+                                m.position.x = -center.x * s;
+                                m.position.y = 0.025 - box.min.y * s;
+                                m.position.z = -center.z * s;
+                            }
+                            m.traverse(node => {
+                                if (node.isMesh) {
+                                    node.castShadow = true;
+                                    node.userData.ingredientId = item.id;
+                                    grp.userData.hitMeshList.push(node);
+                                }
+                            });
+                            if (procModel) procModel.visible = false;
+                            grp.add(m);
+                        },
+                        undefined,
+                        (err) => {
+                            // Silencioso: usa o modelo procedural nativo
+                        }
+                    );
 
                     // Inicialmente invisível e com escala zero
                     grp.visible = false;
@@ -1237,13 +1374,12 @@
             }
 
             _createWoodLabel(name, icon) {
-                // Cria etiqueta nítida e legível usando canvas 2D desenhado em textura 3D
                 const canvas = document.createElement('canvas');
                 canvas.width = 320;
                 canvas.height = 96;
                 const ctx = canvas.getContext('2d');
 
-                // Fundo de placa mágica
+                // Fundo de placa rústica com borda âmbar
                 ctx.fillStyle = '#1c120a';
                 ctx.strokeStyle = '#f59e0b';
                 ctx.lineWidth = 5;
@@ -1252,9 +1388,9 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Texto legível
+                // Tipografia nítida
                 ctx.fillStyle = '#fef3c7';
-                ctx.font = 'bold 30px sans-serif';
+                ctx.font = 'bold 28px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(`${icon} ${name}`, 160, 48);
@@ -1263,6 +1399,32 @@
                 const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
                 const geo = new THREE.PlaneGeometry(0.28, 0.085);
                 return new THREE.Mesh(geo, mat);
+            }
+
+            _buildIngredientModel(id) {
+                switch(id) {
+                    case "eye_of_newt": return this._buildEyeModel();
+                    case "green_bottle": return this._buildBottleModel(0x22c55e, 0x39ff14);
+                    case "magic_spider": return this._buildSpiderModel();
+                    case "glowing_mushroom": return this._buildMushroomModel();
+                    case "purple_elixir": return this._buildPotionFlaskModel(0xa855f7, 0xd8b4fe);
+                    case "dragon_tooth": return this._buildHornModel();
+                    case "bat_wing": return this._buildBatWingModel();
+                    case "poison_apple": return this._buildAppleModel();
+                    case "pumpkin_spice": return this._buildPumpkinModel();
+                    case "black_cat_fur": return this._buildCatTalismanModel();
+                    case "raven_feather": return this._buildFeatherModel();
+                    case "crystal_shard": return this._buildCrystalModel();
+                    case "golden_key": return this._buildKeyModel();
+                    case "moon_dust": return this._buildMoonDustModel();
+                    case "snake_venom": return this._buildVenomVialModel();
+                    case "vampire_fang": return this._buildVampireFangsModel();
+                    case "golden_bone": return this._buildBoneModel();
+                    case "stardust_vial": return this._buildStardustModel();
+                    case "magic_clover": return this._buildCloverModel();
+                    case "witch_candle": return this._buildCandleModel();
+                    default: return this._buildCrystalModel();
+                }
             }
 
             _buildEyeModel() {
@@ -1383,22 +1545,411 @@
                 return grp;
             }
 
-            _buildCrystalModel() {
+            _buildPotionFlaskModel(col, emis) {
                 const grp = new THREE.Group();
-                const crystal = new THREE.Mesh(
-                    new THREE.ConeGeometry(0.085, 0.3, 5),
+                const bulb = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.11, 16, 16),
                     new THREE.MeshPhysicalMaterial({
-                        color: 0xf97316,
-                        emissive: 0xfbbf24,
-                        emissiveIntensity: 0.75,
-                        roughness: 0.1,
+                        color: col,
+                        emissive: emis,
+                        emissiveIntensity: 0.7,
+                        roughness: 0.12,
+                        transmission: 0.75,
+                        transparent: true,
+                        opacity: 0.95
+                    })
+                );
+                bulb.position.y = 0.11;
+                bulb.castShadow = true;
+                grp.add(bulb);
+
+                const neck = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.035, 0.035, 0.10, 12),
+                    bulb.material
+                );
+                neck.position.y = 0.22;
+                grp.add(neck);
+
+                const cork = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.032, 0.028, 0.045, 10),
+                    new THREE.MeshStandardMaterial({ color: 0x9a6b43, roughness: 0.85 })
+                );
+                cork.position.y = 0.28;
+                grp.add(cork);
+                return grp;
+            }
+
+            _buildHornModel() {
+                const grp = new THREE.Group();
+                const tooth = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.065, 0.26, 10),
+                    new THREE.MeshStandardMaterial({
+                        color: 0xfef9c3,
+                        roughness: 0.25,
                         metalness: 0.1
                     })
                 );
-                crystal.position.y = 0.15;
-                crystal.rotation.z = 0.08;
-                crystal.castShadow = true;
-                grp.add(crystal);
+                tooth.position.y = 0.13;
+                tooth.rotation.z = 0.12;
+                tooth.castShadow = true;
+                grp.add(tooth);
+
+                const goldBand = new THREE.Mesh(
+                    new THREE.TorusGeometry(0.066, 0.015, 8, 16),
+                    new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.85, roughness: 0.3 })
+                );
+                goldBand.rotation.x = Math.PI / 2;
+                goldBand.position.y = 0.03;
+                grp.add(goldBand);
+                return grp;
+            }
+
+            _buildBatWingModel() {
+                const grp = new THREE.Group();
+                const wingMat = new THREE.MeshStandardMaterial({ color: 0x272438, roughness: 0.7 });
+                const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.01, 0.22, 6), wingMat);
+                arm.position.set(0, 0.14, 0);
+                arm.rotation.z = -Math.PI / 4;
+                grp.add(arm);
+
+                const membraneGeo = new THREE.ConeGeometry(0.14, 0.22, 3);
+                membraneGeo.rotateZ(Math.PI / 3);
+                const membrane = new THREE.Mesh(membraneGeo, new THREE.MeshStandardMaterial({ color: 0x3730a3, roughness: 0.6 }));
+                membrane.position.set(0.04, 0.12, 0);
+                membrane.castShadow = true;
+                grp.add(membrane);
+
+                const claw = new THREE.Mesh(new THREE.ConeGeometry(0.018, 0.04, 6), new THREE.MeshStandardMaterial({ color: 0xfef08a }));
+                claw.position.set(-0.08, 0.21, 0);
+                grp.add(claw);
+                return grp;
+            }
+
+            _buildAppleModel() {
+                const grp = new THREE.Group();
+                const apple = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.11, 16, 14),
+                    new THREE.MeshStandardMaterial({ color: 0x881337, roughness: 0.25 })
+                );
+                apple.scale.set(1.05, 0.95, 1.05);
+                apple.position.y = 0.11;
+                apple.castShadow = true;
+                grp.add(apple);
+
+                const toxicSlime = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.112, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.45),
+                    new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x39ff14, emissiveIntensity: 0.85, roughness: 0.1 })
+                );
+                toxicSlime.scale.set(1.05, 0.95, 1.05);
+                toxicSlime.position.y = 0.11;
+                grp.add(toxicSlime);
+
+                const stem = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.01, 0.008, 0.07, 6),
+                    new THREE.MeshStandardMaterial({ color: 0x451a03 })
+                );
+                stem.position.set(0, 0.22, 0);
+                stem.rotation.z = 0.15;
+                grp.add(stem);
+                return grp;
+            }
+
+            _buildPumpkinModel() {
+                const grp = new THREE.Group();
+                const pumpkin = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.12, 16, 12),
+                    new THREE.MeshStandardMaterial({ color: 0xea580c, roughness: 0.45 })
+                );
+                pumpkin.scale.set(1.15, 0.85, 1.15);
+                pumpkin.position.y = 0.10;
+                pumpkin.castShadow = true;
+                grp.add(pumpkin);
+
+                const stem = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.018, 0.024, 0.065, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.7 })
+                );
+                stem.position.set(0, 0.20, 0);
+                stem.rotation.z = 0.12;
+                grp.add(stem);
+
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xfde047 });
+                const e1 = new THREE.Mesh(new THREE.ConeGeometry(0.02, 0.03, 3), eyeMat);
+                e1.position.set(-0.04, 0.11, 0.13);
+                e1.rotation.y = Math.PI / 2;
+                const e2 = e1.clone();
+                e2.position.x = 0.04;
+                grp.add(e1);
+                grp.add(e2);
+                return grp;
+            }
+
+            _buildCatTalismanModel() {
+                const grp = new THREE.Group();
+                const ball = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.11, 14, 14),
+                    new THREE.MeshStandardMaterial({ color: 0x09090b, roughness: 0.85 })
+                );
+                ball.position.y = 0.11;
+                ball.castShadow = true;
+                grp.add(ball);
+
+                const earGeo = new THREE.ConeGeometry(0.04, 0.08, 4);
+                const earL = new THREE.Mesh(earGeo, ball.material);
+                earL.position.set(-0.06, 0.21, 0);
+                earL.rotation.z = 0.25;
+                grp.add(earL);
+
+                const earR = new THREE.Mesh(earGeo, ball.material);
+                earR.position.set(0.06, 0.21, 0);
+                earR.rotation.z = -0.25;
+                grp.add(earR);
+
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+                const eyeL = new THREE.Mesh(new THREE.CircleGeometry(0.02, 10), eyeMat);
+                eyeL.position.set(-0.04, 0.12, 0.105);
+                const eyeR = eyeL.clone();
+                eyeR.position.x = 0.04;
+                grp.add(eyeL);
+                grp.add(eyeR);
+                return grp;
+            }
+
+            _buildFeatherModel() {
+                const grp = new THREE.Group();
+                const pot = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.05, 0.075, 0.07, 12),
+                    new THREE.MeshStandardMaterial({ color: 0x78350f, metalness: 0.7, roughness: 0.35 })
+                );
+                pot.position.y = 0.035;
+                grp.add(pot);
+
+                const quillShaft = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.007, 0.004, 0.30, 6),
+                    new THREE.MeshStandardMaterial({ color: 0x312e81, roughness: 0.3 })
+                );
+                quillShaft.position.set(0.02, 0.17, 0);
+                quillShaft.rotation.z = -0.15;
+                grp.add(quillShaft);
+
+                const vane = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.05, 0.22, 4),
+                    new THREE.MeshStandardMaterial({
+                        color: 0x1e1b4b,
+                        emissive: 0x4338ca,
+                        emissiveIntensity: 0.5,
+                        roughness: 0.4
+                    })
+                );
+                vane.scale.set(1.4, 1, 0.2);
+                vane.position.set(0.03, 0.21, 0);
+                vane.rotation.z = -0.15;
+                grp.add(vane);
+                return grp;
+            }
+
+            _buildCrystalModel() {
+                const grp = new THREE.Group();
+                const cMat = new THREE.MeshPhysicalMaterial({
+                    color: 0xa855f7,
+                    emissive: 0xc084fc,
+                    emissiveIntensity: 0.8,
+                    roughness: 0.1,
+                    metalness: 0.1
+                });
+                const c1 = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.27, 5), cMat);
+                c1.position.y = 0.135;
+                c1.castShadow = true;
+                grp.add(c1);
+
+                const c2 = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.18, 5), cMat);
+                c2.position.set(-0.06, 0.09, 0.02);
+                c2.rotation.z = 0.25;
+                grp.add(c2);
+
+                const c3 = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.15, 5), cMat);
+                c3.position.set(0.05, 0.07, -0.02);
+                c3.rotation.z = -0.28;
+                grp.add(c3);
+                return grp;
+            }
+
+            _buildKeyModel() {
+                const grp = new THREE.Group();
+                const goldMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.9, roughness: 0.25 });
+                const bow = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.016, 8, 20), goldMat);
+                bow.position.set(0, 0.18, 0);
+                grp.add(bow);
+
+                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.18, 8), goldMat);
+                stem.position.set(0, 0.08, 0);
+                grp.add(stem);
+
+                const bit = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.045, 0.014), goldMat);
+                bit.position.set(0.02, 0.03, 0);
+                grp.add(bit);
+                return grp;
+            }
+
+            _buildMoonDustModel() {
+                const grp = new THREE.Group();
+                const orb = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.09, 16, 16),
+                    new THREE.MeshStandardMaterial({
+                        color: 0xf8fafc,
+                        emissive: 0xe2e8f0,
+                        emissiveIntensity: 0.9,
+                        roughness: 0.15
+                    })
+                );
+                orb.position.y = 0.12;
+                grp.add(orb);
+
+                const ring = new THREE.Mesh(
+                    new THREE.TorusGeometry(0.13, 0.008, 8, 24),
+                    new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.85, roughness: 0.2 })
+                );
+                ring.position.y = 0.12;
+                ring.rotation.x = Math.PI / 3;
+                grp.add(ring);
+                return grp;
+            }
+
+            _buildVenomVialModel() {
+                const grp = new THREE.Group();
+                const glass = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.045, 0.05, 0.22, 12),
+                    new THREE.MeshPhysicalMaterial({
+                        color: 0x84cc16,
+                        emissive: 0xa3e635,
+                        emissiveIntensity: 0.8,
+                        roughness: 0.12,
+                        transmission: 0.7,
+                        transparent: true
+                    })
+                );
+                glass.position.y = 0.11;
+                grp.add(glass);
+
+                const cork = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.035, 0.03, 0.045, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x713f12 })
+                );
+                cork.position.y = 0.24;
+                grp.add(cork);
+                return grp;
+            }
+
+            _buildVampireFangsModel() {
+                const grp = new THREE.Group();
+                const cushion = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.20, 0.045, 0.14),
+                    new THREE.MeshStandardMaterial({ color: 0x881337, roughness: 0.8 })
+                );
+                cushion.position.y = 0.022;
+                grp.add(cushion);
+
+                const fangMat = new THREE.MeshStandardMaterial({ color: 0xfffff0, roughness: 0.15 });
+                const f1 = new THREE.Mesh(new THREE.ConeGeometry(0.032, 0.14, 8), fangMat);
+                f1.position.set(-0.045, 0.09, 0);
+                f1.rotation.x = 0.15;
+                const f2 = f1.clone();
+                f2.position.x = 0.045;
+                grp.add(f1);
+                grp.add(f2);
+                return grp;
+            }
+
+            _buildBoneModel() {
+                const grp = new THREE.Group();
+                const bMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.85, roughness: 0.3 });
+                const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.19, 8), bMat);
+                shaft.position.y = 0.10;
+                grp.add(shaft);
+
+                [[-0.03, 0.19], [0.03, 0.19], [-0.03, 0.015], [0.03, 0.015]].forEach(pos => {
+                    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 8), bMat);
+                    knob.position.set(pos[0], pos[1], 0);
+                    grp.add(knob);
+                });
+                return grp;
+            }
+
+            _buildStardustModel() {
+                const grp = new THREE.Group();
+                const vial = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.055, 0.055, 0.17, 6),
+                    new THREE.MeshPhysicalMaterial({
+                        color: 0xfef08a,
+                        emissive: 0xfde047,
+                        emissiveIntensity: 0.9,
+                        roughness: 0.1,
+                        transmission: 0.65,
+                        transparent: true
+                    })
+                );
+                vial.position.y = 0.09;
+                grp.add(vial);
+
+                const cap = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.035, 0.035, 0.04, 6),
+                    new THREE.MeshStandardMaterial({ color: 0xca8a04, metalness: 0.8 })
+                );
+                cap.position.y = 0.19;
+                grp.add(cap);
+                return grp;
+            }
+
+            _buildCloverModel() {
+                const grp = new THREE.Group();
+                const stem = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.01, 0.008, 0.14, 6),
+                    new THREE.MeshStandardMaterial({ color: 0x065f46 })
+                );
+                stem.position.y = 0.07;
+                grp.add(stem);
+
+                const leafMat = new THREE.MeshStandardMaterial({
+                    color: 0x10b981,
+                    emissive: 0x34d399,
+                    emissiveIntensity: 0.5,
+                    roughness: 0.35
+                });
+                const lGeo = new THREE.SphereGeometry(0.045, 8, 8);
+                lGeo.scale(1, 0.2, 1.2);
+
+                [[0, 0.05], [0, -0.05], [0.05, 0], [-0.05, 0]].forEach((offset, idx) => {
+                    const leaf = new THREE.Mesh(lGeo, leafMat);
+                    leaf.position.set(offset[0], 0.14, offset[1]);
+                    leaf.rotation.y = (idx * Math.PI) / 2;
+                    grp.add(leaf);
+                });
+                return grp;
+            }
+
+            _buildCandleModel() {
+                const grp = new THREE.Group();
+                const candle = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.055, 0.055, 0.18, 12),
+                    new THREE.MeshStandardMaterial({ color: 0x3b0764, roughness: 0.55 })
+                );
+                candle.position.y = 0.09;
+                candle.castShadow = true;
+                grp.add(candle);
+
+                const wick = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.005, 0.005, 0.03, 6),
+                    new THREE.MeshBasicMaterial({ color: 0x111111 })
+                );
+                wick.position.y = 0.19;
+                grp.add(wick);
+
+                const flame = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.024, 0.07, 8),
+                    new THREE.MeshBasicMaterial({ color: 0xf97316 })
+                );
+                flame.position.y = 0.235;
+                grp.add(flame);
                 return grp;
             }
 
@@ -1739,6 +2290,7 @@
         class GameController {
             constructor(view3D) {
                 this.view3D = view3D;
+                this.recipes = generateDynamicRecipes();
                 this.recipeIdx = 0;
                 this.taskIdx = 0;
                 this.score = 0;
@@ -1770,7 +2322,7 @@
             }
 
             loadCurrentTask() {
-                const recipe = RECIPES[this.recipeIdx];
+                const recipe = this.recipes[this.recipeIdx];
                 const task = recipe.tasks[this.taskIdx];
                 this.mistakes = 0;
                 this.isBusy = false;
@@ -1783,31 +2335,23 @@
 
                 this.hideToast();
 
-                // Sorteia exatamente 3 ingredientes: o correto (target) + 2 distratores
-                const allIds = ["eye_of_newt", "green_bottle", "magic_spider", "glowing_mushroom", "purple_elixir", "dragon_tooth"];
-                const otherIds = allIds.filter(id => id !== task.target);
+                // Pega os 3 ingredientes da tarefa (o alvo e os 2 distratores únicos pré-sorteados)
+                const chosen3 = [task.target, task.distractors[0], task.distractors[1]];
 
-                // Embaralha distratores
-                for (let i = otherIds.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [otherIds[i], otherIds[j]] = [otherIds[j], otherIds[i]];
-                }
-                const chosen3 = [task.target, otherIds[0], otherIds[1]];
-
-                // Embaralha as 3 posições para não ficar sempre no mesmo lugar
+                // Embaralha as 3 posições na bancada para que a resposta certa não fique sempre no mesmo slot
                 for (let i = chosen3.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [chosen3[i], chosen3[j]] = [chosen3[j], chosen3[i]];
                 }
 
-                // Faz os 3 surgirem na bancada com a animação
+                // Faz os 3 surgirem na bancada com a animação elástica
                 this.view3D.spawnActiveIngredients(chosen3);
             }
 
             selectIngredient(id) {
                 if (this.isBusy || !this.view3D.isReady) return;
 
-                const recipe = RECIPES[this.recipeIdx];
+                const recipe = this.recipes[this.recipeIdx];
                 const currentTask = recipe.tasks[this.taskIdx];
 
                 if (id === currentTask.target) {
@@ -1852,7 +2396,7 @@
 
             finishRecipe() {
                 sound.playVictory();
-                const recipe = RECIPES[this.recipeIdx];
+                const recipe = this.recipes[this.recipeIdx];
                 document.getElementById('recipe-done-title').textContent = `${recipe.name} Pronta!`;
 
                 setTimeout(() => {
@@ -1866,7 +2410,7 @@
                 this.recipeIdx++;
                 this.taskIdx = 0;
 
-                if (this.recipeIdx >= RECIPES.length) {
+                if (this.recipeIdx >= this.recipes.length) {
                     this.showVictory();
                 } else {
                     this.view3D.resetIngredients();
@@ -1909,6 +2453,7 @@
                 this.taskIdx = 0;
                 this.score = 0;
                 this.mistakes = 0;
+                this.recipes = generateDynamicRecipes(); // Gera novas receitas e combinações inéditas!
                 document.getElementById('score-val').textContent = '0';
 
                 this.view3D.resetIngredients();
