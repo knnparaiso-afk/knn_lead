@@ -720,6 +720,7 @@
 <script src="{{ url_for('static', filename='js/three.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/GLTFLoader.js') }}"></script>
 <script src="{{ url_for('static', filename='js/witch-reactions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ingredient-models.js') }}"></script>
 
 <script>
     (function () {
@@ -1415,6 +1416,10 @@
             }
 
             _buildIngredientModel(id) {
+                if (window.WitchIngredientModels) {
+                    const model = window.WitchIngredientModels.create(id);
+                    if (model) return model;
+                }
                 switch(id) {
                     case "eye_of_newt": return this._buildEyeModel();
                     case "green_bottle": return this._buildBottleModel(0x22c55e, 0x39ff14);
