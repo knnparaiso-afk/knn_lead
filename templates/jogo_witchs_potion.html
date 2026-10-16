@@ -932,6 +932,12 @@
             });
         }
 
+        // Catálogo de modelos 3D GLB customizados que foram adicionados a static/models/
+        // O jogo roda com modelos procedurais 3D de altíssima qualidade por padrão sem 404s.
+        // Ao baixar um modelo GLB (ex: bat_wing.glb), adicione o ID na lista abaixo!
+        const INSTALLED_GLB_INGREDIENTS = [];
+        const HAS_CUSTOM_CAULDRON = false;
+
         // ========================================================
         // 3. ENGINE 3D (THREE.JS) — ENQUADRAMENTO PERFEITO
         // ========================================================
@@ -1010,13 +1016,13 @@
                 const aspect = this.container.clientWidth / this.container.clientHeight;
                 if (aspect < 0.8) {
                     // Smartphone vertical (Portrait)
-                    // Câmera perfeitamente inclinada para ver bruxa, caldeirão e a mesa na frente
-                    this.camera.position.set(0, 1.85, 3.5);
-                    this.camera.lookAt(0, 1.05, 0);
+                    // Enquadramento perfeito: bruxa à esquerda, caldeirão à direita e mesa com ingredientes na frente
+                    this.camera.position.set(0, 1.70, 3.10);
+                    this.camera.lookAt(0, 0.90, 0.15);
                 } else {
                     // Desktop horizontal (Landscape)
-                    this.camera.position.set(0, 1.65, 3.1);
-                    this.camera.lookAt(0, 1.1, 0);
+                    this.camera.position.set(0, 1.60, 2.90);
+                    this.camera.lookAt(0, 0.95, 0.10);
                 }
             }
 
@@ -1082,19 +1088,26 @@
                 this.scene.add(this.magicDust);
 
                 // MESA DE ALQUIMIA NA FRENTE
-                // Dimensões compactas para caber 100% no campo de visão vertical do celular!
-                const tableMat = new THREE.MeshStandardMaterial({ color: 0x3d2514, roughness: 0.7, metalness: 0.1 });
-                const tableTop = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.1, 1.1), tableMat);
-                tableTop.position.set(0, 0.50, 0.82);
+                // Bancada proporcional, acabamento em mogno escuro com friso dourado
+                const tableMat = new THREE.MeshStandardMaterial({ color: 0x24140b, roughness: 0.65, metalness: 0.1 });
+                const tableTop = new THREE.Mesh(new THREE.BoxGeometry(1.64, 0.08, 0.46), tableMat);
+                tableTop.position.set(0, 0.51, 0.82);
                 tableTop.receiveShadow = true;
                 tableTop.castShadow = true;
                 this.scene.add(tableTop);
 
-                // Pernas da mesa
-                const legGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.5, 8);
-                [[-0.8, 0.25, 1.25], [0.8, 0.25, 1.25], [-0.8, 0.25, 0.45], [0.8, 0.25, 0.45]].forEach(p => {
+                // Friso dourado ornamental na borda da mesa
+                const trimMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.35, metalness: 0.85 });
+                const tableTrim = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.016, 0.47), trimMat);
+                tableTrim.position.set(0, 0.542, 0.82);
+                this.scene.add(tableTrim);
+
+                // Pernas torneadas da mesa
+                const legGeo = new THREE.CylinderGeometry(0.04, 0.035, 0.51, 8);
+                [[-0.68, 0.255, 0.96], [0.68, 0.255, 0.96], [-0.68, 0.255, 0.68], [0.68, 0.255, 0.68]].forEach(p => {
                     const leg = new THREE.Mesh(legGeo, tableMat);
                     leg.position.set(...p);
+                    leg.castShadow = true;
                     this.scene.add(leg);
                 });
             }
@@ -1241,38 +1254,40 @@
                     this.bubbles.push(b);
                 }
 
-                // Carregamento dinâmico assíncrono de modelo customizado GLB caso o usuário baixe um:
-                const cauldronLoader = new THREE.GLTFLoader();
-                cauldronLoader.load(
-                    "{{ url_for('static', filename='models/cauldron.glb') }}",
-                    (gltf) => {
-                        const m = gltf.scene;
-                        const box = new THREE.Box3().setFromObject(m);
-                        const size = box.getSize(new THREE.Vector3());
-                        const center = box.getCenter(new THREE.Vector3());
-                        const maxDim = Math.max(size.x, size.y, size.z);
-                        if (maxDim > 0) {
-                            const targetScale = 1.15 / maxDim;
-                            m.scale.set(targetScale, targetScale, targetScale);
-                            m.position.x = -center.x * targetScale;
-                            m.position.y = -box.min.y * targetScale;
-                            m.position.z = -center.z * targetScale;
-                        }
-                        m.traverse(node => {
-                            if (node.isMesh) {
-                                node.castShadow = true;
-                                node.receiveShadow = true;
+                // Carregamento dinâmico de modelo customizado GLB caso o usuário baixe um:
+                if (HAS_CUSTOM_CAULDRON) {
+                    const cauldronLoader = new THREE.GLTFLoader();
+                    cauldronLoader.load(
+                        "{{ url_for('static', filename='models/cauldron.glb') }}",
+                        (gltf) => {
+                            const m = gltf.scene;
+                            const box = new THREE.Box3().setFromObject(m);
+                            const size = box.getSize(new THREE.Vector3());
+                            const center = box.getCenter(new THREE.Vector3());
+                            const maxDim = Math.max(size.x, size.y, size.z);
+                            if (maxDim > 0) {
+                                const targetScale = 1.15 / maxDim;
+                                m.scale.set(targetScale, targetScale, targetScale);
+                                m.position.x = -center.x * targetScale;
+                                m.position.y = -box.min.y * targetScale;
+                                m.position.z = -center.z * targetScale;
                             }
-                        });
-                        procCauldron.visible = false;
-                        grp.add(m);
-                        console.log("Caldeirão 3D GLB personalizado carregado com sucesso!");
-                    },
-                    undefined,
-                    (err) => {
-                        // Silencioso: usa o caldeirão procedural PBR de alta fidelidade
-                    }
-                );
+                            m.traverse(node => {
+                                if (node.isMesh) {
+                                    node.castShadow = true;
+                                    node.receiveShadow = true;
+                                }
+                            });
+                            procCauldron.visible = false;
+                            grp.add(m);
+                            console.log("Caldeirão 3D GLB personalizado carregado com sucesso!");
+                        },
+                        undefined,
+                        (err) => {
+                            // Silencioso: usa o caldeirão procedural PBR de alta fidelidade
+                        }
+                    );
+                }
 
                 this.cauldron = grp;
                 this.scene.add(this.cauldron);
@@ -1332,37 +1347,39 @@
                     });
 
                     // Suporte a carregamento de modelo 3D GLB customizado se o usuário baixar
-                    const ingLoader = new THREE.GLTFLoader();
-                    ingLoader.load(
-                        `{{ url_for('static', filename='models/ingredients/') }}${item.id}.glb`,
-                        (gltf) => {
-                            const m = gltf.scene;
-                            const box = new THREE.Box3().setFromObject(m);
-                            const size = box.getSize(new THREE.Vector3());
-                            const center = box.getCenter(new THREE.Vector3());
-                            const maxDim = Math.max(size.x, size.y, size.z);
-                            if (maxDim > 0) {
-                                const s = 0.30 / maxDim;
-                                m.scale.set(s, s, s);
-                                m.position.x = -center.x * s;
-                                m.position.y = 0.025 - box.min.y * s;
-                                m.position.z = -center.z * s;
-                            }
-                            m.traverse(node => {
-                                if (node.isMesh) {
-                                    node.castShadow = true;
-                                    node.userData.ingredientId = item.id;
-                                    grp.userData.hitMeshList.push(node);
+                    if (INSTALLED_GLB_INGREDIENTS.includes(item.id)) {
+                        const ingLoader = new THREE.GLTFLoader();
+                        ingLoader.load(
+                            `{{ url_for('static', filename='models/ingredients/') }}${item.id}.glb`,
+                            (gltf) => {
+                                const m = gltf.scene;
+                                const box = new THREE.Box3().setFromObject(m);
+                                const size = box.getSize(new THREE.Vector3());
+                                const center = box.getCenter(new THREE.Vector3());
+                                const maxDim = Math.max(size.x, size.y, size.z);
+                                if (maxDim > 0) {
+                                    const s = 0.30 / maxDim;
+                                    m.scale.set(s, s, s);
+                                    m.position.x = -center.x * s;
+                                    m.position.y = 0.025 - box.min.y * s;
+                                    m.position.z = -center.z * s;
                                 }
-                            });
-                            if (procModel) procModel.visible = false;
-                            grp.add(m);
-                        },
-                        undefined,
-                        (err) => {
-                            // Silencioso: usa o modelo procedural nativo
-                        }
-                    );
+                                m.traverse(node => {
+                                    if (node.isMesh) {
+                                        node.castShadow = true;
+                                        node.userData.ingredientId = item.id;
+                                        grp.userData.hitMeshList.push(node);
+                                    }
+                                });
+                                if (procModel) procModel.visible = false;
+                                grp.add(m);
+                            },
+                            undefined,
+                            (err) => {
+                                // Silencioso: usa o modelo procedural nativo
+                            }
+                        );
+                    }
 
                     // Inicialmente invisível e com escala zero
                     grp.visible = false;
@@ -1962,12 +1979,18 @@
                     (gltf) => {
                         const model = gltf.scene;
 
-                        // Escala proporcional
-                        model.scale.set(0.92, 0.92, 0.92);
+                        // Normalização da altura da bruxa e assentamento perfeito dos pés no chão (Y = 0)
+                        const box = new THREE.Box3().setFromObject(model);
+                        const size = box.getSize(new THREE.Vector3());
+                        const targetHeight = 1.55;
+                        const scale = targetHeight / (size.y || 1);
+                        model.scale.set(scale, scale, scale);
 
-                        // POSICIONAMENTO DA BRUXA:
-                        // Fica na esquerda-centro (x = -0.42), perfeitamente visível e enquadrada na tela vertical!
-                        model.position.set(-0.42, 0, -0.32);
+                        box.setFromObject(model);
+                        const feetY = box.min.y;
+
+                        // Posiciona a bruxa na esquerda (-0.46), com os pés no chão e recuada atrás da bancada (Z = -0.35)
+                        model.position.set(-0.46, -feetY, -0.35);
                         model.rotation.y = 0.35; // Olhando para o jogador e caldeirão
 
                         model.traverse(node => {
@@ -2045,11 +2068,11 @@
                 this.activeIngredientIds = [...activeIds];
                 this.interactiveObjects = [];
 
-                // 3 posições amplas, perfeitamente espaçadas na bancada (x = -0.38, 0, +0.38)
+                // 3 posições amplas, perfeitamente espaçadas na bancada (x = -0.42, 0, +0.42)
                 const slots = [
-                    new THREE.Vector3(-0.38, 0.55, 0.82),
-                    new THREE.Vector3(0.00, 0.55, 0.85),
-                    new THREE.Vector3(0.38, 0.55, 0.82)
+                    new THREE.Vector3(-0.42, 0.55, 0.82),
+                    new THREE.Vector3(0.00, 0.55, 0.82),
+                    new THREE.Vector3(0.42, 0.55, 0.82)
                 ];
 
                 sound.playSpawn();
