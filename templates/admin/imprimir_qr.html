@@ -188,10 +188,10 @@
         </div>
 
         <div class="toolbar-actions">
-            <a href="{{ url_for('gerenciar_qr', campanha_id=qr.campanha_id) }}" class="btn btn-secondary">
+            <a href="{{ url_for('qr.gerenciar_qr', campanha_id=qr.campanha_id) }}" class="btn btn-secondary">
                 &larr; Voltar
             </a>
-            <a href="{{ url_for('download_qr', codigo=qr.codigo) }}" class="btn btn-secondary">
+            <a href="{{ url_for('qr.download_qr', codigo=qr.codigo) }}" class="btn btn-secondary">
                 Baixar Imagem PNG
             </a>
             <button onclick="window.print()" class="btn btn-primary">
@@ -202,7 +202,7 @@
 
     <main class="print-canvas-area">
         <div class="paper-card">
-            <img src="{{ url_for('imagem_qr', codigo=qr.codigo) }}" alt="QR Code com Frase da Semana {{ qr.semana }}">
+            <img src="{{ url_for('qr.imagem_qr', codigo=qr.codigo) }}" alt="QR Code com Frase da Semana {{ qr.semana }}">
         </div>
     </main>
 

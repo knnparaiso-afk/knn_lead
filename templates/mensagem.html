@@ -26,7 +26,7 @@ Mensagem Secreta | KNN
             {{ erro }}
         </p>
 
-        <a href="{{ url_for('index') }}" class="btn">
+        <a href="{{ url_for('public.index') }}" class="btn">
             Voltar
         </a>
 
@@ -38,7 +38,7 @@ Mensagem Secreta | KNN
 
 <section class="experience-shell" id="frame-1">
     <header class="experience-header">
-        <a class="wordmark" href="{{ url_for('index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a>
+        <a class="wordmark" href="{{ url_for('public.index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a>
         <span class="mission-tag">MISSÃO {{ '%02d'|format(qr.semana) }}</span>
     </header>
 
@@ -68,7 +68,7 @@ Mensagem Secreta | KNN
 
 <section class="experience-shell" id="frame-2" style="display: none;">
     <header class="experience-header">
-        <a class="wordmark" href="{{ url_for('index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a>
+        <a class="wordmark" href="{{ url_for('public.index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a>
         <span class="mission-tag">SEMANA {{ '%02d'|format(qr.semana) }}</span>
     </header>
 
@@ -551,7 +551,7 @@ Mensagem Secreta | KNN
                 formData.append("resposta", letra);
 
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-                const response = await fetch("{{ url_for('responder_desafio', codigo=qr.codigo) }}", {
+                const response = await fetch("{{ url_for('public.responder_desafio', codigo=qr.codigo) }}", {
                     method: "POST",
                     headers: { "X-CSRFToken": csrfToken || "" },
                     body: formData,

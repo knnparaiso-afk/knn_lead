@@ -28,7 +28,7 @@
 <!-- FRAME 1 - Discovery Screen -->
 <section class="experience-shell hw-shell" id="frame-1">
     <header class="hw-header">
-        <a class="hw-brand" href="{{ url_for('index') }}">
+        <a class="hw-brand" href="{{ url_for('public.index') }}">
             <strong class="hw-brand-knn">KNN</strong>
             <span class="hw-brand-hw">HALLOWEEN</span>
         </a>
@@ -60,7 +60,7 @@
 <!-- FRAME 2 - Challenge Screen -->
 <section class="experience-shell hw-shell" id="frame-2" style="display: none;">
     <header class="hw-header">
-        <a class="hw-brand" href="{{ url_for('index') }}">
+        <a class="hw-brand" href="{{ url_for('public.index') }}">
             <strong class="hw-brand-knn">KNN</strong>
             <span class="hw-brand-hw">HALLOWEEN</span>
         </a>
@@ -771,7 +771,7 @@ body.halloween-theme {
                 formData.append("resposta", letra);
 
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-                const response = await fetch("{{ url_for('responder_desafio', codigo=codigo) }}", {
+                const response = await fetch("{{ url_for('public.responder_desafio', codigo=codigo) }}", {
                     method: "POST",
                     headers: { "X-CSRFToken": csrfToken || "" },
                     body: formData,

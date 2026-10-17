@@ -116,7 +116,7 @@ English Pass | Inglês Secreto
 
                     {% if premio.status != 'utilizado' %}
 
-                    <form method="POST" action="{{ url_for('utilizar_premio', premio_id=premio.id) }}">
+                    <form method="POST" action="{{ url_for('reports.utilizar_premio', premio_id=premio.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                         <button type="submit" class="table-button">

@@ -17,7 +17,7 @@ Campanhas | Inglês Secreto
 
     </div>
 
-    <a href="{{ url_for('nova_campanha') }}" class="btn btn-primary">
+    <a href="{{ url_for('campaigns.nova_campanha') }}" class="btn btn-primary">
         + NOVA CAMPANHA
     </a>
 
@@ -112,15 +112,15 @@ Campanhas | Inglês Secreto
 
                 <td>
 
-                    <a href="{{ url_for('editar_campanha', campanha_id=campanha.id) }}" class="table-link">
+                    <a href="{{ url_for('campaigns.editar_campanha', campanha_id=campanha.id) }}" class="table-link">
                         Editar
                     </a>
 
-                    <a href="{{ url_for('gerenciar_qr', campanha_id=campanha.id) }}" class="btn btn-primary">
+                    <a href="{{ url_for('qr.gerenciar_qr', campanha_id=campanha.id) }}" class="btn btn-primary">
                         GERAR QR CODE
                     </a>
 
-                    <form method="POST" action="{{ url_for('excluir_campanha', campanha_id=campanha.id) }}" style="display: inline-block;" onsubmit="return confirm('Tem certeza que deseja excluir esta campanha e todos os seus QR Codes?');">
+                    <form method="POST" action="{{ url_for('campaigns.excluir_campanha', campanha_id=campanha.id) }}" style="display: inline-block;" onsubmit="return confirm('Tem certeza que deseja excluir esta campanha e todos os seus QR Codes?');">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-danger" style="padding: 6px 12px; min-height: 34px; font-size: 10px;">EXCLUIR</button>
                     </form>

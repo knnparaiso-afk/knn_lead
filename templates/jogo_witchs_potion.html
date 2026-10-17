@@ -16,7 +16,7 @@
 
     <!-- TOP HEADER COMPACTO (FIXO NO TOPO ABSOLUTO) -->
     <header class="wp-topbar">
-        <a class="wp-brand" href="{{ url_for('index') }}">
+        <a class="wp-brand" href="{{ url_for('public.index') }}">
             <strong class="wp-brand-knn">KNN</strong>
             <span class="wp-brand-hw">WITCH'S POTION</span>
         </a>
@@ -151,8 +151,8 @@
         cauldronUrl: "{{ url_for('static', filename='models/cauldron.glb') | v }}",
         ingredientsBaseUrl: "{{ url_for('static', filename='models/ingredients/') }}",
         backgroundUrl: "{{ url_for('static', filename='images/witch-forest-background.webp') | v }}",
-        participarUrl: "{{ url_for('participar', codigo=codigo) }}",
-        responderUrl: "{{ url_for('responder_desafio', codigo=codigo) }}",
+        participarUrl: "{{ url_for('public.participar', codigo=codigo) }}",
+        responderUrl: "{{ url_for('public.responder_desafio', codigo=codigo) }}",
         hasCustomCauldron: true,
         installedGlbIngredients: [
             "magic_mushrooms", "spell_book", "blue_potion", "green_potion",

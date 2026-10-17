@@ -90,3 +90,14 @@ Verifique também `SECRET_KEY` e `ADMIN_PASSWORD` no Render. Use uma chave aleat
 6. Confira no navegador os cabeçalhos de segurança e o atributo `Secure` do cookie em HTTPS.
 
 As novas tabelas `registros_consentimento` e `rate_limit_buckets` são criadas automaticamente ao iniciar a aplicação; não apagam nem reescrevem as tabelas existentes. Faça backup do PostgreSQL antes de publicar qualquer atualização.
+
+## Estrutura do código
+
+- `app.py`: ponto de entrada (`gunicorn app:app` continua válido).
+- `inglessecreto/__init__.py`: `create_app()` (configuração, CSRF, ProxyFix, blueprints).
+- `inglessecreto/security.py`: rate limit, limites de campo, cabeçalhos de segurança.
+- `inglessecreto/blueprints/`: `public`, `auth`, `reports`, `campaigns`, `locations`, `qr`, `models`.
+- `inglessecreto/services/`: regras de negócio (participantes/consentimentos, campanhas, arte do QR).
+- `tests/smoke_test.py`: teste de fumaça de todas as rotas (`python tests/smoke_test.py`, usa banco temporário).
+
+Nos templates, endpoints têm o prefixo do blueprint (ex.: `url_for('qr.gerar_qr', ...)`).
