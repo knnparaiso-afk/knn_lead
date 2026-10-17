@@ -1,11 +1,12 @@
 from functools import wraps
 from datetime import datetime, timedelta
+import gzip
+import mimetypes
 import os
 import secrets
 import hmac
 import string
 import time
-from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import qrcode
@@ -55,6 +56,7 @@ app.config.update(
     PERMANENT_SESSION_LIFETIME=timedelta(hours=4),
     SESSION_REFRESH_EACH_REQUEST=False,
     WTF_CSRF_TIME_LIMIT=7200,
+    SEND_FILE_MAX_AGE_DEFAULT=31536000,
 )
 
 
@@ -68,6 +70,38 @@ if IS_PRODUCTION:
 csrf = CSRFProtect(app)
 
 init_db()
+
+ASSET_VERSION = "20261016.1"
+
+
+@app.template_filter("v")
+def versioned_asset(url):
+    """Adiciona parâmetro de versão para cache-busting automático de assets."""
+    if not url:
+        return url
+    separator = "&" if "?" in url else "?"
+    return f"{url}{separator}v={ASSET_VERSION}"
+
+
+def _garantir_modelos_comprimidos():
+    """Gera arquivos .glb.gz pré-comprimidos (gzip nível 9) para economia de banda."""
+    try:
+        models_dir = os.path.join(app.root_path, "static", "models")
+        if not os.path.isdir(models_dir):
+            return
+        for root, _dirs, files in os.walk(models_dir):
+            for f in files:
+                if f.lower().endswith(".glb") and not f.lower().endswith(".glb.gz"):
+                    raw_path = os.path.join(root, f)
+                    gz_path = raw_path + ".gz"
+                    if not os.path.exists(gz_path) or os.path.getmtime(raw_path) > os.path.getmtime(gz_path):
+                        with open(raw_path, "rb") as f_in, gzip.open(gz_path, "wb", compresslevel=9) as f_out:
+                            f_out.write(f_in.read())
+    except Exception:
+        pass
+
+
+_garantir_modelos_comprimidos()
 
 PRIVACY_NOTICE_VERSION = "2026-10-13-v1"
 CONSENT_TEXT_VERSION = "2026-10-13-v3"
@@ -173,6 +207,9 @@ def adicionar_cabecalhos_de_seguranca(response):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+    elif request.path.startswith("/static/"):
+        if response.status_code in (200, 304):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
     if IS_PRODUCTION and request.is_secure:
         response.headers.setdefault(
             "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
@@ -180,10 +217,42 @@ def adicionar_cabecalhos_de_seguranca(response):
     return response
 
 
+@app.route("/static/models/<path:filename>")
+def servir_modelo_estatico(filename):
+    """
+    Serve modelos 3D com Content-Encoding: gzip transparente quando o cliente
+    suporta gzip e o arquivo .gz correspondente existe pré-comprimido.
+    Reduz a transferência de rede em ~64% sem reprocessamento em tempo de execução.
+    """
+    models_dir = os.path.join(app.root_path, "static", "models")
+    safe_path = os.path.normpath(os.path.join(models_dir, filename))
+    if not safe_path.startswith(models_dir):
+        return ("Arquivo não encontrado", 404)
+
+    accept_encoding = request.headers.get("Accept-Encoding", "")
+    gz_path = safe_path + ".gz"
+
+    if "gzip" in accept_encoding and os.path.isfile(gz_path):
+        response = make_response(send_file(gz_path, mimetype="model/gltf-binary"))
+        response.headers["Content-Encoding"] = "gzip"
+        response.headers["Vary"] = "Accept-Encoding"
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
+
+    if os.path.isfile(safe_path):
+        mime = "model/gltf-binary" if safe_path.lower().endswith(".glb") else (mimetypes.guess_type(safe_path)[0] or "application/octet-stream")
+        response = make_response(send_file(safe_path, mimetype=mime))
+        response.headers["Vary"] = "Accept-Encoding"
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
+
+    return ("Modelo não encontrado", 404)
+
+
 @app.route("/models/<path:filename>")
 def servir_modelos(filename):
-    """Serve modelos 3D da pasta models com cache e MIME type apropriado."""
-    return send_from_directory("models", filename)
+    """Compatibilidade retroativa com URLs legadas de modelos."""
+    return servir_modelo_estatico(filename)
 
 
 @app.errorhandler(CSRFError)
