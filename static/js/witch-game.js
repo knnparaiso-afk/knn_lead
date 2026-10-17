@@ -9,6 +9,7 @@
     const modelUrl = cfg.modelUrl || '/static/models/model.glb';
     const cauldronUrl = cfg.cauldronUrl || '/static/models/cauldron.glb';
     const ingredientsBaseUrl = cfg.ingredientsBaseUrl || '/static/models/ingredients/';
+    const sceneryBaseUrl = cfg.sceneryBaseUrl || '/static/models/scenery/';
     const participarUrl = cfg.participarUrl || '/participar';
     const responderUrl = cfg.responderUrl || '';
     const hasCustomCauldron = Boolean(cfg.hasCustomCauldron);
@@ -204,7 +205,6 @@
                     target: targetItem.id,
                     prefixEn: targetItem.prefixEn,
                     keywordEn: targetItem.name,
-                    keywordPt: targetItem.namePt,
                     distractors: [d1.id, d2.id]
                 });
             }
@@ -274,6 +274,7 @@
 
             this._setupLighting();
             this._buildEnvironment();
+            this._loadBackgroundScenery();
             this._buildCauldron();
             this._loadWitch();
 
@@ -373,6 +374,43 @@
                 leg.position.set(...p);
                 leg.castShadow = true;
                 this.scene.add(leg);
+            });
+        }
+
+        _loadBackgroundScenery() {
+            const loader = new THREE.GLTFLoader();
+            const items = [
+                { file: 'fence.glb', position: [0, 0, -2.92], size: 4.9 },
+                { file: 'tree_001.glb', position: [-2.05, 0, -2.7], size: 2.4, rotationY: 0.28 },
+                { file: 'tree_001.glb', position: [2.12, 0, -2.82], size: 1.9, rotationY: -0.42 },
+                { file: 'pumpkin.glb', position: [-1.32, 0, -1.7], size: 0.38, rotationY: 0.24 },
+                { file: 'pumpkin.glb', position: [1.5, 0, -1.75], size: 0.31, rotationY: -0.35 }
+            ];
+
+            items.forEach(({ file, position, size, rotationY = 0 }) => {
+                loader.load(`${sceneryBaseUrl}${file}`, (gltf) => {
+                    const model = gltf.scene;
+                    const box = new THREE.Box3().setFromObject(model);
+                    const dimensions = box.getSize(new THREE.Vector3());
+                    const maxDimension = Math.max(dimensions.x, dimensions.y, dimensions.z);
+                    if (!maxDimension) return;
+
+                    const scale = size / maxDimension;
+                    model.scale.setScalar(scale);
+                    model.position.set(
+                        position[0] - (box.min.x + dimensions.x / 2) * scale,
+                        position[1] - box.min.y * scale,
+                        position[2] - (box.min.z + dimensions.z / 2) * scale
+                    );
+                    model.rotation.y = rotationY;
+                    model.traverse(node => {
+                        if (node.isMesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                        }
+                    });
+                    this.scene.add(model);
+                }, undefined, () => {});
             });
         }
 
@@ -1082,9 +1120,6 @@
 
             const enEl = document.getElementById('task-text-en');
             if (enEl) enEl.innerHTML = `${task.prefixEn} <span class="hud-keyword">${task.keywordEn}</span>!`;
-
-            const ptEl = document.getElementById('task-text-pt');
-            if (ptEl) ptEl.innerHTML = `Na mesa, procure: <strong id="task-keyword-pt">${task.keywordPt}</strong>`;
 
             this.hideToast();
 

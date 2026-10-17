@@ -49,9 +49,6 @@
                     <div class="hud-en-line" id="task-text-en">
                         Pick the <span class="hud-keyword">Magic Mushrooms</span>!
                     </div>
-                    <div class="hud-pt-line" id="task-text-pt">
-                        Na mesa, procure: <strong>Cogumelos Mágicos</strong>
-                    </div>
                 </div>
             </div>
         </div>
@@ -153,6 +150,7 @@
         modelUrl: "{{ url_for('static', filename='models/model.glb') | v }}",
         cauldronUrl: "{{ url_for('static', filename='models/cauldron.glb') | v }}",
         ingredientsBaseUrl: "{{ url_for('static', filename='models/ingredients/') }}",
+        sceneryBaseUrl: "{{ url_for('static', filename='models/scenery/') }}",
         participarUrl: "{{ url_for('participar', codigo=codigo) }}",
         responderUrl: "{{ url_for('responder_desafio', codigo=codigo) }}",
         hasCustomCauldron: true,
