@@ -586,23 +586,9 @@
             return new THREE.Mesh(geo, mat);
         }
 
-        _buildIngredientModel(id) {
-            if (window.WitchIngredientModels) {
-                const model = window.WitchIngredientModels.create(id);
-                if (model) return model;
-            }
-            // Fallback genérico caso ingredient-models.js não tenha carregado
-            const fallbackGroup = new THREE.Group();
-            const crystalMat = new THREE.MeshStandardMaterial({ color: 0xa855f7, roughness: 0.3 });
-            const crystal = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.22, 5), crystalMat);
-            crystal.position.y = 0.11;
-            fallbackGroup.add(crystal);
-            return fallbackGroup;
-        }
-
         /**
-         * Instanciação sob demanda (Lazy Loading) do ingrediente.
-         * Só aloca memória, malhas e texturas quando o ingrediente for realmente necessário na rodada.
+         * Constrói um ingrediente já com o GLB pré-carregado (via this.glbCache).
+         * Sem modelo procedural — o GLB é sempre a fonte única da geometria.
          */
         getOrCreateIngredient(id) {
             if (this.ingredients[id]) return this.ingredients[id];
@@ -629,14 +615,43 @@
             plate.receiveShadow = true;
             grp.add(plate);
 
-            const procModel = this._buildIngredientModel(item.id);
-            if (procModel) {
-                procModel.position.y = 0.025;
-                grp.add(procModel);
+            // Usa o GLB pré-carregado do cache (sem fallback procedural)
+            const cachedGltf = this.glbCache && this.glbCache[item.id];
+            if (cachedGltf) {
+                const m = cachedGltf.scene.clone();
+                const box = new THREE.Box3().setFromObject(m);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                if (maxDim > 0) {
+                    let targetDim = 0.30;
+                    if (item.id === 'magic_coin') targetDim = 0.22;
+                    else if (item.id === 'golden_key') targetDim = 0.26;
+                    else if (item.id === 'witch_staff') targetDim = 0.38;
+                    else if (item.id === 'treasure_chest' || item.id === 'magic_box' || item.id === 'wooden_lid') targetDim = 0.32;
+                    else if (item.id === 'mini_cauldron') targetDim = 0.28;
+                    else if (item.id === 'ancient_scroll' || item.id === 'spell_book') targetDim = 0.30;
+                    else if (item.id.includes('potion') || item.id === 'magic_vial') targetDim = 0.28;
+
+                    const s = targetDim / maxDim;
+                    m.scale.set(s, s, s);
+                    m.position.x = -center.x * s;
+                    m.position.y = 0.025 - box.min.y * s;
+                    m.position.z = -center.z * s;
+
+                    if (item.id === 'witch_staff') m.rotation.z = Math.PI / 8;
+                }
+                m.traverse(node => {
+                    if (node.isMesh) {
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                        node.userData.ingredientId = item.id;
+                        grp.userData.hitMeshList.push(node);
+                    }
+                });
+                grp.add(m);
             }
 
-            // As placas físicas da mesa ajudam o jogador a relacionar o vocabulário
-            // em inglês da missão com o objeto identificado em português.
             const labelMesh = this._createWoodLabel(item.namePt, item.icon);
             labelMesh.position.set(0, 0.02, 0.17);
             labelMesh.rotation.x = -Math.PI / 4;
@@ -648,60 +663,7 @@
             hitBox.position.y = 0.25;
             hitBox.userData = { ingredientId: item.id };
             grp.add(hitBox);
-
             grp.userData.hitMeshList.push(hitBox);
-            grp.traverse(child => {
-                if (child.isMesh) {
-                    child.userData.ingredientId = item.id;
-                    grp.userData.hitMeshList.push(child);
-                }
-            });
-
-            if (installedGlbIngredients.includes(item.id)) {
-                const ingLoader = new THREE.GLTFLoader();
-                ingLoader.load(
-                    `${ingredientsBaseUrl}${item.id}.glb`,
-                    (gltf) => {
-                        const m = gltf.scene;
-                        const box = new THREE.Box3().setFromObject(m);
-                        const size = box.getSize(new THREE.Vector3());
-                        const center = box.getCenter(new THREE.Vector3());
-                        const maxDim = Math.max(size.x, size.y, size.z);
-                        if (maxDim > 0) {
-                            let targetDim = 0.30;
-                            if (item.id === 'magic_coin') targetDim = 0.22;
-                            else if (item.id === 'golden_key') targetDim = 0.26;
-                            else if (item.id === 'witch_staff') targetDim = 0.38;
-                            else if (item.id === 'treasure_chest' || item.id === 'magic_box' || item.id === 'wooden_lid') targetDim = 0.32;
-                            else if (item.id === 'mini_cauldron') targetDim = 0.28;
-                            else if (item.id === 'ancient_scroll' || item.id === 'spell_book') targetDim = 0.30;
-                            else if (item.id.includes('potion') || item.id === 'magic_vial') targetDim = 0.28;
-
-                            const s = targetDim / maxDim;
-                            m.scale.set(s, s, s);
-                            m.position.x = -center.x * s;
-                            m.position.y = 0.025 - box.min.y * s;
-                            m.position.z = -center.z * s;
-
-                            if (item.id === 'witch_staff') {
-                                m.rotation.z = Math.PI / 8;
-                            }
-                        }
-                        m.traverse(node => {
-                            if (node.isMesh) {
-                                node.castShadow = true;
-                                node.receiveShadow = true;
-                                node.userData.ingredientId = item.id;
-                                grp.userData.hitMeshList.push(node);
-                            }
-                        });
-                        if (procModel) procModel.visible = false;
-                        grp.add(m);
-                    },
-                    undefined,
-                    () => {}
-                );
-            }
 
             grp.visible = false;
             grp.scale.set(0.0001, 0.0001, 0.0001);
@@ -711,54 +673,89 @@
             return grp;
         }
 
+        /**
+         * Pré-carrega a bruxa E todos os GLBs de ingredientes durante a loading screen.
+         * Só libera o jogo quando tudo estiver em cache — zero flash ao spawnar.
+         */
         _loadWitch() {
             const bar = document.getElementById('loading-bar');
-            const loader = new THREE.GLTFLoader();
+            const st = document.getElementById('loading-status');
+            this.glbCache = {};
 
-            loader.load(
+            const glbIds = installedGlbIngredients.length > 0
+                ? installedGlbIngredients
+                : INGREDIENTS_DATABASE.map(i => i.id);
+
+            // Total de assets: 1 bruxa + N ingredientes
+            const total = 1 + glbIds.length;
+            let loaded = 0;
+
+            const onOneLoaded = () => {
+                loaded++;
+                if (bar) bar.style.width = Math.round((loaded / total) * 95) + '%';
+            };
+
+            const tryFinish = () => {
+                if (loaded < total) return;
+                if (bar) bar.style.width = '100%';
+                setTimeout(() => {
+                    const overlay = document.getElementById('loading-overlay');
+                    if (overlay) {
+                        overlay.style.opacity = '0';
+                        setTimeout(() => overlay.style.display = 'none', 500);
+                    }
+                    this.isReady = true;
+                }, 350);
+            };
+
+            // 1. Carrega a bruxa
+            const witchLoader = new THREE.GLTFLoader();
+            witchLoader.load(
                 modelUrl,
                 (gltf) => {
                     const model = gltf.scene;
-
                     model.scale.set(0.92, 0.92, 0.92);
                     model.position.set(-0.42, 0, -0.32);
                     model.rotation.y = 0.35;
-
                     model.traverse(node => {
-                        if (node.isMesh) {
-                            node.castShadow = true;
-                            node.receiveShadow = true;
-                        }
+                        if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; }
                     });
-
                     this.scene.add(model);
-
                     if (window.WitchReactions) {
                         this.witch = new window.WitchReactions();
                         this.witch.init(gltf);
                     }
-
-                    if (bar) bar.style.width = '100%';
-                    setTimeout(() => {
-                        const overlay = document.getElementById('loading-overlay');
-                        if (overlay) {
-                            overlay.style.opacity = '0';
-                            setTimeout(() => overlay.style.display = 'none', 500);
-                        }
-                        this.isReady = true;
-                    }, 350);
+                    onOneLoaded();
+                    tryFinish();
                 },
-                (xhr) => {
-                    if (xhr.lengthComputable && bar) {
-                        bar.style.width = Math.round((xhr.loaded / xhr.total) * 90) + '%';
-                    }
-                },
+                undefined,
                 (err) => {
                     console.error("Erro ao carregar bruxa:", err);
-                    const st = document.getElementById('loading-status');
                     if (st) st.textContent = "Erro ao carregar modelo 3D.";
+                    onOneLoaded();
+                    tryFinish();
                 }
             );
+
+            // 2. Pré-carrega todos os GLBs de ingredientes em paralelo
+            if (st) st.textContent = 'Preparando ingredientes mágicos...';
+            glbIds.forEach((id) => {
+                const ingLoader = new THREE.GLTFLoader();
+                ingLoader.load(
+                    `${ingredientsBaseUrl}${id}.glb`,
+                    (gltf) => {
+                        this.glbCache[id] = gltf;
+                        onOneLoaded();
+                        tryFinish();
+                    },
+                    undefined,
+                    () => {
+                        // Falha silenciosa: ingrediente simplesmente não aparecerá
+                        onOneLoaded();
+                        tryFinish();
+                    }
+                );
+            });
         }
 
         onPointer(clientX, clientY) {
