@@ -71,7 +71,7 @@ csrf = CSRFProtect(app)
 
 init_db()
 
-ASSET_VERSION = "20261016.5"
+ASSET_VERSION = "20261016.6"
 
 
 @app.template_filter("v")

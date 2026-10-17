@@ -70,6 +70,29 @@
 /* Cadastro */
 .lead-intro { margin-bottom: 31px; }.lead-form { padding: 26px; border: 1px solid var(--p-line); border-radius: 6px; background: #fff; }.field { margin-bottom: 18px; }.field label { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 700; }.field input { height: 52px; }.lead-grid { display: grid; grid-template-columns: .55fr 1fr; gap: 12px; }.consent { display: flex; align-items: flex-start; gap: 10px; margin: 4px 0 20px; color: var(--p-muted); font-size: 11px; line-height: 1.48; }.consent input { width: 16px; height: 16px; margin-top: 1px; accent-color: var(--p-red); }.lead-submit { width: 100%; }.form-note { margin: 14px 0 0; color: #85817b; font-size: 10px; line-height: 1.45; text-align: center; }
 
+/* Cadastro temático de Halloween: mantém a hierarquia da campanha, com acabamento mágico discreto. */
+body.public-lead { min-height: 100vh; background: radial-gradient(circle at 50% -10%, #54228b 0, #241035 41%, #12091d 100%); color: #f8f5ff; }
+body.public-lead .lead-shell { position: relative; isolation: isolate; overflow: hidden; }
+body.public-lead .lead-shell::before { content: ""; position: fixed; z-index: -1; top: -105px; left: -105px; width: 275px; height: 275px; opacity: .48; background: repeating-conic-gradient(from -10deg at 100% 100%, rgba(227, 205, 255, .7) 0 1deg, transparent 1deg 30deg), repeating-radial-gradient(circle at 100% 100%, transparent 0 23px, rgba(227, 205, 255, .52) 24px 25px, transparent 26px 48px); pointer-events: none; }
+body.public-lead .lead-shell::after { content: "🕷"; position: fixed; z-index: -1; top: 21px; right: max(5vw, 22px); color: rgba(236, 222, 255, .66); font-size: 26px; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .35)); pointer-events: none; }
+body.public-lead .lead-shell > * { position: relative; z-index: 1; }
+body.public-lead .wordmark { color: #fff; }
+body.public-lead .wordmark span { border-color: rgba(255, 255, 255, .3); color: rgba(255, 255, 255, .75); }
+body.public-lead .mission-tag.is-unlocked { border-color: rgba(192, 132, 252, .55); background: rgba(88, 32, 132, .52); color: #eadcff; }
+body.public-lead .mission-progress span { background: rgba(255, 255, 255, .18); }
+body.public-lead .mission-progress span.active { background: linear-gradient(90deg, #f97316, #a855f7); }
+body.public-lead .lead-intro h1 { text-shadow: 0 3px 18px rgba(0, 0, 0, .3); }
+body.public-lead .lead-intro p { color: rgba(241, 233, 255, .78); }
+body.public-lead .lead-form { border-color: rgba(213, 180, 255, .3); border-radius: 14px; background: linear-gradient(145deg, rgba(36, 17, 57, .94), rgba(20, 10, 34, .96)); box-shadow: 0 20px 44px rgba(5, 2, 10, .42), inset 0 1px 0 rgba(255, 255, 255, .08); }
+body.public-lead .field label { color: #f4edff; }
+body.public-lead .field input { border-color: rgba(220, 197, 255, .26); border-radius: 8px; background: rgba(255, 255, 255, .08); color: #fff; }
+body.public-lead .field input::placeholder { color: rgba(238, 227, 255, .54); }
+body.public-lead .field input:focus { border-color: #c084fc; box-shadow: 0 0 0 3px rgba(192, 132, 252, .2); }
+body.public-lead .consent { color: rgba(235, 225, 249, .73); }
+body.public-lead .consent input { accent-color: #f97316; }
+body.public-lead .lead-submit { border-radius: 8px; background: linear-gradient(135deg, #e51b2b, #a21caf); box-shadow: 0 9px 20px rgba(102, 20, 129, .34); }
+body.public-lead .lead-submit:hover { background: linear-gradient(135deg, #fa2639, #b82cbe); }
+
 /* Confirmação */
 .success-shell { padding-top: 36px; text-align: center; }.success-shell .experience-header { margin-bottom: 60px; }.success-seal { display: grid; width: 66px; height: 66px; margin: 0 auto 25px; place-items: center; border-radius: 50%; background: var(--p-red); color: #fff; box-shadow: 0 10px 22px rgba(229,27,43,.2); font-size: 32px; font-weight: 700; }.success-copy { max-width: 390px; margin: 0 auto 29px; color: var(--p-muted); line-height: 1.6; }.journey-card { padding: 23px; border-radius: 6px; background: var(--p-ink); color: #fff; text-align: left; }.journey-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }.journey-top span { color: rgba(255,255,255,.6); font-size: 10px; font-weight: 700; letter-spacing: .1em; }.journey-top strong { color: #fff; font-size: 14px; }.journey-track { height: 7px; margin: 17px 0 13px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.18); }.journey-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--p-red); transition: width .8s ease; }.journey-card p { margin: 0; color: rgba(255,255,255,.68); font-size: 12px; line-height: 1.5; }.next-mission, .reward-callout { display: flex; gap: 13px; align-items: center; margin-top: 17px; padding: 18px; border: 1px solid var(--p-line); border-radius: 6px; text-align: left; }.next-mission { display: block; }.next-mission span { display: block; margin-bottom: 3px; color: var(--p-red); font-size: 10px; font-weight: 800; letter-spacing: .1em; }.next-mission strong { font-size: 14px; }.reward-callout > span { display: grid; width: 35px; height: 35px; place-items: center; border-radius: 50%; background: var(--p-red); color: #fff; }.reward-callout strong { font-size: 14px; }.reward-callout p { margin: 2px 0 0; color: var(--p-muted); font-size: 12px; }
 

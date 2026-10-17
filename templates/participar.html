@@ -23,8 +23,8 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <div class="field">
-            <label for="nome" class="sr-only">Nome</label>
-            <input id="nome" type="text" name="nome" maxlength="120" autocomplete="name" placeholder="Nome" required>
+            <label for="nome">Nome completo</label>
+            <input id="nome" type="text" name="nome" maxlength="120" autocomplete="name" placeholder="Digite seu nome completo" required>
         </div>
 
         <div class="field">
@@ -34,12 +34,12 @@
 
         <div class="lead-grid">
             <div class="field">
-                <label for="idade" class="sr-only">Idade</label>
-                <input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" placeholder="Idade" required>
+                <label for="idade">Idade</label>
+                <input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" placeholder="Ex.: 18" required>
             </div>
             <div class="field">
-                <label for="email" class="sr-only">E-mail</label>
-                <input id="email" type="email" name="email" maxlength="254" autocomplete="email" placeholder="example@gmail.com" required>
+                <label for="email">E-mail</label>
+                <input id="email" type="email" name="email" maxlength="254" autocomplete="email" placeholder="voce@email.com" required>
             </div>
         </div>
 
