@@ -1,15 +1,56 @@
 import gzip
+import hashlib
 import os
 
-ASSET_VERSION = "20261017.2"
+ASSET_VERSION = "20261017.5"  # fallback, só usado se o arquivo não for encontrado
+
+_cache_versoes = {}
+
+
+def _hash_arquivo(path):
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for bloco in iter(lambda: f.read(65536), b""):
+            h.update(bloco)
+    return h.hexdigest()
+
+
+def _versao_do_arquivo(url_path):
+    """Versão automática = hash do conteúdo. Muda sozinha quando o arquivo muda.
+    Para .css, inclui também as imagens de static/img (usadas via url() no CSS)."""
+    from flask import current_app
+
+    if url_path in _cache_versoes:
+        return _cache_versoes[url_path]
+    versao = ASSET_VERSION
+    try:
+        static_dir = current_app.static_folder
+        rel = url_path.split("/static/", 1)[1]
+        arquivo = os.path.join(static_dir, *rel.split("/"))
+        h = hashlib.md5(_hash_arquivo(arquivo).encode())
+        if arquivo.lower().endswith(".css"):
+            img_dir = os.path.join(static_dir, "img")
+            if os.path.isdir(img_dir):
+                for nome in sorted(os.listdir(img_dir)):
+                    caminho = os.path.join(img_dir, nome)
+                    if os.path.isfile(caminho):
+                        h.update(nome.encode())
+                        h.update(_hash_arquivo(caminho).encode())
+        versao = h.hexdigest()[:10]
+        _cache_versoes[url_path] = versao
+    except Exception:
+        pass
+    return versao
 
 
 def versioned_asset(url):
-    """Adiciona parâmetro de versão para cache-busting de assets."""
+    """Adiciona ?v=<hash do arquivo> para cache-busting automático de assets."""
     if not url:
         return url
+    path_only = url.split("?", 1)[0]
+    versao = _versao_do_arquivo(path_only) if "/static/" in path_only else ASSET_VERSION
     separator = "&" if "?" in url else "?"
-    return f"{url}{separator}v={ASSET_VERSION}"
+    return f"{url}{separator}v={versao}"
 
 
 def garantir_modelos_comprimidos(app):

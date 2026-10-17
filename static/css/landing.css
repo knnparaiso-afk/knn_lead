@@ -43,6 +43,10 @@ footer{background:var(--ink);color:#cfc9e6;padding:40px 0;font-size:.9rem}footer
 .hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:380px;z-index:0;pointer-events:none;background:url("../img/hero-knn.webp") 50% 55%/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0,rgba(0,0,0,.08) 12%,rgba(0,0,0,.25) 28%,rgba(0,0,0,.5) 46%,rgba(0,0,0,.78) 66%,#000 88%);mask-image:linear-gradient(to bottom,transparent 0,rgba(0,0,0,.08) 12%,rgba(0,0,0,.25) 28%,rgba(0,0,0,.5) 46%,rgba(0,0,0,.78) 66%,#000 88%)}
 .hero h1,.hero p{text-shadow:0 2px 14px rgba(30,23,64,.35)}
 @media(max-width:1023px){.hero{padding-bottom:340px}}
+/* ===== FOTO DA CAMPANHA: mesma lógica do hero ===== */
+.camp{position:relative;overflow:hidden}.camp>.wrap{position:relative;z-index:1}
+.camp::after{content:"";position:absolute;left:0;right:0;bottom:0;height:400px;z-index:0;pointer-events:none;background:url("../img/camp-halloween.webp") 40% 100%/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0,rgba(0,0,0,.08) 12%,rgba(0,0,0,.25) 28%,rgba(0,0,0,.5) 46%,rgba(0,0,0,.78) 66%,#000 88%);mask-image:linear-gradient(to bottom,transparent 0,rgba(0,0,0,.08) 12%,rgba(0,0,0,.25) 28%,rgba(0,0,0,.5) 46%,rgba(0,0,0,.78) 66%,#000 88%)}
+@media(max-width:1023px){.camp{padding-bottom:calc(clamp(400px,62vw,560px) - 20px);clip-path:polygon(0 0,100% 80px,100% 100%,0 calc(100% - 80px))}.camp::after{height:clamp(400px,62vw,560px);background-position:40% 100%}}
 /* ===== PORT DESKTOP (>=1024px): mesma identidade do mobile, só escala e alinhamento. Não afeta <1024px ===== */
 @media(min-width:1024px){
 body{font-size:18px}
@@ -60,4 +64,6 @@ h1{font-size:clamp(3.8rem,5vw,5rem)}h2{font-size:clamp(2.3rem,3vw,2.9rem)}h3{fon
 details{padding:22px 0}summary{font-size:1.1rem}
 .final{padding:120px 0}footer{padding:56px 0}
 .hero::after{left:auto;top:0;height:auto;width:58%;background-position:50% 58%;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.08) 12%,rgba(0,0,0,.25) 28%,rgba(0,0,0,.5) 46%,rgba(0,0,0,.78) 66%,#000 88%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.08) 12%,rgba(0,0,0,.25) 28%,rgba(0,0,0,.5) 46%,rgba(0,0,0,.78) 66%,#000 88%)}
+.camp::after{left:auto;right:0;top:0;height:auto;width:53%;transform:translateX(20%);opacity:.92;background-position:30% 100%;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 16%,rgba(0,0,0,.12) 30%,rgba(0,0,0,.28) 46%,rgba(0,0,0,.52) 62%,rgba(0,0,0,.78) 80%,#000 96%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 16%,rgba(0,0,0,.12) 30%,rgba(0,0,0,.28) 46%,rgba(0,0,0,.52) 62%,rgba(0,0,0,.78) 80%,#000 96%)}
+.camp .steps li{background:rgba(30,23,64,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 }
