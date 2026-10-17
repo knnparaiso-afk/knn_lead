@@ -55,7 +55,7 @@ if ENGLISH_PASS_REQUIRED < 1:
 # Informações da unidade KNN
 UNIDADE = {
     "nome": "KNN Paraisópolis",
-    "whatsapp": os.getenv("UNIDADE_WHATSAPP", "5535997239131").strip(),
+    "whatsapp": os.getenv("UNIDADE_WHATSAPP", "553597239143").strip(),
     "endereco": "Rua Duque de Caxias, 684 - Centro, Paraisópolis - MG, CEP 37660-000",
     "maps": "https://www.google.com/maps/search/?api=1&query=KNN+Idiomas+Rua+Duque+de+Caxias+684+Paraisopolis+MG",
     "instagram": "https://www.instagram.com/knnparaisopolis/",

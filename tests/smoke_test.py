@@ -19,7 +19,7 @@ def token(html): return re.search(r'name="csrf_token"[^>]*value="([^"]+)"', html
 
 r = c.get("/"); html_landing = r.get_data(as_text=True)
 check("GET /", r.status_code == 200 and "Fale inglês desde a primeira aula" in html_landing, r.status_code)
-check("landing tem whatsapp e fachada", "wa.me/5535997239131" in html_landing and "fachada.webp" in html_landing)
+check("landing tem whatsapp e fachada", "wa.me/553597239143" in html_landing and "fachada.webp" in html_landing)
 r_camp = c.get("/ingles-secreto"); html_camp = r_camp.get_data(as_text=True)
 check("GET /ingles-secreto", r_camp.status_code == 200 and "Inglês Secreto" in html_camp, r_camp.status_code)
 r_camp2 = c.get("/campanha")
