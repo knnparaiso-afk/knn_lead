@@ -180,9 +180,9 @@
         }
 
         const recipeMeta = [
-            { name: "Beginner's Brew", tag: "Recipe 1/3", steps: 2 },
-            { name: "Moonlight Mixture", tag: "Recipe 2/3", steps: 2 },
-            { name: "Dragon's Flame", tag: "Recipe 3/3", steps: 2 }
+            { name: "Poção Iniciante", tag: "Receita 1/3", steps: 2 },
+            { name: "Mistura ao Luar", tag: "Receita 2/3", steps: 2 },
+            { name: "Chama do Dragão", tag: "Receita 3/3", steps: 2 }
         ];
 
         const targetPool = catalog.slice(0, 6);
@@ -616,7 +616,9 @@
                 grp.add(procModel);
             }
 
-            const labelMesh = this._createWoodLabel(item.name, item.icon);
+            // As placas físicas da mesa ajudam o jogador a relacionar o vocabulário
+            // em inglês da missão com o objeto identificado em português.
+            const labelMesh = this._createWoodLabel(item.namePt, item.icon);
             labelMesh.position.set(0, 0.02, 0.17);
             labelMesh.rotation.x = -Math.PI / 4;
             grp.add(labelMesh);
@@ -1076,13 +1078,13 @@
             if (nameEl) nameEl.textContent = `📜 ${recipe.tag}: ${recipe.name}`;
 
             const stepEl = document.getElementById('hud-step-pill');
-            if (stepEl) stepEl.textContent = `Task ${this.taskIdx + 1}/${recipe.tasks.length}`;
+            if (stepEl) stepEl.textContent = `Etapa ${this.taskIdx + 1}/${recipe.tasks.length}`;
 
             const enEl = document.getElementById('task-text-en');
             if (enEl) enEl.innerHTML = `${task.prefixEn} <span class="hud-keyword">${task.keywordEn}</span>!`;
 
             const ptEl = document.getElementById('task-text-pt');
-            if (ptEl) ptEl.innerHTML = `👉 Toque no <strong id="task-keyword-pt">${task.keywordPt}</strong> na bancada`;
+            if (ptEl) ptEl.innerHTML = `Na mesa, procure: <strong id="task-keyword-pt">${task.keywordPt}</strong>`;
 
             this.hideToast();
 

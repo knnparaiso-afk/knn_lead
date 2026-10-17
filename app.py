@@ -1034,36 +1034,11 @@ def nova_campanha():
         )
         campanha_id = cursor.fetchone()["id"]
 
-        # Auto-gerar QR Code para a campanha
-        codigo_qr = gerar_codigo()
-
-        # Criar local genérico se não existir
-        local_generico = connection.execute(
-            "SELECT id FROM locais WHERE nome = 'Geral' LIMIT 1"
-        ).fetchone()
-        if not local_generico:
-            cursor_local = connection.execute(
-                "INSERT INTO locais (nome, endereco, parceiro) VALUES ('Geral', '', '') RETURNING id"
-            )
-            local_id = cursor_local.fetchone()["id"]
-        else:
-            local_id = local_generico["id"]
-
-        connection.execute(
-            "INSERT INTO qr_codes (codigo, campanha_id, local_id) VALUES (?, ?, ?)",
-            (codigo_qr, campanha_id, local_id)
-        )
-
         connection.commit()
         connection.close()
 
-        # Gerar arte do QR Code
-        campanha_dict = {"semana": semana, "frase": f"CAMPANHA: {nome}", "nome": nome}
-        local_dict = {"nome": "QR Code Principal", "parceiro": None}
-        gerar_arte_qrcode(codigo_qr, campanha_dict, local_dict)
-
-        flash("Campanha criada com sucesso! QR Code gerado automaticamente.", "success")
-        return redirect(url_for("campanhas"))
+        flash("Campanha criada! Agora selecione um local cadastrado para gerar o QR Code.", "success")
+        return redirect(url_for("gerenciar_qr", campanha_id=campanha_id))
 
     categoria_default = "frases"
     return render_template(

@@ -129,12 +129,12 @@
     }
 
     .hud-challenge-card {
-        background: linear-gradient(135deg, rgba(22, 14, 38, 0.94) 0%, rgba(13, 8, 24, 0.96) 100%);
+        background: linear-gradient(135deg, rgba(33, 20, 57, 0.96) 0%, rgba(13, 8, 24, 0.98) 100%);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
         border: 1.5px solid rgba(168, 85, 247, 0.5);
         border-radius: 16px;
-        padding: 8px 14px 10px;
+        padding: 10px 14px 12px;
         max-width: 440px;
         margin: 0 auto;
         width: 100%;
@@ -224,7 +224,7 @@
 
     .hud-en-line {
         font-family: "Barlow Condensed", Impact, sans-serif;
-        font-size: 21px;
+        font-size: 22px;
         font-weight: 900;
         line-height: 1.1;
         color: #ffffff;
@@ -243,14 +243,19 @@
     }
 
     .hud-pt-line {
+        align-self: flex-start;
+        margin-top: 7px;
+        padding: 4px 8px;
+        border-radius: 7px;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #e4e4e7;
         font-size: 12px;
-        color: #d4d4d8;
-        margin-top: 3px;
-        line-height: 1.2;
+        line-height: 1.3;
     }
 
     .hud-pt-line strong {
-        color: #fbbf24;
+        color: #fcd34d;
         font-weight: 800;
     }
 
@@ -471,21 +476,35 @@
         margin: 0 0 16px;
     }
 
-    .intro-recipes-summary {
+    .intro-how-to {
         display: flex;
         justify-content: center;
-        gap: 6px;
+        gap: 7px;
         margin-bottom: 20px;
-        font-size: 10.5px;
-        color: #d4d4d8;
+        font-size: 10px;
+        color: #e4e4e7;
         font-weight: 700;
     }
 
-    .intro-recipes-summary span {
-        background: rgba(255, 255, 255, 0.06);
-        padding: 5px 8px;
+    .intro-how-to span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(255, 255, 255, 0.07);
+        padding: 6px 8px;
         border-radius: 6px;
         border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .intro-how-to b {
+        display: grid;
+        width: 16px;
+        height: 16px;
+        place-items: center;
+        border-radius: 50%;
+        background: #7c3aed;
+        color: #fff;
+        font-size: 9px;
     }
 
     .btn-witch-glow {
