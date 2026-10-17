@@ -79,7 +79,7 @@
       <p>{% for h in u.horario %}{{ h }}{% if not loop.last %}<br>{% endif %}{% endfor %}</p>
       <p class="actions">
         <a class="btn" href="{{ wa }}{{ msg_aula }}">Chamar no WhatsApp</a>
-        <a class="btn btn-line" href="tel:{{ u.telefone_tel }}">Ligar {{ u.telefone }}</a>
+        {% if u.telefone %}<a class="btn btn-line" href="tel:{{ u.telefone_tel }}">Ligar {{ u.telefone }}</a>{% endif %}
         <a class="btn btn-line" href="{{ u.maps }}" target="_blank" rel="noopener noreferrer">Como chegar</a>
         <a class="btn btn-line" href="{{ u.instagram }}" target="_blank" rel="noopener noreferrer">Instagram</a>
       </p>

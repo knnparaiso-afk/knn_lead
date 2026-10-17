@@ -56,8 +56,6 @@ if ENGLISH_PASS_REQUIRED < 1:
 UNIDADE = {
     "nome": "KNN Paraisópolis",
     "whatsapp": os.getenv("UNIDADE_WHATSAPP", "5535997239131").strip(),
-    "telefone": "(35) 3651-3133",
-    "telefone_tel": "+553536513133",
     "endereco": "Rua Duque de Caxias, 684 - Centro, Paraisópolis - MG, CEP 37660-000",
     "maps": "https://www.google.com/maps/search/?api=1&query=KNN+Idiomas+Rua+Duque+de+Caxias+684+Paraisopolis+MG",
     "instagram": "https://www.instagram.com/knnparaisopolis/",
