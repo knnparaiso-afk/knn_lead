@@ -6,7 +6,7 @@ from flask import (Blueprint, flash, jsonify, make_response, redirect,
 from database import get_connection
 from desafios import sortear_desafio, obter_desafio_por_id
 
-from config import ENGLISH_PASS_REQUIRED
+from config import ENGLISH_PASS_REQUIRED, UNIDADE
 from ..security import permitir_requisicao
 from ..services.participants import (criar_pass_se_necessario,
                                      salvar_participacao, validar_formulario,
@@ -17,14 +17,26 @@ from ..utils import hoje_brasilia
 bp = Blueprint("public", __name__)
 
 
-@bp.route("/")
-def index():
+def _campanha_ativa():
     connection = get_connection()
     campanha = connection.execute(
         "SELECT * FROM campanhas WHERE ativa = 1 ORDER BY id DESC LIMIT 1"
     ).fetchone()
     connection.close()
-    return render_template("index.html", campanha=campanha)
+    return campanha
+
+
+@bp.route("/")
+def index():
+    """Landing completa da escola."""
+    return render_template("landing.html", campanha=_campanha_ativa(), u=UNIDADE)
+
+
+@bp.route("/ingles-secreto")
+@bp.route("/campanha")
+def campanha():
+    """Página da campanha (Halloween)."""
+    return render_template("campanha.html", campanha=_campanha_ativa(), u=UNIDADE)
 
 
 @bp.route("/e/<codigo>")
@@ -269,7 +281,7 @@ def conquista():
         contato_autorizado=contato_autorizado,
         novo_registro=novo_registro,
         local_nome=local_nome,
-        instagram_url="https://www.instagram.com/knnparaisopolis/",
+        instagram_url=UNIDADE.get("instagram", "https://www.instagram.com/knnparaisopolis/"),
     )
 
 

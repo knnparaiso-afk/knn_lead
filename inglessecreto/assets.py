@@ -1,7 +1,7 @@
 import gzip
 import os
 
-ASSET_VERSION = "20261016.6"
+ASSET_VERSION = "20261017.1"
 
 
 def versioned_asset(url):

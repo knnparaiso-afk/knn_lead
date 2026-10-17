@@ -52,13 +52,27 @@ if ENGLISH_PASS_REQUIRED < 1:
     raise RuntimeError("ENGLISH_PASS_REQUIRED precisa ser pelo menos 1.")
 
 
+# Informações da unidade KNN
+UNIDADE = {
+    "nome": "KNN Paraisópolis",
+    "whatsapp": os.getenv("UNIDADE_WHATSAPP", "5535997239131").strip(),
+    "telefone": "(35) 3651-3133",
+    "telefone_tel": "+553536513133",
+    "endereco": "Rua Duque de Caxias, 684 - Centro, Paraisópolis - MG, CEP 37660-000",
+    "maps": "https://www.google.com/maps/search/?api=1&query=KNN+Idiomas+Rua+Duque+de+Caxias+684+Paraisopolis+MG",
+    "instagram": "https://www.instagram.com/knnparaisopolis/",
+    "horario": ["Segunda a sexta, das 8h às 21h", "Sábado, das 8h às 12h"],
+    "razao_social": "Alfredo Ferreira Ribeiro e Cia LTDA",
+    "cnpj": "00.468.416/0001-39",
+}
+
 # Preencha estas variáveis no Render com os dados reais da empresa/franqueada
 # controladora e seu canal de privacidade antes da divulgação pública.
 PRIVACY_CONTROLLER_NAME = os.getenv(
-    "PRIVACY_CONTROLLER_NAME", "A informar pela unidade responsável"
+    "PRIVACY_CONTROLLER_NAME", UNIDADE["razao_social"]
 ).strip()
 PRIVACY_CONTROLLER_CNPJ = os.getenv(
-    "PRIVACY_CONTROLLER_CNPJ", "A informar pela unidade responsável"
+    "PRIVACY_CONTROLLER_CNPJ", UNIDADE["cnpj"]
 ).strip()
 PRIVACY_CONTACT_EMAIL = os.getenv(
     "PRIVACY_CONTACT_EMAIL", "A informar pela unidade responsável"

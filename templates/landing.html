@@ -1,0 +1,114 @@
+{% extends "landing_base.html" %}
+{% set wa = "https://wa.me/" ~ u.whatsapp ~ "?text=" %}
+{% set msg_aula = "Olá! Vim pelo site da KNN Paraisópolis e quero agendar uma aula grátis."|urlencode %}
+{% set msg_camp = "Olá! Vim pela campanha Inglês Secreto e quero saber mais sobre a KNN."|urlencode %}
+{% block body %}
+<header class="top">
+  <a href="#inicio" class="logo"><img src="{{ url_for('static', filename='img/logo-knn.png') }}" alt="KNN Idiomas" width="82" height="42" style="height: 42px; width: auto; max-height: 42px; max-width: 140px; object-fit: contain; display: block;"></a>
+  <nav aria-label="Principal">
+    <a href="#metodo">Método</a><a href="#cursos">Cursos</a>
+    {% if campanha %}<a href="#campanha">Campanha</a>{% endif %}<a href="#unidade">Unidade</a>
+  </nav>
+  <a class="btn btn-sm" href="{{ wa }}{{ msg_aula }}">Aula grátis</a>
+</header>
+
+<main id="inicio">
+<section class="hero">
+  <div class="wrap">
+    <h1>Fale inglês desde a primeira aula</h1>
+    <p>Método criado para brasileiros, com foco na conversação e turmas reduzidas. Aqui em Paraisópolis.</p>
+    <div class="actions">
+      <a class="btn btn-light" href="{{ wa }}{{ msg_aula }}">Agendar aula grátis</a>
+      {% if campanha %}<a class="btn btn-ghost" href="{{ url_for('public.campanha') }}">Campanha de Halloween</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+{% if campanha %}
+<section class="camp" id="campanha">
+  <div class="wrap camp-grid">
+    <div>
+      <h2>Inglês Secreto: Halloween Edition</h2>
+      <p>Enigmas em inglês escondidos em estabelecimentos parceiros de Paraisópolis. Escaneie os QR Codes, decifre os desafios e concorra ao English Pass da KNN.</p>
+      <a class="btn" href="{{ url_for('public.campanha') }}">Ver como participar</a>
+    </div>
+    <ol class="steps">
+      <li><strong>Encontre</strong> os totens com QR Code nos parceiros.</li>
+      <li><strong>Decifre</strong> o enigma no seu celular.</li>
+      <li><strong>Concorra</strong> ao English Pass.</li>
+    </ol>
+  </div>
+</section>
+{% endif %}
+
+<section class="sec" id="metodo">
+  <div class="wrap">
+    <h2>Um método feito para quem fala português</h2>
+    <p class="lead">Você aprende falando, não decorando regras. A conversa começa já na primeira aula, de forma natural e progressiva.</p>
+    <div class="grid">
+      <article><h3>Foco na conversação</h3><p>Falar desde o primeiro dia, do jeito que aprendemos o português.</p></article>
+      <article><h3>Turmas reduzidas</h3><p>Mais espaço para você participar e ser ouvido.</p></article>
+      <article><h3>Ambiente acolhedor</h3><p>Errar faz parte. Aqui você se expressa sem medo.</p></article>
+      <article><h3>Professor próximo</h3><p>As aulas se adaptam às suas necessidades.</p></article>
+      <article><h3>Suporte completo</h3><p>Você não estuda sozinho: tem a escola e os colegas com você.</p></article>
+      <article><h3>Comunidade</h3><p>Pessoas com os mesmos objetivos, aprendendo juntas.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="sec alt" id="cursos">
+  <div class="wrap">
+    <h2>Cursos</h2>
+    <!-- PREENCHER: deixe só o que a unidade oferece -->
+    <div class="grid two">
+      <article><h3>Para adultos</h3><p>Inglês, Espanhol, Francês, Italiano e Alemão.</p></article>
+      <article><h3>KNN Kids</h3><p>Inglês e Espanhol para crianças.</p></article>
+      <article><h3>Intensivo de inglês</h3><p>Para quem quer avançar em menos tempo.</p></article>
+      <article><h3>Inglês para iniciantes</h3><p>Ponto de partida para quem nunca estudou.</p></article>
+    </div>
+    <p class="note">Consulte a disponibilidade de turmas pelo WhatsApp.</p>
+  </div>
+</section>
+
+<section class="sec" id="unidade">
+  <div class="wrap two-col">
+    <img class="photo" src="{{ url_for('static', filename='img/fachada.webp') }}" alt="Fachada da KNN Paraisópolis, na Rua Duque de Caxias" width="1370" height="900" loading="lazy">
+    <div>
+      <h2>{{ u.nome }}</h2>
+      <p>{{ u.endereco }}</p>
+      <p>{% for h in u.horario %}{{ h }}{% if not loop.last %}<br>{% endif %}{% endfor %}</p>
+      <p class="actions">
+        <a class="btn" href="{{ wa }}{{ msg_aula }}">Chamar no WhatsApp</a>
+        <a class="btn btn-line" href="tel:{{ u.telefone_tel }}">Ligar {{ u.telefone }}</a>
+        <a class="btn btn-line" href="{{ u.maps }}" target="_blank" rel="noopener noreferrer">Como chegar</a>
+        <a class="btn btn-line" href="{{ u.instagram }}" target="_blank" rel="noopener noreferrer">Instagram</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="sec alt" id="faq">
+  <div class="wrap narrow">
+    <h2>Perguntas frequentes</h2>
+    <details><summary>Preciso saber inglês para começar?</summary><p>Não. Existe o curso de inglês para iniciantes, e na aula grátis indicamos o melhor ponto de partida.</p></details>
+    <details><summary>Como funciona a aula grátis?</summary><p>Você agenda pelo WhatsApp e conhece a escola e o método na prática. Combinamos data e horário com você.</p></details>
+    <details><summary>Tem curso para crianças?</summary><p>Sim, o KNN Kids tem inglês e espanhol. Confirme a turma disponível pelo WhatsApp.</p></details>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>Pronto para começar a falar?</h2>
+    <a class="btn btn-light" href="{{ wa }}{{ msg_aula }}">Agendar aula grátis</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <img src="{{ url_for('static', filename='img/logo-knn-branco.png') }}" alt="KNN Idiomas" width="70" height="36" style="height: 36px; width: auto; max-height: 36px; max-width: 120px; object-fit: contain; display: block; margin-bottom: 12px;">
+    <p>{{ u.razao_social }} · CNPJ {{ u.cnpj }}<br>{{ u.endereco }}</p>
+    <p><a href="https://www.knnidiomas.com.br" rel="noopener">KNN Brasil</a></p>
+  </div>
+</footer>
+{% endblock %}
