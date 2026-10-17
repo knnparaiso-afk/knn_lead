@@ -150,26 +150,26 @@
     // 2. BANCO DE 20 INGREDIENTES E GERADOR DINÂMICO
     // ========================================================
     const INGREDIENTS_DATABASE = [
-        { id: "eye_of_newt", name: "Eye of Newt", namePt: "Olho de Salamandra", prefixEn: "Add the", icon: "👁️" },
-        { id: "green_bottle", name: "Green Bottle", namePt: "Frasco Verde", prefixEn: "Choose the", icon: "🧪" },
-        { id: "magic_spider", name: "Magic Spider", namePt: "Aranha Mágica", prefixEn: "Catch the", icon: "🕷️" },
-        { id: "glowing_mushroom", name: "Glowing Mushroom", namePt: "Cogumelo Brilhante", prefixEn: "Add the", icon: "🍄" },
-        { id: "purple_elixir", name: "Purple Elixir", namePt: "Elixir Roxo", prefixEn: "Pour the", icon: "🔮" },
-        { id: "dragon_tooth", name: "Dragon Tooth", namePt: "Dente de Dragão", prefixEn: "Drop the", icon: "💎" },
-        { id: "bat_wing", name: "Bat Wing", namePt: "Asa de Morcego", prefixEn: "Find the", icon: "🦇" },
-        { id: "poison_apple", name: "Poison Apple", namePt: "Maçã Envenenada", prefixEn: "Pick the", icon: "🍎" },
-        { id: "pumpkin_spice", name: "Pumpkin Spice", namePt: "Abóbora Mágica", prefixEn: "Add the", icon: "🎃" },
-        { id: "black_cat_fur", name: "Black Cat Fur", namePt: "Pelo de Gato Preto", prefixEn: "Find the", icon: "🐈‍⬛" },
-        { id: "raven_feather", name: "Raven Feather", namePt: "Pena de Corvo", prefixEn: "Choose the", icon: "🪶" },
-        { id: "crystal_shard", name: "Crystal Shard", namePt: "Cristal Mágico", prefixEn: "Select the", icon: "✨" },
+        { id: "magic_mushrooms", name: "Magic Mushrooms", namePt: "Cogumelos Mágicos", prefixEn: "Pick the", icon: "🍄" },
+        { id: "spell_book", name: "Spell Book", namePt: "Livro de Feitiços", prefixEn: "Open the", icon: "📖" },
+        { id: "blue_potion", name: "Blue Potion", namePt: "Poção Azul", prefixEn: "Pour the", icon: "🧪" },
+        { id: "green_potion", name: "Green Potion", namePt: "Poção Verde", prefixEn: "Pour the", icon: "🧪" },
+        { id: "red_potion", name: "Red Potion", namePt: "Poção Vermelha", prefixEn: "Pour the", icon: "🧪" },
+        { id: "magic_crystal", name: "Magic Crystal", namePt: "Cristal Mágico", prefixEn: "Drop the", icon: "💎" },
+        { id: "crystal_amulet", name: "Crystal Amulet", namePt: "Amuleto de Cristal", prefixEn: "Place the", icon: "🧿" },
+        { id: "ancient_scroll", name: "Ancient Scroll", namePt: "Pergaminho Antigo", prefixEn: "Read the", icon: "📜" },
+        { id: "mortar_pestle", name: "Mortar and Pestle", namePt: "Almofariz e Pilão", prefixEn: "Grind with the", icon: "🥣" },
+        { id: "ingredient_jar", name: "Ingredient Jar", namePt: "Pote de Ingredientes", prefixEn: "Open the", icon: "🫙" },
+        { id: "magic_pouch", name: "Magic Pouch", namePt: "Bolsa de Magia", prefixEn: "Empty the", icon: "👛" },
+        { id: "magic_vial", name: "Magic Vial", namePt: "Frasco Mágico", prefixEn: "Add the", icon: "⚗️" },
+        { id: "magic_candle", name: "Magic Candle", namePt: "Vela Mágica", prefixEn: "Light the", icon: "🕯️" },
+        { id: "witch_staff", name: "Witch Staff", namePt: "Cajado da Bruxa", prefixEn: "Wave the", icon: "🪄" },
         { id: "golden_key", name: "Golden Key", namePt: "Chave Dourada", prefixEn: "Turn the", icon: "🗝️" },
-        { id: "moon_dust", name: "Moon Dust", namePt: "Pó da Lua", prefixEn: "Sprinkle the", icon: "🌙" },
-        { id: "snake_venom", name: "Snake Venom", namePt: "Veneno de Cobra", prefixEn: "Pour the", icon: "🐍" },
-        { id: "vampire_fang", name: "Vampire Fang", namePt: "Presa de Vampiro", prefixEn: "Add the", icon: "🧛" },
-        { id: "golden_bone", name: "Golden Bone", namePt: "Osso Dourado", prefixEn: "Find the", icon: "🦴" },
-        { id: "stardust_vial", name: "Stardust Vial", namePt: "Poeira Estelar", prefixEn: "Mix the", icon: "⭐" },
-        { id: "magic_clover", name: "Magic Clover", namePt: "Trevo Mágico", prefixEn: "Find the", icon: "🍀" },
-        { id: "witch_candle", name: "Magic Candle", namePt: "Vela Mágica", prefixEn: "Light the", icon: "🕯️" }
+        { id: "magic_coin", name: "Magic Coin", namePt: "Moeda Mágica", prefixEn: "Toss the", icon: "🪙" },
+        { id: "treasure_chest", name: "Treasure Chest", namePt: "Baú do Tesouro", prefixEn: "Unlock the", icon: "📦" },
+        { id: "magic_box", name: "Magic Box", namePt: "Caixa Mágica", prefixEn: "Inspect the", icon: "📦" },
+        { id: "wooden_lid", name: "Wooden Lid", namePt: "Tampa de Madeira", prefixEn: "Lift the", icon: "🪵" },
+        { id: "mini_cauldron", name: "Mini Cauldron", namePt: "Mini Caldeirão", prefixEn: "Stir the", icon: "🫕" }
     ];
 
     function generateDynamicRecipes() {
@@ -469,7 +469,7 @@
                     roughness: 0.18
                 })
             );
-            this.cauldronLiquid.position.y = 0.80;
+            this.cauldronLiquid.position.y = 0.74;
             grp.add(this.cauldronLiquid);
 
             const bMat = new THREE.MeshStandardMaterial({
@@ -482,7 +482,7 @@
             for (let i = 0; i < 7; i++) {
                 const b = new THREE.Mesh(new THREE.SphereGeometry(0.028 + Math.random() * 0.032, 10, 8), bMat);
                 b.userData = {
-                    baseY: 0.80,
+                    baseY: 0.74,
                     speed: 0.35 + Math.random() * 0.55,
                     maxH: 0.30 + Math.random() * 0.25,
                     angle: Math.random() * Math.PI * 2,
@@ -647,15 +647,29 @@
                         const center = box.getCenter(new THREE.Vector3());
                         const maxDim = Math.max(size.x, size.y, size.z);
                         if (maxDim > 0) {
-                            const s = 0.30 / maxDim;
+                            let targetDim = 0.30;
+                            if (item.id === 'magic_coin') targetDim = 0.22;
+                            else if (item.id === 'golden_key') targetDim = 0.26;
+                            else if (item.id === 'witch_staff') targetDim = 0.38;
+                            else if (item.id === 'treasure_chest' || item.id === 'magic_box' || item.id === 'wooden_lid') targetDim = 0.32;
+                            else if (item.id === 'mini_cauldron') targetDim = 0.28;
+                            else if (item.id === 'ancient_scroll' || item.id === 'spell_book') targetDim = 0.30;
+                            else if (item.id.includes('potion') || item.id === 'magic_vial') targetDim = 0.28;
+
+                            const s = targetDim / maxDim;
                             m.scale.set(s, s, s);
                             m.position.x = -center.x * s;
                             m.position.y = 0.025 - box.min.y * s;
                             m.position.z = -center.z * s;
+
+                            if (item.id === 'witch_staff') {
+                                m.rotation.z = Math.PI / 8;
+                            }
                         }
                         m.traverse(node => {
                             if (node.isMesh) {
                                 node.castShadow = true;
+                                node.receiveShadow = true;
                                 node.userData.ingredientId = item.id;
                                 grp.userData.hitMeshList.push(node);
                             }

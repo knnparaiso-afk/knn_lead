@@ -47,7 +47,7 @@
                 <div class="hud-text-content">
                     <div class="hud-eyebrow">A BRUXA PEDE:</div>
                     <div class="hud-en-line" id="task-text-en">
-                        Add the <span class="hud-keyword">Eye of Newt</span>!
+                        Pick the <span class="hud-keyword">Magic Mushrooms</span>!
                     </div>
                 </div>
             </div>
@@ -153,8 +153,14 @@
         ingredientsBaseUrl: "{{ url_for('static', filename='models/ingredients/') }}",
         participarUrl: "{{ url_for('participar', codigo=codigo) }}",
         responderUrl: "{{ url_for('responder_desafio', codigo=codigo) }}",
-        hasCustomCauldron: false,
-        installedGlbIngredients: []
+        hasCustomCauldron: true,
+        installedGlbIngredients: [
+            "magic_mushrooms", "spell_book", "blue_potion", "green_potion",
+            "red_potion", "magic_crystal", "crystal_amulet", "ancient_scroll",
+            "mortar_pestle", "ingredient_jar", "magic_pouch", "magic_vial",
+            "magic_candle", "witch_staff", "golden_key", "magic_coin",
+            "treasure_chest", "magic_box", "wooden_lid", "mini_cauldron"
+        ]
     };
 </script>
 <script src="{{ url_for('static', filename='js/witch-game.js') | v }}"></script>

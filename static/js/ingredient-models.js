@@ -65,7 +65,25 @@
         golden_bone(g){const m=mat(0xe5ad2b,{metalness:.68,roughness:.26});shape(g,s=>{s.moveTo(-.19,.12);s.quadraticCurveTo(-.23,.18,-.18,.23);s.quadraticCurveTo(-.13,.28,-.085,.22);s.lineTo(.085,.22);s.quadraticCurveTo(.13,.28,.18,.23);s.quadraticCurveTo(.23,.18,.19,.12);s.quadraticCurveTo(.15,.07,.09,.115);s.lineTo(-.09,.115);s.quadraticCurveTo(-.15,.07,-.19,.12);},m,.04,.055);tube(g,[[-.12,.18,.12],[0,.18,.13],[.12,.18,.12]],.003,mat(0xffe6a0));},
         stardust_vial(g){vial(g,mat(0xf6d645,{emissive:0xe5a91a,emissiveIntensity:.6,transparent:true,opacity:.86}),false);star(g,0,.09,.08,.025,ivory);star(g,-.03,.14,.08,.014,gold);star(g,.03,.18,.075,.013,ivory);},
         magic_clover(g){tube(g,[[0,.02,.02],[0,.09,.04],[.02,.16,.04]],.009,mat(0x24713f));for(const [x,y,a] of [[-.06,.18,-.7],[.06,.18,.7],[-.06,.26,.7],[.06,.26,-.7]]){const o=shape(g,s=>{s.moveTo(0,0);s.quadraticCurveTo(-.05,.09,-.025,.13);s.quadraticCurveTo(0,.16,.025,.13);s.quadraticCurveTo(.05,.09,0,0);},green,.055,.02);o.position.set(x,y,.055);o.rotation.z=a;o.scale.setScalar(.9);}},
-        witch_candle(g){const wax=mat(0x68418a);cyl(g,wax,.075,.082,.19,0,.105,0,12);cyl(g,mat(0xb999d2),.075,.075,.012,0,.202,0,12);for(let i=0;i<5;i++){const a=i*Math.PI*2/5;ball(g,wax,Math.cos(a)*.065,.16,Math.sin(a)*.065,.018,.045,.018,8);}cyl(g,black,.006,.006,.03,0,.222,0,6);shape(g,s=>{s.moveTo(-.03,.22);s.quadraticCurveTo(-.05,.29,-.01,.34);s.quadraticCurveTo(0,.38,.015,.34);s.quadraticCurveTo(.05,.27,.03,.22);s.quadraticCurveTo(0,.2,-.03,.22);},mat(0xffa126,{emissive:0xf65b0c,emissiveIntensity:.8}),.02,.025);}
+        witch_candle(g){const wax=mat(0x68418a);cyl(g,wax,.075,.082,.19,0,.105,0,12);cyl(g,mat(0xb999d2),.075,.075,.012,0,.202,0,12);for(let i=0;i<5;i++){const a=i*Math.PI*2/5;ball(g,wax,Math.cos(a)*.065,.16,Math.sin(a)*.065,.018,.045,.018,8);}cyl(g,black,.006,.006,.03,0,.222,0,6);shape(g,s=>{s.moveTo(-.03,.22);s.quadraticCurveTo(-.05,.29,-.01,.34);s.quadraticCurveTo(0,.38,.015,.34);s.quadraticCurveTo(.05,.27,.03,.22);s.quadraticCurveTo(0,.2,-.03,.22);},mat(0xffa126,{emissive:0xf65b0c,emissiveIntensity:.8}),.02,.025);},
+        magic_mushrooms(g){builders.glowing_mushroom(g);},
+        spell_book(g){shape(g,s=>{s.moveTo(-.14,.02);s.lineTo(.14,.02);s.lineTo(.13,.18);s.lineTo(-.14,.18);},mat(0x5c2c16),.02,.05);cyl(g,gold,.01,.01,.16,-.13,.10,0);},
+        blue_potion(g){vial(g,mat(0x2563eb,{emissive:0x1d4ed8,emissiveIntensity:.6,transparent:true,opacity:.85}),false);},
+        green_potion(g){builders.green_bottle(g);},
+        red_potion(g){vial(g,mat(0xdc2626,{emissive:0xb91c1c,emissiveIntensity:.6,transparent:true,opacity:.85}),false);},
+        magic_crystal(g){builders.crystal_shard(g);},
+        crystal_amulet(g){add(g,new T.TorusGeometry(.075,.015,8,20),gold,0,.15,0);star(g,0,.15,.02,.045,mat(0x38bdf8));},
+        ancient_scroll(g){cyl(g,mat(0xfef3c7),.04,.04,.24,0,.12,0,12);add(g,new T.TorusGeometry(.045,.008,6,16),mat(0xd97706),0,.12,0);},
+        mortar_pestle(g){cyl(g,mat(0x475569),.10,.07,.09,0,.06,0,14);cyl(g,mat(0x334155),.02,.02,.16,.04,.11,0,8).rotation.z=-.3;},
+        ingredient_jar(g){cyl(g,glass,.08,.08,.16,0,.10,0,14);cyl(g,mat(0x92400e),.065,.065,.04,0,.19,0,12);},
+        magic_pouch(g){ball(g,mat(0x78350f),0,.10,0,.09,.11,.08,12);add(g,new T.TorusGeometry(.045,.008,6,12),gold,0,.17,0);},
+        magic_vial(g){builders.stardust_vial(g);},
+        witch_staff(g){cyl(g,mat(0x5c2c16),.015,.018,.34,0,.17,0,8);star(g,0,.35,0,.04,mat(0xa855f7,{emissive:0x9333ea,emissiveIntensity:.8}));},
+        magic_coin(g){cyl(g,gold,.09,.09,.015,0,.05,0,20).rotation.x=Math.PI/4;},
+        treasure_chest(g){add(g,new T.BoxGeometry(.20,.12,.14),mat(0x78350f),0,.08,0);add(g,new T.TorusGeometry(.025,.006,6,12),gold,0,.08,.075);},
+        magic_box(g){add(g,new T.BoxGeometry(.20,.10,.14),mat(0x78350f),0,.07,0);},
+        wooden_lid(g){add(g,new T.BoxGeometry(.21,.04,.15),mat(0x92400e),0,.04,0);},
+        mini_cauldron(g){cyl(g,black,.09,.07,.12,0,.08,0,14);add(g,new T.TorusGeometry(.095,.01,6,16),black,0,.13,0);}
     };
     root.WitchIngredientModels = { create(id) { if (!builders[id]) return null; const g=new T.Group(); builders[id](g); g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}}); return g; } };
 })(window);
