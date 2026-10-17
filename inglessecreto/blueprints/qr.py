@@ -44,8 +44,16 @@ def _arte_do_qr(qr):
     return gerar_arte_qrcode(qr["codigo"], campanha, local)
 
 
-def _nome_download(semana, codigo):
-    return f"qr-ingles-secreto-semana{semana}-{codigo}.png"
+def _nome_download(campanha_nome, local_nome, codigo):
+    import re, unicodedata
+    def slug(t):
+        if not t: return "geral"
+        texto = unicodedata.normalize("NFD", str(t).lower())
+        texto = "".join(c for c in texto if not unicodedata.combining(c))
+        return re.sub(r"[^a-z0-9]+", "-", texto).strip("-")
+    c_slug = slug(campanha_nome)
+    l_slug = slug(local_nome)
+    return f"qr-{c_slug}-{l_slug}-{codigo}.png"
 
 
 @bp.route("/admin/qr/<int:campanha_id>")
@@ -110,7 +118,7 @@ def gerar_qr(campanha_id, local_id):
 
     caminho = gerar_arte_qrcode(codigo, campanha, local)
     return send_file(caminho, mimetype="image/png", as_attachment=True,
-                     download_name=_nome_download(campanha["semana"], codigo))
+                     download_name=_nome_download(campanha["nome"], local["nome"], codigo))
 
 
 @bp.route("/admin/qr/<codigo>/download")
@@ -121,7 +129,7 @@ def download_qr(codigo):
         flash("QR Code não encontrado.", "error")
         return redirect(url_for("campaigns.campanhas"))
     return send_file(_arte_do_qr(qr), mimetype="image/png", as_attachment=True,
-                     download_name=_nome_download(qr["semana"], codigo))
+                     download_name=_nome_download(qr["campanha_nome"], qr["local_nome"], codigo))
 
 
 @bp.route("/admin/qr/<codigo>/imagem")

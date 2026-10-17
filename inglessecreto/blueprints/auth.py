@@ -22,8 +22,14 @@ def admin_login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
-        if (hmac.compare_digest(username, ADMIN_USERNAME)
-                and hmac.compare_digest(password, ADMIN_PASSWORD)):
+        senha_correta = False
+        if ADMIN_PASSWORD.startswith(("pbkdf2:", "scrypt:", "argon2:")):
+            from werkzeug.security import check_password_hash
+            senha_correta = check_password_hash(ADMIN_PASSWORD, password)
+        else:
+            senha_correta = hmac.compare_digest(password, ADMIN_PASSWORD)
+
+        if hmac.compare_digest(username, ADMIN_USERNAME) and senha_correta:
             session.clear()  # rotaciona a sessão para reduzir fixation
             session.permanent = True
             session["admin_logged"] = True

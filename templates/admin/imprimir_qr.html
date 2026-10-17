@@ -180,10 +180,10 @@
         <div class="toolbar-info">
             <h1>
                 Poster da Missão
-                <span>Semana {{ qr.semana }}</span>
+                <span>{{ qr.campanha_nome or 'Inglês Secreto' }}</span>
             </h1>
             <p>
-                Frase: <strong>"{{ qr.frase }}"</strong> &bull; Ponto: {{ qr.local_nome }} (Código: {{ qr.codigo }})
+                Campanha: <strong>"{{ qr.campanha_nome or qr.frase }}"</strong> &bull; Ponto: {{ qr.local_nome }} (Código: {{ qr.codigo }})
             </p>
         </div>
 
@@ -202,7 +202,7 @@
 
     <main class="print-canvas-area">
         <div class="paper-card">
-            <img src="{{ url_for('qr.imagem_qr', codigo=qr.codigo) }}" alt="QR Code com Frase da Semana {{ qr.semana }}">
+            <img src="{{ url_for('qr.imagem_qr', codigo=qr.codigo) }}" alt="QR Code - {{ qr.campanha_nome or qr.codigo }}">
         </div>
     </main>
 

@@ -6,9 +6,12 @@ from flask import (Blueprint, flash, jsonify, make_response, redirect,
 from database import get_connection
 from desafios import sortear_desafio, obter_desafio_por_id
 
+from config import ENGLISH_PASS_REQUIRED
 from ..security import permitir_requisicao
 from ..services.participants import (criar_pass_se_necessario,
-                                     salvar_participacao, validar_formulario)
+                                     salvar_participacao, validar_formulario,
+                                     gerar_token_participante, obter_id_por_token,
+                                     quantidade_descobertas)
 from ..utils import hoje_brasilia
 
 bp = Blueprint("public", __name__)
@@ -114,30 +117,64 @@ def participar(codigo):
         flash("Acerte o desafio antes de liberar seu cadastro.", "error")
         return redirect(url_for("public.mensagem", codigo=codigo))
 
+    token_cookie = request.cookies.get("knn_lead_token")
+    user_id_cookie = obter_id_por_token(token_cookie)
+    participante_reconhecido = None
+    ja_encontrou_este_local = False
+
+    if user_id_cookie:
+        participante_reconhecido = connection.execute(
+            "SELECT id, nome, whatsapp, email, idade FROM usuarios WHERE id = ?",
+            (user_id_cookie,),
+        ).fetchone()
+
+        if participante_reconhecido:
+            # Verifica se já encontrou o QR Code deste local
+            descoberta_existente = connection.execute(
+                "SELECT id FROM descobertas WHERE usuario_id = ? AND qr_code_id = ?",
+                (participante_reconhecido["id"], qr["id"]),
+            ).fetchone()
+            if descoberta_existente:
+                ja_encontrou_este_local = True
+
     if request.method != "POST":
         connection.close()
-        return render_template("participar.html", qr=qr)
+        return render_template(
+            "participar.html",
+            qr=qr,
+            participante=participante_reconhecido,
+            ja_encontrou=ja_encontrou_este_local,
+        )
 
-    nome = request.form.get("nome", "").strip()
-    whatsapp = request.form.get("whatsapp", "").strip()
-    email = request.form.get("email", "").strip()
-    idade = request.form.get("idade", "").strip()
-    confirmou = request.form.get("participacao_confirmada")
+    # Verifica se enviou o form completo OU se confirmou identificação rápida
+    confirmou_reconhecido = request.form.get("confirmar_reconhecido") == "1"
 
-    if not (nome and whatsapp and email and idade and confirmou):
-        connection.close()
-        flash("Preencha os campos obrigatórios e confirme sua participação e "
-              "autorização de contato para continuar.", "error")
-        return render_template("participar.html", qr=qr)
+    if confirmou_reconhecido and participante_reconhecido:
+        nome = participante_reconhecido["nome"]
+        whatsapp = participante_reconhecido["whatsapp"]
+        email = participante_reconhecido["email"]
+        idade = participante_reconhecido["idade"]
+    else:
+        nome = request.form.get("nome", "").strip()
+        whatsapp = request.form.get("whatsapp", "").strip()
+        email = request.form.get("email", "").strip()
+        idade = request.form.get("idade", "").strip()
+        confirmou = request.form.get("participacao_confirmada")
 
-    idade, erro = validar_formulario(nome, whatsapp, email, idade)
-    if erro:
-        connection.close()
-        flash(erro, "error")
-        return render_template("participar.html", qr=qr)
+        if not (nome and whatsapp and email and idade and confirmou):
+            connection.close()
+            flash("Preencha os campos obrigatórios e confirme sua participação e "
+                  "autorização de contato para continuar.", "error")
+            return render_template("participar.html", qr=qr, participante=participante_reconhecido, ja_encontrou=ja_encontrou_este_local)
+
+        idade, erro = validar_formulario(nome, whatsapp, email, idade)
+        if erro:
+            connection.close()
+            flash(erro, "error")
+            return render_template("participar.html", qr=qr, participante=participante_reconhecido, ja_encontrou=ja_encontrou_este_local)
 
     try:
-        usuario_id = salvar_participacao(connection, qr, nome, whatsapp, email, idade)
+        usuario_id, novo_registro = salvar_participacao(connection, qr, nome, whatsapp, email, idade)
         connection.commit()
     except Exception:
         connection.rollback()
@@ -147,10 +184,34 @@ def participar(codigo):
 
     criar_pass_se_necessario(usuario_id)
 
-    # Não guardar dados pessoais no cookie assinado.
-    session.pop("ultimo_lead_nome", None)
+    total_descobertas = quantidade_descobertas(usuario_id)
+
+    # Prepara resposta redirecionando para /conquista
     session["contato_autorizado"] = True
-    return redirect(url_for("public.nada"))
+    session["descobertas_usuario"] = total_descobertas
+    session["nome_usuario"] = nome.split()[0] if nome else ""
+    session["novo_registro"] = novo_registro
+    session["local_nome"] = qr["local_nome"]
+
+    resp = make_response(redirect(url_for("public.conquista")))
+    novo_token = gerar_token_participante(usuario_id)
+    resp.set_cookie(
+        "knn_lead_token",
+        novo_token,
+        max_age=86400 * 365,  # 1 ano
+        httponly=True,
+        samesite="Lax",
+        secure=request.is_secure,
+    )
+    return resp
+
+
+@bp.route("/e/<codigo>/redefinir", methods=["POST"])
+def redefinir_participante(codigo):
+    """Limpa a identificação do participante deste navegador para permitir novo cadastro."""
+    resp = make_response(redirect(url_for("public.participar", codigo=codigo)))
+    resp.delete_cookie("knn_lead_token")
+    return resp
 
 
 @bp.route("/e/<codigo>/responder", methods=["POST"])
@@ -193,13 +254,26 @@ def responder_desafio(codigo):
     return jsonify({"ok": False, "mensagem": "Não foi dessa vez! Tente outra alternativa. 👻"})
 
 
-@bp.route("/nada")
-def nada():
+@bp.route("/conquista")
+def conquista():
     contato_autorizado = bool(session.pop("contato_autorizado", False))
-    session.pop("ultimo_lead_nome", None)
+    descobertas = session.pop("descobertas_usuario", 1)
+    nome = session.pop("nome_usuario", "")
+    novo_registro = session.pop("novo_registro", True)
+    local_nome = session.pop("local_nome", "")
     return render_template(
-        "nada.html",
-        nome="",
+        "conquista.html",
+        nome=nome,
+        descobertas=descobertas,
+        pass_required=ENGLISH_PASS_REQUIRED,
         contato_autorizado=contato_autorizado,
+        novo_registro=novo_registro,
+        local_nome=local_nome,
         instagram_url="https://www.instagram.com/knnparaisopolis/",
     )
+
+
+@bp.route("/nada")
+def nada():
+    """Redirecionamento mantido para compatibilidade."""
+    return redirect(url_for("public.conquista"))

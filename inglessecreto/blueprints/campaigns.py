@@ -41,7 +41,7 @@ def campanhas():
         FROM campanhas
         LEFT JOIN descobertas ON descobertas.campanha_id = campanhas.id
         GROUP BY campanhas.id
-        ORDER BY campanhas.semana
+        ORDER BY campanhas.id DESC
         """
     ).fetchall()
     connection.close()

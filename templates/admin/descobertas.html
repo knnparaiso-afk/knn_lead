@@ -33,7 +33,7 @@ Descobertas | Inglês Secreto
                 </th>
 
                 <th>
-                    Frase
+                    Campanha
                 </th>
 
                 <th>
@@ -75,13 +75,7 @@ Descobertas | Inglês Secreto
                 </td>
 
                 <td>
-
-                    {{ descoberta.frase }}
-
-                    <small>
-                        Semana {{ descoberta.semana }}
-                    </small>
-
+                    {{ descoberta.campanha_nome or descoberta.frase }}
                 </td>
 
                 <td>
@@ -97,7 +91,7 @@ Descobertas | Inglês Secreto
                 </td>
 
                 <td>
-                    {{ descoberta.data_hora }}
+                    {{ descoberta.data_hora | data_br }}
                 </td>
 
             </tr>

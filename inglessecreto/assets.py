@@ -30,6 +30,34 @@ def garantir_modelos_comprimidos(app):
         app.logger.exception("Falha ao pré-comprimir modelos 3D")
 
 
+def formatar_data_brasil(valor):
+    """Formata timestamps ISO/SQL para formato amigável brasileiro (dd/mm/aaaa às HH:MM)."""
+    if not valor:
+        return "—"
+    try:
+        texto = str(valor).strip()
+        # Remove microssegundos se existirem
+        if "." in texto:
+            texto = texto.split(".")[0]
+        # Trata formato YYYY-MM-DD HH:MM:SS ou YYYY-MM-DDTHH:MM:SS
+        texto = texto.replace("T", " ")
+        if len(texto) >= 16:
+            partes = texto.split(" ")
+            data_pts = partes[0].split("-")
+            hora_pts = partes[1].split(":")
+            if len(data_pts) == 3 and len(hora_pts) >= 2:
+                ano, mes, dia = data_pts
+                hora, minuto = hora_pts[0], hora_pts[1]
+                return f"{dia}/{mes}/{ano} às {hora}:{minuto}"
+        elif len(texto) == 10 and "-" in texto:
+            ano, mes, dia = texto.split("-")
+            return f"{dia}/{mes}/{ano}"
+        return texto
+    except Exception:
+        return str(valor)
+
+
 def register(app):
     app.template_filter("v")(versioned_asset)
+    app.template_filter("data_br")(formatar_data_brasil)
     garantir_modelos_comprimidos(app)

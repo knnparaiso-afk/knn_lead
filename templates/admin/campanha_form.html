@@ -87,100 +87,7 @@ Nova Campanha
             </div>
 
         </div>
-    </div>
-
-    <!-- SEÇÃO 3: PREVIEW DINÂMICO DOS DESAFIOS/JOGOS -->
-    <div
-        style="margin-bottom: 32px; background: #0f0c1b; border: 1px solid #2d264a; border-radius: 14px; padding: 22px; color: #fff; box-shadow: 0 10px 25px -5px rgba(15, 12, 27, 0.4);">
-
-        <!-- Conteúdo para Categoria: FRASES -->
-        <div id="preview-frases" style="{% if campanha and campanha.categoria == 'jogos' %}display: none;{% endif %}">
-            <div
-                style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 10px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 20px;">👻</span>
-                    <span style="font-weight: 800; font-size: 15px; color: #f3f4f6; letter-spacing: 0.02em;">Desafios
-                        Disponíveis para Sorteio</span>
-                </div>
-                <span
-                    style="font-size: 11px; font-weight: 700; background: rgba(124, 58, 237, 0.3); color: #c4b5fd; padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(124, 58, 237, 0.4);">
-                    10 Desafios Cadastrados
-                </span>
-            </div>
-
-            <p style="font-size: 12px; color: #9ca3af; margin-top: 0; margin-bottom: 14px;">
-                Quando o visitante escanear o QR Code, a tela sorteará automaticamente um dos seguintes desafios:
-            </p>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px;">
-                {% if todos_desafios and todos_desafios.frases %}
-                {% for d in todos_desafios.frases %}
-                <div class="preview-item-phrase">
-                    <span class="preview-item-emoji">{{ d.emoji }}</span>
-                    <div style="overflow: hidden;">
-                        <div class="preview-item-name">{{ d.tema }}</div>
-                        <div class="preview-item-sub">"{{ d.frase }}"</div>
-                    </div>
-                </div>
-                {% endfor %}
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Conteúdo para Categoria: JOGOS -->
-        <div id="preview-jogos" style="{% if not campanha or campanha.categoria != 'jogos' %}display: none;{% endif %}">
-            <div
-                style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 10px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 20px;">🧙‍♀️</span>
-                    <span style="font-weight: 800; font-size: 15px; color: #f3f4f6; letter-spacing: 0.02em;">Jogo
-                        Interativo Disponível</span>
-                </div>
-                <span
-                    style="font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.25); color: #6ee7b7; padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.35);">
-                    Pronto para jogar
-                </span>
-            </div>
-
-            <p style="font-size: 12px; color: #9ca3af; margin-top: 0; margin-bottom: 16px;">
-                O participante entrará direto no minijogo interativo abaixo com gamificação e captação de lead:
-            </p>
-
-            <!-- Card Destaque do Jogo Witch's Potion -->
-            <div class="preview-game-hero">
-                <div style="display: flex; align-items: center; gap: 16px;">
-                    <div class="preview-game-icon">
-                        <span style="font-size: 38px;">🧪</span>
-                    </div>
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <h3
-                                style="margin: 0; font-size: 18px; font-weight: 800; color: #39ff14; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.04em; text-transform: uppercase;">
-                                Witch's Potion (Poção da Bruxa)
-                            </h3>
-                            <span
-                                style="font-size: 11px; background: rgba(57, 255, 20, 0.15); color: #39ff14; font-weight: 800; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(57, 255, 20, 0.3);">
-                                NOVO
-                            </span>
-                        </div>
-                        <p style="margin: 4px 0 8px; font-size: 13px; color: #d1d5db; line-height: 1.4;">
-                            O jogador ajuda uma bruxa simpática a preparar 3 receitas mágicas adicionando ingredientes
-                            ao caldeirão borbulhante.
-                        </p>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            <span class="preview-pill">🍲 Caldeirão Borbulhante</span>
-                            <span class="preview-pill">✨ Efeitos & Partículas</span>
-                            <span class="preview-pill">📜 3 Receitas Progressivas</span>
-                            <span class="preview-pill">🏆 Placar & Conquistas</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- SEÇÃO 4: PERÍODO DE VIGÊNCIA -->
+    <!-- SEÇÃO 3: PERÍODO DE VIGÊNCIA -->
     <div style="margin-bottom: 28px;">
         <div
             style="font-size: 13px; font-weight: 800; color: #1f2937; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em;">
@@ -409,19 +316,13 @@ Nova Campanha
         // Alterna classes ativas nos cards
         const cardFrases = document.getElementById('card-cat-frases');
         const cardJogos = document.getElementById('card-cat-jogos');
-        const previewFrases = document.getElementById('preview-frases');
-        const previewJogos = document.getElementById('preview-jogos');
 
         if (categoria === 'frases') {
             cardFrases.classList.add('active');
             cardJogos.classList.remove('active');
-            previewFrases.style.display = 'block';
-            previewJogos.style.display = 'none';
         } else {
             cardJogos.classList.add('active');
             cardFrases.classList.remove('active');
-            previewJogos.style.display = 'block';
-            previewFrases.style.display = 'none';
         }
     }
 </script>

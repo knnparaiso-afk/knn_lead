@@ -44,6 +44,30 @@
                     Missão <span class="highlight">Concluída!</span>
                 {% endif %}
             </h1>
+
+            <!-- Gamificação de QR Codes Encontrados -->
+            <div style="background: rgba(168, 85, 247, 0.15); border: 1.5px solid rgba(168, 85, 247, 0.35); border-radius: 12px; padding: 14px 18px; margin: 18px 0; text-align: center;">
+                <div style="font-size: 13px; font-weight: 800; color: #e9d5ff; letter-spacing: 0.05em; text-transform: uppercase;">
+                    🎯 SEU PROGRESSO NO HALLOWEEN KNN
+                </div>
+                <div style="font-size: 24px; font-weight: 900; color: #fff; margin: 6px 0;">
+                    {% if descobertas == 1 %}
+                        🌟 1º QR CODE ENCONTRADO!
+                    {% elif descobertas >= pass_required %}
+                        🏆 PARABÉNS! VOCÊ CONQUISTOU O ENGLISH PASS!
+                    {% else %}
+                        🔥 {{ descobertas }}º QR CODE ENCONTRADO! SEU PRÊMIO CRESCEU!
+                    {% endif %}
+                </div>
+                <p style="margin: 4px 0 0; font-size: 13px; color: #c4b5fd;">
+                    {% if descobertas >= pass_required %}
+                        Você atingiu a pontuação máxima de {{ descobertas }} missões! Um super prêmio está te esperando na unidade!
+                    {% else %}
+                        Encontre mais QR Codes espalhados pela cidade para subir de nível e desbloquear prêmios maiores! ({{ descobertas }}/{{ pass_required }})
+                    {% endif %}
+                </p>
+            </div>
+
             <p class="nada-desc">
                 Sua participação foi registrada com sucesso no <strong>Inglês Secreto KNN Paraisópolis</strong>. 
                 {% if contato_autorizado %}

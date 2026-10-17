@@ -19,6 +19,56 @@
         <p>Complete seu cadastro para contabilizar a missão e entrar na trilha de prêmios.</p>
     </div>
 
+    {% if participante %}
+    <!-- CARD TEMÁTICO DE RECONHECIMENTO (BEM-VINDO DE VOLTA) -->
+    <div class="welcome-back-card">
+        <div class="wb-glow"></div>
+        <div class="wb-avatar-wrap">
+            <span class="wb-avatar">🎃</span>
+        </div>
+
+        <div class="wb-header">
+            <span class="wb-badge">EXPLORADOR RECONHECIDO</span>
+            <h2 class="wb-title">
+                Bem-vindo(a) de volta, <span class="wb-highlight">{{ participante.nome.split()[0] }}</span>!
+            </h2>
+            {% if ja_encontrou %}
+            <div class="wb-warning-box">
+                <div class="wb-warning-icon">📍</div>
+                <div class="wb-warning-text">
+                    <strong>Você já encontrou a frase deste {{ qr.local_nome or 'local' }}!</strong>
+                    <p>Ao avançar, você confirmará sua participação anterior sem duplicar o prêmio.</p>
+                </div>
+            </div>
+            {% else %}
+            <p class="wb-subtitle">
+                Você acabou de encontrar um <strong>novo QR Code</strong> em <u>{{ qr.local_nome or 'ponto secreto' }}</u>!
+            </p>
+            {% endif %}
+        </div>
+
+        <form method="POST" class="wb-action-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="confirmar_reconhecido" value="1">
+            <button type="submit" class="btn btn-primary wb-submit-btn">
+                {% if ja_encontrou %}
+                    VER MEU PROGRESSO ATUAL ➔
+                {% else %}
+                    CONTABILIZAR NOVO QR CODE ➔
+                {% endif %}
+            </button>
+        </form>
+
+        <div class="wb-footer-switch">
+            <form method="POST" action="{{ url_for('public.redefinir_participante', codigo=qr.codigo) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="wb-link-reset">
+                    Não é {{ participante.nome.split()[0] }}? Cadastrar outro participante aqui
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
     <form method="POST" class="lead-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
@@ -50,6 +100,7 @@
 
         <button type="submit" id="btn-submit-lead" class="btn btn-primary lead-submit">CONTABILIZAR MISSÃO <span>→</span></button>
     </form>
+    {% endif %}
 </section>
 
 <div id="submitting-overlay" style="display:none; position:fixed; inset:0; background:rgba(19,9,36,0.92); z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; backdrop-filter:blur(8px);">
@@ -62,6 +113,150 @@
 @keyframes bounceIcon {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px) scale(1.1); }
+}
+
+/* Estilos Temáticos da Tela Bem-Vindo de Volta */
+.welcome-back-card {
+    background: radial-gradient(circle at 50% 0%, rgba(147, 51, 234, 0.25) 0%, rgba(26, 16, 48, 0.95) 70%);
+    border: 1.5px solid rgba(168, 85, 247, 0.45);
+    border-radius: 20px;
+    padding: 32px 24px;
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 0 24px rgba(147, 51, 234, 0.2);
+    overflow: hidden;
+}
+
+.wb-glow {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.wb-avatar-wrap {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: rgba(168, 85, 247, 0.2);
+    border: 2px solid rgba(168, 85, 247, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+.wb-avatar {
+    font-size: 38px;
+    animation: bounceIcon 2s infinite ease-in-out;
+}
+
+.wb-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(168, 85, 247, 0.3);
+    color: #e9d5ff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    margin-bottom: 12px;
+}
+
+.wb-title {
+    font-size: 26px;
+    font-weight: 900;
+    color: #ffffff;
+    margin: 0 0 8px;
+    line-height: 1.2;
+}
+
+.wb-highlight {
+    color: #c084fc;
+    text-shadow: 0 0 12px rgba(192, 132, 252, 0.6);
+}
+
+.wb-subtitle {
+    font-size: 14px;
+    color: #d1d5db;
+    margin: 0 0 20px;
+    line-height: 1.5;
+}
+
+.wb-warning-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(234, 179, 8, 0.12);
+    border: 1px solid rgba(234, 179, 8, 0.4);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 14px 0 20px;
+    text-align: left;
+}
+
+.wb-warning-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.wb-warning-text strong {
+    display: block;
+    font-size: 14px;
+    color: #fef08a;
+    margin-bottom: 2px;
+}
+
+.wb-warning-text p {
+    font-size: 12px;
+    color: #fde047;
+    margin: 0;
+}
+
+.wb-submit-btn {
+    width: 100%;
+    min-height: 52px;
+    font-size: 16px;
+    font-weight: 800;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+    border: 1px solid #a855f7;
+    box-shadow: 0 6px 20px rgba(147, 51, 234, 0.45);
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.wb-submit-btn:hover, .wb-submit-btn:active {
+    transform: scale(1.02);
+}
+
+.wb-footer-switch {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wb-link-reset {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 11px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.15s;
+}
+
+.wb-link-reset:hover {
+    color: #e5e7eb;
 }
 </style>
 

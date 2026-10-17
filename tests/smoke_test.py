@@ -64,11 +64,16 @@ app.config["WTF_CSRF_ENABLED"] = True
 r = pub.get(f"/participar/{codigo}"); check("GET participar", r.status_code == 200, r.status_code)
 t = token(r.get_data(as_text=True))
 form = {"nome":"Fulano","whatsapp":"(35) 99999-1234","email":"a@b.com","idade":"15","participacao_confirmada":"on","csrf_token":t}
-r = pub.post(f"/participar/{codigo}", data=form); check("POST participar -> /nada", r.status_code == 302 and r.headers["Location"].endswith("/nada"), (r.status_code, r.headers.get("Location")))
+r = pub.post(f"/participar/{codigo}", data=form); check("POST participar -> /conquista", r.status_code == 302 and r.headers["Location"].endswith("/conquista"), (r.status_code, r.headers.get("Location")))
 conn = get_connection()
 n = {k: conn.execute(f"SELECT COUNT(*) AS n FROM {k}").fetchone()["n"] for k in ["usuarios","descobertas","registros_consentimento","premios"]}
 conn.close(); check("DB: 1 usuário, 1 descoberta, 2 consentimentos (menor)", n["usuarios"]==1 and n["descobertas"]==1 and n["registros_consentimento"]==2, n)
-r = pub.get("/nada"); check("GET /nada", r.status_code == 200, r.status_code)
+r = pub.get("/conquista"); check("GET /conquista", r.status_code == 200, r.status_code)
+# Teste de escaneamento repetido do mesmo QR pelo mesmo usuário
+t_rep = token(pub.get(f"/participar/{codigo}").get_data(as_text=True))
+r = pub.post(f"/participar/{codigo}", data={"confirmar_reconhecido": "1", "csrf_token": t_rep}); check("POST repetir mesmo QR", r.status_code == 302)
+conn = get_connection(); total_desc = conn.execute("SELECT COUNT(*) AS n FROM descobertas").fetchone()["n"]; conn.close(); check("não duplicou descoberta", total_desc == 1, total_desc)
+r = pub.get("/nada", follow_redirects=True); check("GET /nada redireciona para /conquista", r.status_code == 200)
 t = token(pub.get(f"/participar/{codigo}").get_data(as_text=True))
 r = pub.post(f"/participar/{codigo}", data={**form, "idade":"2","csrf_token":t}); check("idade inválida -> 200 c/ erro", r.status_code == 200)
 r = pub.get("/e/NAOEXISTE"); check("QR inexistente 404", r.status_code == 404)
@@ -88,6 +93,8 @@ r = pub.get(f"/e/{codigo}"); check("campanha expirada -> inativa (200)", r.statu
 conn = get_connection(); a = conn.execute("SELECT ativa FROM campanhas").fetchone()["ativa"]; conn.close(); check("hook desativou campanha", a == 0, a)
 
 # exclusões
+r = c.post("/admin/participantes/1/excluir", data={"csrf_token":csrf()}); check("excluir participante cascata", r.status_code == 302)
+conn = get_connection(); total_u = conn.execute("SELECT COUNT(*) AS n FROM usuarios").fetchone()["n"]; conn.close(); check("participante deletado do banco", total_u == 0, total_u)
 r = c.post("/admin/pass/1/utilizar", data={"csrf_token":csrf()}); check("utilizar premio", r.status_code == 302)
 conn = get_connection(); qid = conn.execute("SELECT id FROM qr_codes").fetchone()["id"]; conn.close()
 r = c.post(f"/admin/qr/{qid}/excluir", data={"csrf_token":csrf()}); check("excluir QR", r.status_code == 302)

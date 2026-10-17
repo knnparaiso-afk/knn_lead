@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS descobertas (
     FOREIGN KEY (campanha_id) REFERENCES campanhas(id) ON DELETE CASCADE,
     FOREIGN KEY (local_id) REFERENCES locais(id) ON DELETE CASCADE,
     FOREIGN KEY (qr_code_id) REFERENCES qr_codes(id) ON DELETE CASCADE,
-    UNIQUE(usuario_id, campanha_id)
+    UNIQUE(usuario_id, qr_code_id)
 );
 
 CREATE TABLE IF NOT EXISTS recompensas (
@@ -283,6 +283,36 @@ def _migrate_sqlite_schema(connection):
             "ALTER TABLE campanhas ADD COLUMN categoria TEXT DEFAULT 'frases'"
         )
 
+    # Migração da restrição UNIQUE de descobertas: de (usuario_id, campanha_id) para (usuario_id, qr_code_id)
+    # Se a tabela no SQLite ainda tiver a restrição antiga na definição DDL, recriamos sem perder dados.
+    schema_sql = connection.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='descobertas'"
+    ).fetchone()
+    if schema_sql and "UNIQUE(usuario_id, campanha_id)" in schema_sql["sql"]:
+        connection.executescript(
+            """
+            PRAGMA foreign_keys = OFF;
+            CREATE TABLE IF NOT EXISTS descobertas_nova (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario_id INTEGER NOT NULL,
+                campanha_id INTEGER NOT NULL,
+                local_id INTEGER NOT NULL,
+                qr_code_id INTEGER NOT NULL,
+                data_hora TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+                FOREIGN KEY (campanha_id) REFERENCES campanhas(id) ON DELETE CASCADE,
+                FOREIGN KEY (local_id) REFERENCES locais(id) ON DELETE CASCADE,
+                FOREIGN KEY (qr_code_id) REFERENCES qr_codes(id) ON DELETE CASCADE,
+                UNIQUE(usuario_id, qr_code_id)
+            );
+            INSERT OR IGNORE INTO descobertas_nova (id, usuario_id, campanha_id, local_id, qr_code_id, data_hora)
+                SELECT id, usuario_id, campanha_id, local_id, qr_code_id, data_hora FROM descobertas;
+            DROP TABLE descobertas;
+            ALTER TABLE descobertas_nova RENAME TO descobertas;
+            PRAGMA foreign_keys = ON;
+            """
+        )
+
 
 def _migrate_postgres_schema(connection):
     # IF NOT EXISTS permite atualizar bancos criados por versões anteriores.
@@ -296,6 +326,12 @@ def _migrate_postgres_schema(connection):
     connection.execute(
         "ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS categoria TEXT DEFAULT 'frases'"
     )
+    # No PostgreSQL, remove a constraint antiga se existir e cria a nova
+    try:
+        connection.execute("ALTER TABLE descobertas DROP CONSTRAINT IF EXISTS descobertas_usuario_id_campanha_id_key")
+        connection.execute("ALTER TABLE descobertas ADD CONSTRAINT descobertas_usuario_id_qr_code_id_key UNIQUE (usuario_id, qr_code_id)")
+    except Exception:
+        pass
 
 
 def init_db():

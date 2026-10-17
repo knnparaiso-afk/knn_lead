@@ -45,7 +45,15 @@ Participantes | Inglês Secreto
                 </th>
 
                 <th>
+                    Data Cadastro
+                </th>
+
+                <th>
                     Status
+                </th>
+
+                <th>
+                    Ações
                 </th>
 
             </tr>
@@ -77,23 +85,32 @@ Participantes | Inglês Secreto
                 </td>
 
                 <td>
+                    {{ participante.data_cadastro | data_br }}
+                </td>
+
+                <td>
 
                     {% if participante.total_descobertas >= pass_required %}
 
                     <span class="status pass">
                         🏆 PASS
-
                     </span>
 
                     {% else %}
 
                     <span class="status">
                         {{ participante.total_descobertas }}/{{ pass_required }}
-
                     </span>
 
                     {% endif %}
 
+                </td>
+
+                <td>
+                    <form method="POST" action="{{ url_for('reports.excluir_participante', usuario_id=participante.id) }}" style="display: inline-block;" onsubmit="return confirm('Tem certeza que deseja excluir o participante {{ participante.nome }}? Todas as descobertas e prêmios dele serão apagados em cascata.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger" style="padding: 6px 12px; min-height: 34px; font-size: 10px;">EXCLUIR</button>
+                    </form>
                 </td>
 
             </tr>
@@ -102,7 +119,7 @@ Participantes | Inglês Secreto
 
             <tr>
 
-                <td colspan="5" class="empty-table">
+                <td colspan="7" class="empty-table">
                     Ainda não existem participantes.
                 </td>
 

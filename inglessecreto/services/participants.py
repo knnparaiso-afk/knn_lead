@@ -1,5 +1,25 @@
-from config import ENGLISH_PASS_REQUIRED
+from itsdangerous import URLSafeTimedSerializer
+from config import ENGLISH_PASS_REQUIRED, SECRET_KEY
 from database import get_connection
+
+_signer = URLSafeTimedSerializer(SECRET_KEY, salt="knn-participante-salt")
+
+
+def gerar_token_participante(usuario_id):
+    """Gera token assinado e seguro com o ID do participante para persistir no cookie."""
+    return _signer.dumps({"uid": usuario_id})
+
+
+def obter_id_por_token(token):
+    """Extrai e valida o usuario_id do token assinado. Retorna None se inválido."""
+    if not token:
+        return None
+    try:
+        dados = _signer.loads(token, max_age=86400 * 365)  # 1 ano
+        return dados.get("uid")
+    except Exception:
+        return None
+
 
 PRIVACY_NOTICE_VERSION = "2026-10-13-v1"
 CONSENT_TEXT_VERSION = "2026-10-13-v3"
@@ -77,10 +97,11 @@ def salvar_participacao(connection, qr, nome, whatsapp, email, idade):
         usuario_id = cursor.fetchone()["id"]
 
     ja_encontrou = connection.execute(
-        "SELECT id FROM descobertas WHERE usuario_id = ? AND campanha_id = ?",
-        (usuario_id, qr["campanha_id"]),
+        "SELECT id FROM descobertas WHERE usuario_id = ? AND qr_code_id = ?",
+        (usuario_id, qr["id"]),
     ).fetchone()
 
+    novo_registro = False
     if not ja_encontrou:
         connection.execute(
             """
@@ -89,6 +110,7 @@ def salvar_participacao(connection, qr, nome, whatsapp, email, idade):
             """,
             (usuario_id, qr["campanha_id"], qr["local_id"], qr["id"]),
         )
+        novo_registro = True
 
     registrar_consentimento(
         connection, usuario_id, "participacao_e_mensagens", PARTICIPATION_CONSENT_TEXT
@@ -97,7 +119,7 @@ def salvar_participacao(connection, qr, nome, whatsapp, email, idade):
         registrar_consentimento(
             connection, usuario_id, "responsavel_legal", GUARDIAN_CONSENT_TEXT
         )
-    return usuario_id
+    return usuario_id, novo_registro
 
 
 def quantidade_descobertas(usuario_id):

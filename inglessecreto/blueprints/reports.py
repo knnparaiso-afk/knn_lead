@@ -69,6 +69,26 @@ def participantes():
                            participantes=lista, pass_required=ENGLISH_PASS_REQUIRED)
 
 
+@bp.route("/admin/participantes/<int:usuario_id>/excluir", methods=["POST"])
+@admin_required
+def excluir_participante(usuario_id):
+    connection = get_connection()
+    try:
+        # Exclusão em cascata explícita para compatibilidade SQLite e PostgreSQL
+        connection.execute("DELETE FROM registros_consentimento WHERE usuario_id = ?", (usuario_id,))
+        connection.execute("DELETE FROM premios WHERE usuario_id = ?", (usuario_id,))
+        connection.execute("DELETE FROM descobertas WHERE usuario_id = ?", (usuario_id,))
+        connection.execute("DELETE FROM usuarios WHERE id = ?", (usuario_id,))
+        connection.commit()
+        flash("Participante e seus registros foram excluídos com sucesso.", "success")
+    except Exception:
+        connection.rollback()
+        flash("Erro ao excluir participante.", "error")
+    finally:
+        connection.close()
+    return redirect(url_for("reports.participantes"))
+
+
 @bp.route("/admin/descobertas")
 @admin_required
 def descobertas():
@@ -79,6 +99,7 @@ def descobertas():
             descobertas.*,
             usuarios.nome AS usuario_nome,
             usuarios.whatsapp,
+            campanhas.nome AS campanha_nome,
             campanhas.frase,
             campanhas.semana,
             locais.nome AS local_nome,

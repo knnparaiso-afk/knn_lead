@@ -107,22 +107,25 @@ def gerar_arte_qrcode(codigo, campanha, local):
     # 1. Header
     draw.rectangle([(0, 0), (W, 140)], fill=VERMELHO)
     draw.text((W / 2, 50), "KNN IDIOMAS", fill=BRANCO, font=carregar_fonte(BOLD, 46), anchor="mm")
-    semana_num = campanha["semana"]
     draw.text(
-        (W / 2, 100), f"INGLÊS SECRETO · SEMANA {semana_num}",
+        (W / 2, 100), "INGLÊS SECRETO · DESAFIO HALLOWEEN",
         fill="#FFE4E6", font=carregar_fonte(REGULAR, 22), anchor="mm",
     )
 
-    # 2. Frase da semana
+    # 2. Informações de Referência (Campanha & Local)
     try:
-        frase_raw = campanha["frase"] or campanha["nome"]
+        nome_campanha = (campanha["nome"] if campanha and "nome" in campanha.keys() else "MISSÃO HALLOWEEN").strip().upper()
     except Exception:
-        frase_raw = ""
-    frase = (frase_raw or "DESCUBRA SEU ENIGMA").strip().upper()
+        nome_campanha = (dict(campanha).get("nome") if campanha else "MISSÃO HALLOWEEN").strip().upper()
 
-    tam_frase = 46 if len(frase) > 35 else 54 if len(frase) > 20 else 64
+    try:
+        local_nome = (local["nome"] if local and "nome" in local.keys() else "PONTO DA MISSÃO").strip().upper()
+    except Exception:
+        local_nome = (dict(local).get("nome") if local else "PONTO DA MISSÃO").strip().upper()
+
+    tam_frase = 42 if len(nome_campanha) > 30 else 50
     fonte_frase = carregar_fonte(BOLD, tam_frase)
-    linhas = quebrar_texto(frase, fonte_frase, W - 180, draw)
+    linhas = quebrar_texto(nome_campanha, fonte_frase, W - 180, draw)
 
     box_y1 = 170
     altura_texto = len(linhas) * (tam_frase + 16)
@@ -134,10 +137,10 @@ def gerar_arte_qrcode(codigo, campanha, local):
         fill=BRANCO, outline="#FCA5A5", width=3,
     )
     draw.text(
-        (W / 2, box_y1 + 40), f"MISSÃO DA SEMANA {semana_num} · HALLOWEEN SECRETO",
+        (W / 2, box_y1 + 38), f"LOCAL: {local_nome}",
         fill=VERMELHO, font=carregar_fonte(BOLD, 22), anchor="mm",
     )
-    y0 = box_y1 + 80 + int((box_altura - 80 - altura_texto) / 2) + int(tam_frase / 2)
+    y0 = box_y1 + 75 + int((box_altura - 75 - altura_texto) / 2) + int(tam_frase / 2)
     for i, linha in enumerate(linhas):
         draw.text((W / 2, y0 + i * (tam_frase + 16)), linha, fill=PRETO, font=fonte_frase, anchor="mm")
 
