@@ -64,6 +64,6 @@ h1{font-size:clamp(3.8rem,5vw,5rem)}h2{font-size:clamp(2.3rem,3vw,2.9rem)}h3{fon
 details{padding:22px 0}summary{font-size:1.1rem}
 .final{padding:120px 0}footer{padding:56px 0}
 .hero::after{left:auto;top:0;height:auto;width:58%;background-position:50% 58%;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.08) 12%,rgba(0,0,0,.25) 28%,rgba(0,0,0,.5) 46%,rgba(0,0,0,.78) 66%,#000 88%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.08) 12%,rgba(0,0,0,.25) 28%,rgba(0,0,0,.5) 46%,rgba(0,0,0,.78) 66%,#000 88%)}
-.camp::after{left:auto;right:0;top:0;height:auto;width:53%;transform:translateX(20%);opacity:.92;background-position:30% 100%;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 16%,rgba(0,0,0,.12) 30%,rgba(0,0,0,.28) 46%,rgba(0,0,0,.52) 62%,rgba(0,0,0,.78) 80%,#000 96%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 16%,rgba(0,0,0,.12) 30%,rgba(0,0,0,.28) 46%,rgba(0,0,0,.52) 62%,rgba(0,0,0,.78) 80%,#000 96%)}
+.camp::after{left:auto;right:0;top:0;height:auto;width:53%;transform:translateX(30%);opacity:.92;background-position:12% 100%;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 16%,rgba(0,0,0,.12) 30%,rgba(0,0,0,.28) 46%,rgba(0,0,0,.52) 62%,rgba(0,0,0,.78) 80%,#000 96%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 16%,rgba(0,0,0,.12) 30%,rgba(0,0,0,.28) 46%,rgba(0,0,0,.52) 62%,rgba(0,0,0,.78) 80%,#000 96%)}
 .camp .steps li{background:rgba(30,23,64,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 }
