@@ -35,11 +35,11 @@
             <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
                 <a href="{{ url_for('qr.imprimir_qr', codigo=qr_local.codigo) }}" target="_blank" class="btn btn-secondary"
                     style="width: 100%; min-height: 36px; font-size: 11px; justify-content: center;">
-                    IMPRIMIR / VISUALIZAR
+                    IMPRIMIR / ESCOLHER ARTE
                 </a>
                 <a href="{{ url_for('qr.download_qr', codigo=qr_local.codigo) }}" class="btn btn-primary"
                     style="width: 100%; min-height: 36px; font-size: 11px; justify-content: center;">
-                    BAIXAR ARTE (PNG)
+                    BAIXAR PISTA 001 A4 (PNG)
                 </a>
                 <form method="POST" action="{{ url_for('qr.excluir_qr', qr_id=qr_local.id) }}"
                     onsubmit="return confirm('Tem certeza que deseja excluir este QR Code?');">
@@ -52,7 +52,7 @@
             {% else %}
             <form method="POST" action="{{ url_for('qr.gerar_qr', campanha_id=campanha_qr.id, local_id=local.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-primary">GERAR QR <span>→</span></button>
+                <button type="submit" class="btn btn-primary">GERAR QR E ESCOLHER ARTE <span>→</span></button>
             </form>
             {% endif %}
         </article>
@@ -89,8 +89,8 @@
                     <td>
                         <div style="display: flex; gap: 10px; align-items: center;"><a
                                 href="{{ url_for('qr.imprimir_qr', codigo=qr.codigo) }}" target="_blank" class="table-link"
-                                style="color: var(--knn-red); font-weight: 700;">Imprimir</a><a
-                                href="{{ url_for('qr.download_qr', codigo=qr.codigo) }}" class="table-link">Baixar</a>
+                                style="color: var(--knn-red); font-weight: 700;">Imprimir / escolher arte</a><a
+                                href="{{ url_for('qr.download_qr', codigo=qr.codigo) }}" class="table-link">Pista 001 PNG</a>
                             <form method="POST" action="{{ url_for('qr.excluir_qr', qr_id=qr.id) }}"
                                 onsubmit="return confirm('Tem certeza que deseja excluir este QR Code?');"
                                 style="display: inline;">

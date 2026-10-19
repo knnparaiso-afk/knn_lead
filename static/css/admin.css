@@ -48,7 +48,7 @@
 
 .discoveries-person-button { padding: 0; border: 0; background: transparent; color: var(--admin-ink); font: inherit; font-weight: 700; text-align: left; text-decoration: underline; text-decoration-color: rgba(229,27,43,.45); text-underline-offset: 3px; cursor: pointer; }
 .discoveries-person-button:hover, .discoveries-person-button:focus-visible { color: var(--admin-red); }
-.discoveries-dialog { width: min(1000px, calc(100vw - 36px)); max-width: none; max-height: calc(100dvh - 40px); padding: 0; overflow: hidden; border: 1px solid var(--admin-line); border-radius: 7px; background: #fff; color: var(--admin-ink); box-shadow: 0 24px 80px rgba(0,0,0,.3); }
+.discoveries-dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0; width: min(1000px, calc(100vw - 36px)); max-width: none; max-height: calc(100dvh - 40px); padding: 0; overflow: hidden; border: 1px solid var(--admin-line); border-radius: 7px; background: #fff; color: var(--admin-ink); box-shadow: 0 24px 80px rgba(0,0,0,.3); }
 .discoveries-dialog::backdrop { background: rgba(18,18,20,.68); }
 .discoveries-dialog-header { display: flex; align-items: start; justify-content: space-between; gap: 20px; padding: 22px 26px; border-bottom: 1px solid var(--admin-line); }
 .discoveries-dialog-header h2 { margin: 6px 0 4px; font: 800 32px/.95 "Barlow Condensed", Impact, sans-serif; }

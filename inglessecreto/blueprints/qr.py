@@ -1,14 +1,16 @@
 import os
 
 from flask import (Blueprint, flash, make_response, redirect,
-                   render_template, send_file, url_for)
+                   render_template, request, send_file, url_for)
 
 from database import get_connection
 
 from ..decorators import admin_required
 from ..security import permitir_requisicao
 from ..services.campaigns import gerar_codigo
-from ..services.qr_art import caminho_qr, gerar_arte_qrcode, remover_arquivos_qr
+from ..services.qr_art import (ARTE_QR_PADRAO, artes_qr_disponiveis,
+                               caminho_qr, gerar_arte_qrcode,
+                               normalizar_arte_qr, remover_arquivos_qr)
 
 bp = Blueprint("qr", __name__)
 
@@ -38,13 +40,11 @@ def _buscar_qr(codigo):
         connection.close()
 
 
-def _arte_do_qr(qr):
-    campanha = {"semana": qr["semana"], "frase": qr["frase"], "nome": qr["campanha_nome"]}
-    local = {"nome": qr["local_nome"], "parceiro": qr["parceiro"]}
-    return gerar_arte_qrcode(qr["codigo"], campanha, local)
+def _arte_do_qr(qr, arte=ARTE_QR_PADRAO):
+    return gerar_arte_qrcode(qr["codigo"], arte)
 
 
-def _nome_download(campanha_nome, local_nome, codigo):
+def _nome_download(campanha_nome, local_nome, codigo, arte=ARTE_QR_PADRAO):
     import re, unicodedata
     def slug(t):
         if not t: return "geral"
@@ -53,7 +53,7 @@ def _nome_download(campanha_nome, local_nome, codigo):
         return re.sub(r"[^a-z0-9]+", "-", texto).strip("-")
     c_slug = slug(campanha_nome)
     l_slug = slug(local_nome)
-    return f"qr-{c_slug}-{l_slug}-{codigo}.png"
+    return f"qr-{c_slug}-{l_slug}-{codigo}-{arte}.png"
 
 
 @bp.route("/admin/qr/<int:campanha_id>")
@@ -116,9 +116,7 @@ def gerar_qr(campanha_id, local_id):
     connection.commit()
     connection.close()
 
-    caminho = gerar_arte_qrcode(codigo, campanha, local)
-    return send_file(caminho, mimetype="image/png", as_attachment=True,
-                     download_name=_nome_download(campanha["nome"], local["nome"], codigo))
+    return redirect(url_for("qr.imprimir_qr", codigo=codigo))
 
 
 @bp.route("/admin/qr/<codigo>/download")
@@ -128,8 +126,11 @@ def download_qr(codigo):
     if not qr:
         flash("QR Code não encontrado.", "error")
         return redirect(url_for("campaigns.campanhas"))
-    return send_file(_arte_do_qr(qr), mimetype="image/png", as_attachment=True,
-                     download_name=_nome_download(qr["campanha_nome"], qr["local_nome"], codigo))
+    arte = normalizar_arte_qr(request.args.get("arte"))
+    return send_file(
+        _arte_do_qr(qr, arte), mimetype="image/png", as_attachment=True,
+        download_name=_nome_download(qr["campanha_nome"], qr["local_nome"], codigo, arte),
+    )
 
 
 @bp.route("/admin/qr/<codigo>/imagem")
@@ -138,9 +139,10 @@ def imagem_qr(codigo):
     qr = _buscar_qr(codigo)
     if not qr:
         return "Não encontrado", 404
-    caminho = caminho_qr(codigo)
+    arte = normalizar_arte_qr(request.args.get("arte"))
+    caminho = caminho_qr(codigo, arte)
     if not os.path.exists(caminho):
-        caminho = _arte_do_qr(qr)
+        caminho = _arte_do_qr(qr, arte)
     return send_file(caminho, mimetype="image/png")
 
 
@@ -151,8 +153,16 @@ def imprimir_qr(codigo):
     if not qr:
         flash("QR Code não encontrado.", "error")
         return redirect(url_for("campaigns.campanhas"))
-    _arte_do_qr(qr)
-    return render_template("admin/imprimir_qr.html", qr=qr)
+    arte = normalizar_arte_qr(request.args.get("arte"))
+    _arte_do_qr(qr, arte)
+    return render_template(
+        "admin/imprimir_qr.html",
+        qr=qr,
+        artes=artes_qr_disponiveis(),
+        arte_selecionada=arte,
+        imagem_url=url_for("qr.imagem_qr", codigo=codigo, arte=arte),
+        download_url=url_for("qr.download_qr", codigo=codigo, arte=arte),
+    )
 
 
 @bp.route("/admin/qr/<int:qr_id>/excluir", methods=["POST"])

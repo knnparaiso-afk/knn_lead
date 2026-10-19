@@ -3,208 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imprimir QR Code · Semana {{ qr.semana }} · {{ qr.codigo }}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <title>Cartaz A4 · {{ qr.codigo }}</title>
     <style>
         :root {
             --knn-red: #ed1b2f;
             --knn-red-dark: #c9001d;
-            --knn-red-light: #fff0f2;
             --text-dark: #111827;
-            --bg-gray: #f3f4f6;
+            --bg-gray: #e5e7eb;
+            --line: #d1d5db;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #e5e7eb;
-            color: var(--text-dark);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            background: var(--bg-gray);
+            color: var(--text-dark);
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
 
         .toolbar {
-            background: #ffffff;
-            border-bottom: 1px solid #d1d5db;
-            padding: 14px 24px;
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            gap: 14px 20px;
+            padding: 14px 24px;
+            background: #fff;
+            border-bottom: 1px solid var(--line);
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
         }
 
-        .toolbar-info h1 {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--text-dark);
+        .toolbar-info { flex: 1 1 250px; }
+        .toolbar-info h1 { font-size: 18px; font-weight: 800; }
+        .toolbar-info h1 span { color: var(--knn-red); }
+        .toolbar-info p { margin-top: 4px; color: #6b7280; font-size: 13px; }
+
+        .art-choices { display: flex; align-items: center; gap: 9px; }
+        .art-choice {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 9px;
+            min-width: 145px;
+            padding: 6px 9px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: #374151;
+            text-decoration: none;
+            transition: border-color .15s ease, background .15s ease;
         }
-
-        .toolbar-info h1 span {
-            background: var(--knn-red);
-            color: #ffffff;
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 999px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .art-choice:hover { border-color: var(--knn-red); }
+        .art-choice[aria-current="page"] {
+            border-color: var(--knn-red);
+            background: #fff4f5;
+            box-shadow: 0 0 0 2px rgba(237,27,47,.1);
         }
-
-        .toolbar-info p {
-            font-size: 13px;
-            color: #6b7280;
-            margin-top: 2px;
+        .art-choice img {
+            display: block;
+            width: 39px;
+            height: 55px;
+            object-fit: cover;
+            border: 1px solid #e5e7eb;
+            border-radius: 3px;
         }
+        .art-choice span { font-size: 12px; font-weight: 700; }
 
-        .toolbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .toolbar-actions { display: flex; align-items: center; gap: 8px; }
         .btn {
             display: inline-flex;
+            min-height: 38px;
             align-items: center;
-            gap: 6px;
-            padding: 9px 18px;
-            font-size: 13px;
-            font-weight: 700;
-            border-radius: 8px;
+            justify-content: center;
+            padding: 8px 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: #fff;
+            color: #374151;
+            font: 700 12px 'Segoe UI', Arial, sans-serif;
             text-decoration: none;
             cursor: pointer;
-            border: none;
-            transition: all 0.15s ease;
         }
-
-        .btn-primary {
-            background: var(--knn-red);
-            color: #ffffff;
-        }
-
-        .btn-primary:hover {
-            background: var(--knn-red-dark);
-        }
-
-        .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #d1d5db;
-        }
-
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
+        .btn-primary { border-color: var(--knn-red); background: var(--knn-red); color: #fff; }
+        .btn-primary:hover { background: var(--knn-red-dark); }
 
         .print-canvas-area {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 30px 20px 60px;
+            padding: 24px 16px 40px;
         }
-
         .paper-card {
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            max-width: 680px;
-            width: 100%;
+            width: min(680px, 100%);
+            aspect-ratio: 210 / 297;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #e5e7eb;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,.15);
+        }
+        .paper-card img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+        @media (max-width: 980px) {
+            .toolbar-info { flex-basis: 100%; text-align: center; }
+            .art-choices { flex: 1 1 auto; justify-content: center; }
+            .toolbar-actions { flex: 1 1 auto; justify-content: center; }
+        }
+        @media (max-width: 540px) {
+            .toolbar { padding: 12px; }
+            .toolbar-info p { max-width: 360px; margin: 5px auto 0; }
+            .art-choices { width: 100%; }
+            .art-choice { min-width: 0; flex: 1; justify-content: center; padding: 6px; }
+            .art-choice img { width: 34px; height: 49px; }
+            .toolbar-actions { width: 100%; flex-wrap: wrap; }
+            .toolbar-actions .btn { flex: 1; }
+            .print-canvas-area { padding: 16px 10px 28px; }
         }
 
-        .paper-card img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
+        @page { size: A4 portrait; margin: 0; }
         @media print {
-            body {
-                background: #ffffff !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-
-            .toolbar {
-                display: none !important;
-            }
-
-            .print-canvas-area {
-                padding: 0 !important;
-                margin: 0 !important;
-                display: block !important;
-            }
-
-            .paper-card {
-                max-width: 100% !important;
-                width: 100% !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-                page-break-inside: avoid;
-            }
-
-            .paper-card img {
-                width: 100% !important;
-                height: 100vh !important;
-                object-fit: contain !important;
-            }
-
-            @page {
-                size: auto;
-                margin: 0mm;
-            }
+            html, body { width: 210mm; height: 297mm; min-height: 297mm; margin: 0 !important; background: #fff !important; }
+            .toolbar { display: none !important; }
+            .print-canvas-area { display: block !important; width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; }
+            .paper-card { width: 210mm !important; height: 297mm !important; aspect-ratio: auto; box-shadow: none; }
+            .paper-card img { width: 210mm !important; height: 297mm !important; object-fit: fill !important; }
         }
     </style>
 </head>
 <body>
-
     <header class="toolbar">
         <div class="toolbar-info">
-            <h1>
-                Poster da Missão
-                <span>{{ qr.campanha_nome or 'Inglês Secreto' }}</span>
-            </h1>
-            <p>
-                Campanha: <strong>"{{ qr.campanha_nome or qr.frase }}"</strong> &bull; Ponto: {{ qr.local_nome }} (Código: {{ qr.codigo }})
-            </p>
+            <h1>Cartaz A4 <span>· {{ qr.codigo }}</span></h1>
+            <p>Escolha uma das artes. O QR Code aparece no campo central, pronto para imprimir.</p>
         </div>
 
+        <nav class="art-choices" aria-label="Escolha a arte do cartaz">
+            {% for arte in artes %}
+            <a class="art-choice" href="{{ url_for('qr.imprimir_qr', codigo=qr.codigo, arte=arte.id) }}"
+                data-image-url="{{ url_for('qr.imagem_qr', codigo=qr.codigo, arte=arte.id) }}"
+                data-download-url="{{ url_for('qr.download_qr', codigo=qr.codigo, arte=arte.id) }}"
+                aria-current="{{ 'page' if arte.id == arte_selecionada else 'false' }}">
+                <img src="{{ url_for('static', filename=arte.thumbnail) }}" alt="">
+                <span>{{ arte.nome }}</span>
+            </a>
+            {% endfor %}
+        </nav>
+
         <div class="toolbar-actions">
-            <a href="{{ url_for('qr.gerenciar_qr', campanha_id=qr.campanha_id) }}" class="btn btn-secondary">
-                &larr; Voltar
-            </a>
-            <a href="{{ url_for('qr.download_qr', codigo=qr.codigo) }}" class="btn btn-secondary">
-                Baixar Imagem PNG
-            </a>
-            <button onclick="window.print()" class="btn btn-primary">
-                &#128438; Imprimir Agora (Ctrl + P)
-            </button>
+            <a href="{{ url_for('qr.gerenciar_qr', campanha_id=qr.campanha_id) }}" class="btn">Voltar</a>
+            <a id="download-art" href="{{ download_url }}" class="btn">Baixar PNG A4</a>
+            <button type="button" onclick="window.print()" class="btn btn-primary">Imprimir</button>
         </div>
     </header>
 
     <main class="print-canvas-area">
         <div class="paper-card">
-            <img src="{{ url_for('qr.imagem_qr', codigo=qr.codigo) }}" alt="QR Code - {{ qr.campanha_nome or qr.codigo }}">
+            <img id="poster-preview" src="{{ imagem_url }}" alt="Cartaz A4 com o QR Code {{ qr.codigo }}">
         </div>
     </main>
 
+    <script>
+        const preview = document.getElementById("poster-preview");
+        const download = document.getElementById("download-art");
+        const artChoices = document.querySelectorAll(".art-choice");
+
+        artChoices.forEach((choice) => {
+            choice.addEventListener("click", (event) => {
+                event.preventDefault();
+                preview.src = choice.dataset.imageUrl;
+                download.href = choice.dataset.downloadUrl;
+                artChoices.forEach((item) => item.setAttribute("aria-current", "false"));
+                choice.setAttribute("aria-current", "page");
+                window.history.replaceState({}, "", choice.href);
+            });
+        });
+    </script>
 </body>
 </html>
