@@ -2,10 +2,11 @@ from flask import (Blueprint, flash, jsonify, make_response, redirect,
                    render_template, request, session, url_for)
 
 from database import get_connection
-from desafios import sortear_desafio, obter_desafio_por_id
+from desafios import obter_desafio_por_id
 
 from config import ENGLISH_PASS_REQUIRED, UNIDADE
 from ..security import permitir_requisicao
+from ..services.challenges import guardar_historico, sortear_para_navegador
 from ..services.campaigns import (filtro_campanha_vigente,
                                   parametros_vigencia, situacao_campanha)
 from ..services.participants import (criar_pass_se_necessario,
@@ -75,21 +76,11 @@ def mensagem(codigo):
         return render_template("campanha_inativa.html", qr=qr, situacao=situacao)
 
     categoria = qr["categoria"] or "frases"
-    session_key = f"desafio_sorteado_{codigo}"
-
-    desafio = None
-    desafio_id = session.get(session_key)
-    if desafio_id:
-        desafio = obter_desafio_por_id(desafio_id, categoria)
-
-    if not desafio:
-        desafio = sortear_desafio(categoria)
-        if not desafio:
-            return render_template("mensagem.html", erro="Nenhum desafio disponível."), 404
-        session[session_key] = desafio["id"]
+    desafio, historico = sortear_para_navegador(codigo, categoria)
 
     template_name = desafio.get("template", "desafio_halloween.html")
-    return render_template(template_name, qr=qr, desafio=desafio, codigo=codigo)
+    response = make_response(render_template(template_name, qr=qr, desafio=desafio, codigo=codigo))
+    return guardar_historico(response, historico)
 
 
 @bp.route("/participar/<codigo>", methods=["GET", "POST"])
