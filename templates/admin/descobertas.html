@@ -14,6 +14,7 @@ Descobertas | Inglês Secreto
         <h1>
             Descobertas
         </h1>
+        <p>Um registro por QR concluído, com a ordem de cada pessoa.</p>
 
     </div>
 
@@ -33,6 +34,14 @@ Descobertas | Inglês Secreto
                 </th>
 
                 <th>
+                    Total de QRs
+                </th>
+
+                <th>
+                    Leitura
+                </th>
+
+                <th>
                     Campanha
                 </th>
 
@@ -49,7 +58,7 @@ Descobertas | Inglês Secreto
                 </th>
 
                 <th>
-                    Data
+                    Horário (Brasília)
                 </th>
 
             </tr>
@@ -75,6 +84,14 @@ Descobertas | Inglês Secreto
                 </td>
 
                 <td>
+                    <strong>{{ descoberta.total_qrs_pessoa }}</strong>
+                </td>
+
+                <td>
+                    {{ descoberta.ordem_qr }}º QR
+                </td>
+
+                <td>
                     {{ descoberta.campanha_nome or descoberta.frase }}
                 </td>
 
@@ -91,7 +108,7 @@ Descobertas | Inglês Secreto
                 </td>
 
                 <td>
-                    {{ descoberta.data_hora | data_br }}
+                    {{ descoberta.data_hora | data_hora_brasilia }}
                 </td>
 
             </tr>
@@ -100,7 +117,7 @@ Descobertas | Inglês Secreto
 
             <tr>
 
-                <td colspan="6" class="empty-table">
+                <td colspan="8" class="empty-table">
                     Nenhuma descoberta registrada.
                 </td>
 

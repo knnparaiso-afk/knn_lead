@@ -2,6 +2,9 @@ import gzip
 import hashlib
 import os
 import re
+from datetime import datetime, timezone
+
+from .utils import TZ_BRASIL
 
 ASSET_VERSION = "20261017.5"  # fallback, só usado se o arquivo não for encontrado
 
@@ -110,7 +113,24 @@ def formatar_data_brasil(valor):
         return str(valor)
 
 
+def formatar_data_hora_brasilia(valor):
+    """Converte o instante da descoberta para o horário de Brasília."""
+    if not valor:
+        return "—"
+    try:
+        instante = valor if isinstance(valor, datetime) else datetime.fromisoformat(
+            str(valor).strip().replace("Z", "+00:00")
+        )
+        # CURRENT_TIMESTAMP do SQLite é UTC sem offset; o PostgreSQL inclui offset.
+        if instante.tzinfo is None:
+            instante = instante.replace(tzinfo=timezone.utc)
+        return instante.astimezone(TZ_BRASIL).strftime("%d/%m/%Y às %H:%M")
+    except (TypeError, ValueError, OverflowError):
+        return str(valor)
+
+
 def register(app):
     app.template_filter("v")(versioned_asset)
     app.template_filter("data_br")(formatar_data_brasil)
+    app.template_filter("data_hora_brasilia")(formatar_data_hora_brasilia)
     garantir_modelos_comprimidos(app)

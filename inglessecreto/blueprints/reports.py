@@ -110,13 +110,20 @@ def descobertas():
             campanhas.semana,
             locais.nome AS local_nome,
             locais.parceiro,
-            qr_codes.codigo AS qr_codigo
+            qr_codes.codigo AS qr_codigo,
+            COUNT(*) OVER (
+                PARTITION BY descobertas.usuario_id
+            ) AS total_qrs_pessoa,
+            ROW_NUMBER() OVER (
+                PARTITION BY descobertas.usuario_id
+                ORDER BY descobertas.data_hora ASC, descobertas.id ASC
+            ) AS ordem_qr
         FROM descobertas
         INNER JOIN usuarios ON usuarios.id = descobertas.usuario_id
         INNER JOIN campanhas ON campanhas.id = descobertas.campanha_id
         INNER JOIN locais ON locais.id = descobertas.local_id
         INNER JOIN qr_codes ON qr_codes.id = descobertas.qr_code_id
-        ORDER BY descobertas.data_hora DESC
+        ORDER BY descobertas.data_hora DESC, descobertas.id DESC
         """
     ).fetchall()
     connection.close()
