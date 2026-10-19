@@ -74,27 +74,38 @@
                 </div>
                 <div style="font-size: 24px; font-weight: 900; color: #fff; margin: 6px 0;">
                     {% if descobertas == 1 %}
-                        🌟 1º QR CODE ENCONTRADO!
-                    {% elif descobertas >= pass_required %}
-                        🏆 PARABÉNS! VOCÊ CONQUISTOU O ENGLISH PASS!
+                        🌟 COMBO KNN DESBLOQUEADO!
+                    {% elif descobertas == 2 %}
+                        🎓 AULA GRATUITA COM CERTIFICADO DESBLOQUEADA!
                     {% else %}
-                        🔥 {{ descobertas }}º QR CODE ENCONTRADO! SEU PRÊMIO CRESCEU!
+                        🏆 ENGLISH PASS DESBLOQUEADO!
                     {% endif %}
                 </div>
                 <p style="margin: 4px 0 0; font-size: 13px; color: #c4b5fd;">
-                    {% if descobertas >= pass_required %}
-                        Você atingiu a pontuação máxima de {{ descobertas }} missões! Um super prêmio está te esperando na unidade!
+                    {% if descobertas == 1 %}
+                        Você desbloqueou o <strong>COMBO KNN</strong>. Venha retirar o combo em nossa escola.
+                    {% elif descobertas == 2 %}
+                        Você desbloqueou uma <strong>AULA GRATUITA COM CERTIFICADO</strong>. Venha retirar o acesso em nossa escola.
                     {% else %}
-                        Encontre mais QR Codes espalhados pela cidade para subir de nível e desbloquear prêmios maiores! ({{ descobertas }}/{{ pass_required }})
+                        Você desbloqueou o English Pass: <strong>50% DE DESCONTO</strong> e <strong>ISENÇÃO NA TAXA DE MATRÍCULA</strong>, com pagamento após um mês do início dos estudos.
+                    {% endif %}
+                </p>
+                <p style="margin: 10px 0 0; font-size: 12px; color: #d8c9ef;">
+                    {% if descobertas < pass_required %}
+                        Progresso: {{ descobertas }} de {{ pass_required }} QR Codes encontrados.
+                    {% else %}
+                        Você completou a jornada de recompensas!
                     {% endif %}
                 </p>
             </div>
             {% endif %}
 
             <p class="nada-desc">
-                Sua participação foi registrada no <strong>Inglês Secreto KNN Paraisópolis</strong>. 
-                {% if contato_autorizado %}
-                    Nossa equipe entrará em contato em breve para liberar seus benefícios e vantagens exclusivas!
+                Sua participação foi registrada no <strong>Inglês Secreto KNN Paraisópolis</strong>.
+                {% if not novo_registro %}
+                    Esta leitura já havia sido contabilizada e não alterou seu progresso.
+                {% elif contato_autorizado %}
+                    Consulte a mensagem acima para saber como resgatar seu benefício.
                 {% else %}
                     Sua conquista nesta experiência de Halloween foi salva com sucesso.
                 {% endif %}
