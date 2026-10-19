@@ -5,12 +5,13 @@ from config import ENGLISH_PASS_REQUIRED
 from database import get_connection
 
 from ..decorators import admin_required
+from ..services.campaigns import filtro_campanha_vigente, parametros_vigencia
 
 bp = Blueprint("reports", __name__)
 
 
-def _contar(connection, sql):
-    return connection.execute(sql).fetchone()["total"]
+def _contar(connection, sql, parameters=()):
+    return connection.execute(sql, parameters).fetchone()["total"]
 
 
 @bp.route("/admin")
@@ -18,13 +19,17 @@ def _contar(connection, sql):
 @admin_required
 def admin_dashboard():
     connection = get_connection()
-    campanhas_ativas = _contar(connection, "SELECT COUNT(*) AS total FROM campanhas WHERE ativa = 1")
+    campanhas_ativas = _contar(
+        connection,
+        f"SELECT COUNT(*) AS total FROM campanhas WHERE {filtro_campanha_vigente()}",
+        parametros_vigencia(),
+    )
     participantes = _contar(connection, "SELECT COUNT(*) AS total FROM usuarios")
     descobertas = _contar(connection, "SELECT COUNT(*) AS total FROM descobertas")
     passes = _contar(connection, "SELECT COUNT(*) AS total FROM premios")
     locais_ativos = _contar(connection, "SELECT COUNT(*) AS total FROM locais WHERE ativo = 1")
     campanha_atual = connection.execute(
-        """
+        f"""
         SELECT
             campanhas.*,
             COUNT(DISTINCT descobertas.id) AS total_descobertas,
@@ -32,11 +37,12 @@ def admin_dashboard():
         FROM campanhas
         LEFT JOIN descobertas ON descobertas.campanha_id = campanhas.id
         LEFT JOIN qr_codes ON qr_codes.campanha_id = campanhas.id
-        WHERE campanhas.ativa = 1
+        WHERE {filtro_campanha_vigente()}
         GROUP BY campanhas.id
         ORDER BY campanhas.id DESC
         LIMIT 1
-        """
+        """,
+        parametros_vigencia(),
     ).fetchone()
     connection.close()
 

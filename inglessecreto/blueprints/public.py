@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from flask import (Blueprint, flash, jsonify, make_response, redirect,
                    render_template, request, session, url_for)
 
@@ -8,11 +6,12 @@ from desafios import sortear_desafio, obter_desafio_por_id
 
 from config import ENGLISH_PASS_REQUIRED, UNIDADE
 from ..security import permitir_requisicao
+from ..services.campaigns import (filtro_campanha_vigente,
+                                  parametros_vigencia, situacao_campanha)
 from ..services.participants import (criar_pass_se_necessario,
                                      salvar_participacao, validar_formulario,
                                      gerar_token_participante, obter_id_por_token,
                                      quantidade_descobertas)
-from ..utils import hoje_brasilia
 
 bp = Blueprint("public", __name__)
 
@@ -20,7 +19,9 @@ bp = Blueprint("public", __name__)
 def _campanha_ativa():
     connection = get_connection()
     campanha = connection.execute(
-        "SELECT * FROM campanhas WHERE ativa = 1 ORDER BY id DESC LIMIT 1"
+        f"SELECT * FROM campanhas WHERE {filtro_campanha_vigente()} "
+        "ORDER BY id DESC LIMIT 1",
+        parametros_vigencia(),
     ).fetchone()
     connection.close()
     return campanha
@@ -48,6 +49,8 @@ def mensagem(codigo):
             qr_codes.*,
             campanhas.nome AS campanha_nome,
             campanhas.semana,
+            campanhas.frase,
+            campanhas.traducao,
             campanhas.categoria,
             campanhas.ativa,
             campanhas.data_inicio,
@@ -67,14 +70,9 @@ def mensagem(codigo):
     if not qr:
         return render_template("mensagem.html", erro="Mensagem não encontrada."), 404
 
-    hoje = hoje_brasilia()
-    parse = lambda s: datetime.strptime(s, "%Y-%m-%d").date() if s else None
-    data_inicio, data_fim = parse(qr["data_inicio"]), parse(qr["data_fim"])
-
-    encerrada = not qr["ativa"] or (data_fim is not None and hoje > data_fim)
-    ainda_nao_iniciou = data_inicio is not None and hoje < data_inicio
-    if encerrada or ainda_nao_iniciou:
-        return render_template("campanha_inativa.html", qr=qr)
+    situacao = situacao_campanha(qr)
+    if situacao != "ativa":
+        return render_template("campanha_inativa.html", qr=qr, situacao=situacao)
 
     categoria = qr["categoria"] or "frases"
     session_key = f"desafio_sorteado_{codigo}"
@@ -103,7 +101,7 @@ def participar(codigo):
 
     connection = get_connection()
     qr = connection.execute(
-        """
+        f"""
         SELECT
             qr_codes.*,
             campanhas.nome AS campanha_nome,
@@ -115,9 +113,9 @@ def participar(codigo):
         FROM qr_codes
         INNER JOIN campanhas ON campanhas.id = qr_codes.campanha_id
         INNER JOIN locais ON locais.id = qr_codes.local_id
-        WHERE qr_codes.codigo = ? AND campanhas.ativa = 1 AND locais.ativo = 1
+        WHERE qr_codes.codigo = ? AND {filtro_campanha_vigente()} AND locais.ativo = 1
         """,
-        (codigo,),
+        (codigo, *parametros_vigencia()),
     ).fetchone()
 
     if not qr:
@@ -240,14 +238,14 @@ def responder_desafio(codigo):
 
     connection = get_connection()
     qr = connection.execute(
-        """
+        f"""
         SELECT campanhas.categoria
         FROM qr_codes
         INNER JOIN campanhas ON campanhas.id = qr_codes.campanha_id
         INNER JOIN locais ON locais.id = qr_codes.local_id
-        WHERE qr_codes.codigo = ? AND campanhas.ativa = 1 AND locais.ativo = 1
+        WHERE qr_codes.codigo = ? AND {filtro_campanha_vigente()} AND locais.ativo = 1
         """,
-        (codigo,),
+        (codigo, *parametros_vigencia()),
     ).fetchone()
     connection.close()
 

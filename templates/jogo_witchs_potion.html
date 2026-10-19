@@ -59,16 +59,6 @@
     <!-- 3D WEBGL VIEWPORT (OCUPA A TELA TODA COM VISÃO 100% LIVRE) -->
     <div class="wp-viewport-wrapper" id="viewport-wrapper">
         <canvas id="webgl-canvas"></canvas>
-
-        <!-- LOADING OVERLAY -->
-        <div class="wp-loading-overlay" id="loading-overlay">
-            <div class="loading-icon">🧙‍♀️</div>
-            <p class="loading-title">ENTRANDO NO LABORATÓRIO 3D...</p>
-            <div class="loading-bar-wrap">
-                <div class="loading-bar-fill" id="loading-bar"></div>
-            </div>
-            <p class="loading-sub" id="loading-status">Carregando bruxa e poções mágicas...</p>
-        </div>
     </div>
 
     <!-- UI LAYER: APENAS MODAIS DE INÍCIO E FIM (NENHUMA BARRA INFERIOR DE TEXTO) -->
@@ -127,6 +117,8 @@
                     <strong id="victory-final-score">600</strong> PTS
                 </div>
 
+                <p class="victory-status" id="victory-status" role="status" aria-live="polite"></p>
+
                 <button type="button" class="btn-witch-glow btn-gold" id="btn-claim-rewards">
                     LIBERAR MEU PRÊMIO NA KNN ➔
                 </button>
@@ -138,6 +130,19 @@
 
     </div>
 
+    <!-- Fica acima do modal e do jogo enquanto um passo aguarda modelos. -->
+    <div class="wp-loading-overlay" id="loading-overlay" role="status" aria-live="polite">
+        <div class="loading-icon">🧙‍♀️</div>
+        <p class="loading-title">ENTRANDO NO LABORATÓRIO 3D...</p>
+        <div class="loading-bar-wrap">
+            <div class="loading-bar-fill" id="loading-bar"></div>
+        </div>
+        <p class="loading-sub" id="loading-status">Carregando bruxa e ingredientes...</p>
+        <button type="button" class="btn-witch-glow loading-retry" id="btn-retry-loading" style="display: none;">
+            TENTAR NOVAMENTE
+        </button>
+    </div>
+
 </div>
 
 <!-- SCRIPTS THREE.JS, LOADER, REAÇÕES E ENGINE DO JOGO -->
@@ -145,6 +150,13 @@
 <script src="{{ url_for('static', filename='js/GLTFLoader.js') | v }}"></script>
 <script src="{{ url_for('static', filename='js/witch-reactions.js') | v }}"></script>
 <script>
+    {% set ingredient_ids = [
+        'magic_mushrooms', 'spell_book', 'blue_potion', 'green_potion',
+        'red_potion', 'magic_crystal', 'crystal_amulet', 'ancient_scroll',
+        'mortar_pestle', 'ingredient_jar', 'magic_pouch', 'magic_vial',
+        'magic_candle', 'witch_staff', 'golden_key', 'magic_coin',
+        'treasure_chest', 'magic_box', 'wooden_lid', 'mini_cauldron'
+    ] %}
     window.WITCH_CONFIG = {
         modelUrl: "{{ url_for('static', filename='models/model.glb') | v }}",
         cauldronUrl: "{{ url_for('static', filename='models/cauldron.glb') | v }}",
@@ -153,13 +165,11 @@
         participarUrl: "{{ url_for('public.participar', codigo=codigo) }}",
         responderUrl: "{{ url_for('public.responder_desafio', codigo=codigo) }}",
         hasCustomCauldron: true,
-        installedGlbIngredients: [
-            "magic_mushrooms", "spell_book", "blue_potion", "green_potion",
-            "red_potion", "magic_crystal", "crystal_amulet", "ancient_scroll",
-            "mortar_pestle", "ingredient_jar", "magic_pouch", "magic_vial",
-            "magic_candle", "witch_staff", "golden_key", "magic_coin",
-            "treasure_chest", "magic_box", "wooden_lid", "mini_cauldron"
-        ]
+        ingredientUrls: {
+            {% for id in ingredient_ids %}
+            {{ id | tojson }}: {{ (url_for('static', filename='models/ingredients/' ~ id ~ '.glb') | v) | tojson }}{{ ',' if not loop.last }}
+            {% endfor %}
+        }
     };
 </script>
 <script src="{{ url_for('static', filename='js/witch-game.js') | v }}"></script>

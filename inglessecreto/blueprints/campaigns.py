@@ -1,10 +1,12 @@
+from datetime import date
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from database import get_connection
 from desafios import CATEGORIAS, DESAFIOS
 
 from ..decorators import admin_required
-from ..services.campaigns import gerar_codigo
+from ..services.campaigns import gerar_codigo, situacao_campanha
 from ..services.qr_art import remover_arquivos_qr
 
 bp = Blueprint("campaigns", __name__)
@@ -21,10 +23,26 @@ def _dados_formulario():
     }
 
 
-def _render_form(campanha, categoria):
+def _erro_periodo(dados):
+    for campo in ("data_inicio", "data_fim"):
+        valor = dados[campo]
+        if valor:
+            try:
+                if date.fromisoformat(valor).isoformat() != valor:
+                    return "Informe datas válidas no formato ano-mês-dia."
+            except ValueError:
+                return "Informe datas válidas no formato ano-mês-dia."
+    if (dados["data_inicio"] and dados["data_fim"]
+            and dados["data_inicio"] > dados["data_fim"]):
+        return "A data de término não pode ser anterior à data de início."
+    return None
+
+
+def _render_form(campanha, categoria, form_data=None):
     return render_template(
         "admin/campanha_form.html",
         campanha=campanha,
+        form_data=form_data,
         categorias=CATEGORIAS,
         desafios_preview=DESAFIOS.get(categoria, DESAFIOS["frases"]),
         todos_desafios=DESAFIOS,
@@ -45,7 +63,8 @@ def campanhas():
         """
     ).fetchall()
     connection.close()
-    return render_template("admin/campanhas.html", campanhas=lista)
+    situacoes = {campanha["id"]: situacao_campanha(campanha) for campanha in lista}
+    return render_template("admin/campanhas.html", campanhas=lista, situacoes=situacoes)
 
 
 @bp.route("/admin/campanhas/nova", methods=["GET", "POST"])
@@ -57,7 +76,11 @@ def nova_campanha():
     d = _dados_formulario()
     if not d["nome"] or len(d["nome"]) > 150:
         flash("Preencha um nome válido para a campanha.", "error")
-        return _render_form(None, d["categoria"])
+        return _render_form(None, d["categoria"], d)
+    erro_periodo = _erro_periodo(d)
+    if erro_periodo:
+        flash(erro_periodo, "error")
+        return _render_form(None, d["categoria"], d)
 
     connection = get_connection()
     max_semana = connection.execute(
@@ -100,7 +123,12 @@ def editar_campanha(campanha_id):
         if not d["nome"] or len(d["nome"]) > 150:
             connection.close()
             flash("Preencha um nome válido para a campanha.", "error")
-            return _render_form(campanha, d["categoria"])
+            return _render_form(campanha, d["categoria"], d)
+        erro_periodo = _erro_periodo(d)
+        if erro_periodo:
+            connection.close()
+            flash(erro_periodo, "error")
+            return _render_form(campanha, d["categoria"], d)
 
         connection.execute(
             """

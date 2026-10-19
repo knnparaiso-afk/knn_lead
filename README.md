@@ -2,6 +2,30 @@
 
 Aplicação Flask para campanhas, QR Codes, participantes, descobertas e recompensas.
 
+Uma campanha marcada como ativa só aparece ao público entre as datas de início e
+término informadas (inclusive). Fora desse período, respostas e cadastros pelo QR
+são bloqueados. As datas são verificadas nas consultas; visitas ao site não alteram
+automaticamente o campo `ativa` no banco. No painel, campanhas futuras aparecem
+como **AGENDADA** e campanhas vencidas como **ENCERRADA**. O formulário rejeita
+datas inválidas ou término anterior ao início.
+
+## Cache dos arquivos e páginas
+
+Arquivos estáticos com `?v=<hash do arquivo>` usam cache por um ano. O hash muda
+quando o arquivo é alterado, inclusive nos modelos 3D dos ingredientes. Arquivos
+sem hash válido, como as imagens carregadas pelo CSS da landing, usam cache de
+cinco minutos. Essas duas imagens receberam uma nova URL para descartar cópias
+antigas que tinham cache de um ano. O HTML público é revalidado a cada visita;
+páginas de cadastro,
+conquista, desafio e administração não são armazenadas em cache.
+
+No jogo 3D, a abertura espera apenas a bruxa, o caldeirão e os três ingredientes
+do primeiro passo. Os três itens seguintes são carregados em segundo plano; um
+passo só começa quando todos os seus modelos estão prontos. Se um download falhar
+ou não responder em 30 segundos, o jogador pode tentar novamente. Ao vencer, o
+botão do prêmio espera a confirmação do servidor e oferece nova tentativa se a
+conexão falhar.
+
 ## Banco de dados
 
 - **Local:** se `DATABASE_URL` não estiver definida, usa `instance/knn.db` em SQLite, como antes.
@@ -24,13 +48,69 @@ Para usar SQLite localmente, não defina `DATABASE_URL`. Copie `.env.example` pa
 Configurações iniciais do Web Service:
 
 - **Build Command:** `pip install -r requirements.txt`
-- **Start Command:** `gunicorn app:app`
+- **Start Command documentado:** `gunicorn app:app` continua funcionando sem mudanças no Render.
+- **Start Command opcional após medir:** `gunicorn -c gunicorn_render.py app:app`.
 - Configure `DATABASE_URL` usando a **Internal Database URL** do PostgreSQL do Render.
 - Configure `SECRET_KEY` com um valor aleatório longo.
 - Configure `ADMIN_USERNAME` e uma senha forte em `ADMIN_PASSWORD`.
 - Configure `BASE_URL` para a URL pública final do serviço/domínio, sem barra no final.
 - Configure `PRIVACY_CONTROLLER_NAME`, `PRIVACY_CONTROLLER_CNPJ` e `PRIVACY_CONTACT_EMAIL` com os dados reais da empresa responsável.
 - Mantenha o Web Service e o PostgreSQL na mesma região.
+
+## Medir tráfego e capacidade
+
+O arquivo `gunicorn_render.py` fica inativo com `gunicorn app:app`. Quando
+ele for selecionado, começará com **um worker e quatro threads**. Assim, haverá
+até quatro requisições em execução por processo, sem multiplicar a memória
+por vários workers. Ajuste somente depois de medir o serviço real. As variáveis
+`WEB_CONCURRENCY` e `GUNICORN_THREADS` permitem alterar esses valores. Durante
+uma medição, `GUNICORN_ACCESS_LOG=1` registra status, bytes e duração em
+microssegundos; remova a variável depois para reduzir volume de logs.
+
+O medidor `scripts/traffic_probe.py` faz somente GET, não cria dados nem bancos.
+Ele conta recursos encontrados no HTML/CSS de uma visita nova e da repetida,
+simulando o reaproveitamento de recursos com cache fresco. Modelos 3D carregados
+pelo JavaScript ficam fora dessa contagem. Para medir carga, cada usuário virtual
+faz uma requisição por vez e espera um segundo entre elas:
+
+```powershell
+python scripts/traffic_probe.py visit http://127.0.0.1:5000/
+python scripts/traffic_probe.py load http://127.0.0.1:5000/ --users 20 --duration 60
+python scripts/traffic_probe.py load http://127.0.0.1:5000/ --users 50 --duration 15
+```
+
+Para medir o desafio, substitua `/` por `/e/CODIGO` de um QR existente. Caso
+exista um serviço **de teste** no Render, use a URL dele com `--allow-remote` e
+`--test-environment` nas cargas. O pico de 20/50 usuários não deve ser executado
+no serviço publicado.
+
+Como atualmente há somente o serviço público, não é necessário contratar outro
+agora. Depois do deploy, faça apenas uma visita de leitura à URL pública com
+`python scripts/traffic_probe.py visit https://SEU-SITE.onrender.com/ --allow-remote`
+e acompanhe CPU, RAM e banda no painel do Render
+durante o uso normal, especialmente no primeiro dia de campanha. Monitore
+também as conexões do PostgreSQL; se houver acesso SQL, consulte
+`SELECT count(*) FROM pg_stat_activity WHERE datname = current_database();`.
+Os logs de acesso opcionais permitem analisar duração e erros das requisições
+reais. Isso mostra o comportamento em produção, mas não comprova capacidade de
+20 ou 50 usuários simultâneos. Se a demanda crescer ou o p95/erros piorarem,
+prepare um serviço de teste temporário antes de aumentar a carga.
+
+Medição local de 18/10/2026, com Flask threaded e o SQLite existente, sem POST:
+
+| Rota | Visita nova | Repetida | 20 usuários: p50 / p95 | 50 usuários: p50 / p95 | Erros |
+| --- | --- | --- | --- | --- | --- |
+| `/` | 7 GET, 530,5 KiB | 1 GET, 6,6 KiB | 4 / 498 ms | 7 / 1.254 ms | 0 |
+| `/e/CODIGO` de jogo | 6 GET, 780,9 KiB | 1 GET, 9,6 KiB | 9 / 535 ms | 15 / 1.371 ms | 0 |
+
+As cargas locais duraram 15 segundos com 20 usuários e 10 segundos com 50.
+Esses números **não** medem Gunicorn, PostgreSQL, CPU/RAM ou a rede do Render;
+portanto, ainda não comprovam a capacidade do plano. Os cinco modelos 3D
+necessários para o primeiro passo somam de 324 a 418 KiB pré-comprimidos,
+conforme os ingredientes sorteados; os 22 modelos somam 591 KiB. Esses bytes
+se acrescentam à visita nova do jogo, e os modelos seguintes entram em segundo
+plano. A validação de 20/50 usuários no Render fica pendente até existir um
+ambiente de teste; não use o serviço público para essa carga sintética.
 
 Não envie `.env`, `instance/`, banco SQLite, `.venv/` ou `.git/` para o repositório. O `.gitignore` desta versão exclui os dados locais. Se `instance/knn.db` ou `instance/qrcodes/` já foram adicionados ao Git, o `.gitignore` não os remove do rastreamento: remova-os do índice com `git rm --cached instance/knn.db` e `git rm --cached -r instance/qrcodes` (os arquivos locais permanecem no PC). Se já foram enviados ao GitHub, excluí-los num commit novo não apaga versões antigas do histórico.
 
@@ -98,6 +178,5 @@ As novas tabelas `registros_consentimento` e `rate_limit_buckets` são criadas a
 - `inglessecreto/security.py`: rate limit, limites de campo, cabeçalhos de segurança.
 - `inglessecreto/blueprints/`: `public`, `auth`, `reports`, `campaigns`, `locations`, `qr`, `models`.
 - `inglessecreto/services/`: regras de negócio (participantes/consentimentos, campanhas, arte do QR).
-- `tests/smoke_test.py`: teste de fumaça de todas as rotas (`python tests/smoke_test.py`, usa banco temporário).
 
 Nos templates, endpoints têm o prefixo do blueprint (ex.: `url_for('qr.gerar_qr', ...)`).

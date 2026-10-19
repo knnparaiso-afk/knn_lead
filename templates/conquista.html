@@ -101,31 +101,12 @@
             </p>
         </div>
 
-        <!-- CARD DESTACADO PARA O INSTAGRAM -->
-        <div class="nada-instagram-card">
-            <div class="insta-glow"></div>
-            
-            <div class="insta-header">
-                <div class="insta-badge-pill">
-                    <svg class="insta-svg" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                    <span>INSTAGRAM OFICIAL</span>
-                </div>
-            </div>
-
-            <h2 class="insta-title">@knnparaisopolis</h2>
-            
-            <p class="insta-desc">
-                Siga nosso perfil para acompanhar as próximas frases secretas, dicas semanais e o sorteio de prêmios do <strong>English Pass</strong>!
-            </p>
-
-            <a href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer" class="btn-insta-cta">
-                <span class="btn-insta-icon">📸</span>
-                <span>SEGUIR NO INSTAGRAM</span>
-                <span class="btn-arrow">➔</span>
-            </a>
-        </div>
+        <a class="nada-instagram-card" href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer">
+            <svg class="insta-svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+            <span>Siga a KNN no Instagram</span>
+        </a>
 
         <!-- Ação de Retorno -->
         <div class="nada-footer-actions">
@@ -274,78 +255,37 @@ body.nada-theme .main-container {
 
 /* Card do Instagram */
 .nada-instagram-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
     background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(237, 27, 47, 0.12) 100%);
     border: 1.5px solid rgba(168, 85, 247, 0.35);
     border-radius: 16px;
-    padding: 26px 20px;
+    padding: 18px 20px;
     margin: 28px 0 20px;
-    position: relative;
-    overflow: hidden;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.insta-badge-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 5px 14px;
-    border-radius: 100px;
-    margin-bottom: 12px;
+.nada-instagram-card:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(237, 27, 47, 0.2) 100%);
+}
+
+.nada-instagram-card:focus-visible {
+    outline: 2px solid #fca5a5;
+    outline-offset: 3px;
 }
 
 .insta-svg {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
+    flex: none;
     fill: #f43f5e;
-}
-
-.insta-badge-pill span {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: #fca5a5;
-}
-
-.insta-title {
-    font-family: "Barlow Condensed", Impact, sans-serif;
-    font-size: 26px;
-    font-weight: 800;
-    color: #ffffff;
-    margin: 0 0 8px;
-    letter-spacing: 0.02em;
-}
-
-.insta-desc {
-    font-size: 13.5px;
-    color: #d1d5db;
-    margin: 0 auto 20px;
-    max-width: 420px;
-    line-height: 1.45;
-}
-
-.btn-insta-cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 14px 28px;
-    background: linear-gradient(135deg, #e11d48 0%, #be123c 50%, #9333ea 100%);
-    border-radius: 10px;
-    color: #ffffff;
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 0.05em;
-    text-decoration: none;
-    box-shadow: 0 6px 20px rgba(225, 29, 72, 0.4);
-    transition: all 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.btn-insta-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(225, 29, 72, 0.55);
 }
 
 .btn-voltar {

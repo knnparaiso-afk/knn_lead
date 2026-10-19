@@ -4,7 +4,7 @@
 {% set msg_camp = "Olá! Vim pela campanha Inglês Secreto e quero saber mais sobre a KNN."|urlencode %}
 {% block body %}
 <header class="top">
-  <a href="#inicio" class="logo"><img src="{{ url_for('static', filename='img/logo-knn.png') }}" alt="KNN Idiomas" width="82" height="42" style="height: 42px; width: auto; max-height: 42px; max-width: 140px; object-fit: contain; display: block;"></a>
+  <a href="#inicio" class="logo"><img src="{{ url_for('static', filename='img/logo-knn.png') | v }}" alt="KNN Idiomas" width="82" height="42" style="height: 42px; width: auto; max-height: 42px; max-width: 140px; object-fit: contain; display: block;"></a>
   <nav aria-label="Principal">
     <a href="#metodo">Método</a><a href="#cursos">Cursos</a>
     {% if campanha %}<a href="#campanha">Campanha</a>{% endif %}<a href="#unidade">Unidade</a>
@@ -72,7 +72,7 @@
 
 <section class="sec" id="unidade">
   <div class="wrap two-col">
-    <img class="photo" src="{{ url_for('static', filename='img/fachada.webp') }}" alt="Fachada da KNN Paraisópolis, na Rua Duque de Caxias" width="1480" height="900" loading="lazy">
+    <img class="photo" src="{{ url_for('static', filename='img/fachada.webp') | v }}" alt="Fachada da KNN Paraisópolis, na Rua Duque de Caxias" width="1480" height="900" loading="lazy">
     <div>
       <h2>{{ u.nome }}</h2>
       <p>{{ u.endereco }}</p>
@@ -106,7 +106,7 @@
 
 <footer>
   <div class="wrap">
-    <img src="{{ url_for('static', filename='img/logo-knn-branco.png') }}" alt="KNN Idiomas" width="70" height="36" style="height: 36px; width: auto; max-height: 36px; max-width: 120px; object-fit: contain; display: block; margin-bottom: 12px;">
+    <img src="{{ url_for('static', filename='img/logo-knn-branco.png') | v }}" alt="KNN Idiomas" width="70" height="36" style="height: 36px; width: auto; max-height: 36px; max-width: 120px; object-fit: contain; display: block; margin-bottom: 12px;">
     <p>{{ u.razao_social }} · CNPJ {{ u.cnpj }}<br>{{ u.endereco }}</p>
     <p><a href="https://www.knnidiomas.com.br" rel="noopener">KNN Brasil</a></p>
   </div>

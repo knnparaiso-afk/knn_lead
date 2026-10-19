@@ -7,7 +7,7 @@
 <section class="night">
   <svg class="bats" viewBox="0 0 200 80" aria-hidden="true"><g fill="currentColor"><path class="b1" d="M30 30c-6-7-16-8-25 2 5 2 9 6 11 11 4 0 7-3 8-6 2 3 5 5 9 5 1-5 4-9 9-11-3-4-8-4-12-1z"/><path class="b2" d="M120 18c-4-5-11-6-17 1 3 2 6 4 7 8 3 0 5-2 6-4 1 2 3 3 6 3 1-4 3-6 6-8-2-3-6-3-8 0z" transform="translate(30 6) scale(.9)"/><path class="b3" d="M170 52c-3-4-8-4-12 1 2 1 4 3 5 5 2 0 4-1 4-3 1 1 2 2 4 2 1-3 2-4 4-5-2-2-4-2-5 0z"/></g></svg>
   <header class="ctop wrap">
-    <a href="{{ url_for('public.index') }}" aria-label="KNN Idiomas"><img src="{{ url_for('static', filename='img/logo-knn-branco.png') }}" alt="KNN Idiomas" width="82" height="42" style="height: 42px; width: auto; max-height: 42px; max-width: 140px; object-fit: contain; display: block;"></a>
+    <a href="{{ url_for('public.index') }}" aria-label="KNN Idiomas"><img src="{{ url_for('static', filename='img/logo-knn-branco.png') | v }}" alt="KNN Idiomas" width="82" height="42" style="height: 42px; width: auto; max-height: 42px; max-width: 140px; object-fit: contain; display: block;"></a>
     <a class="btn btn-sm btn-ghost" href="{{ url_for('public.index') }}">Conhecer a escola</a>
   </header>
   <div class="wrap hero-c">
@@ -43,7 +43,7 @@
 
 <footer class="cfoot">
   <div class="wrap">
-    <img src="{{ url_for('static', filename='img/logo-knn-branco.png') }}" alt="KNN Idiomas" width="66" height="34" style="height: 34px; width: auto; max-height: 34px; max-width: 120px; object-fit: contain; display: block; margin-bottom: 12px;">
+    <img src="{{ url_for('static', filename='img/logo-knn-branco.png') | v }}" alt="KNN Idiomas" width="66" height="34" style="height: 34px; width: auto; max-height: 34px; max-width: 120px; object-fit: contain; display: block; margin-bottom: 12px;">
     <p>{{ u.endereco }}<br><a href="{{ url_for('public.index') }}">Conhecer a KNN Paraisópolis</a></p>
   </div>
 </footer>

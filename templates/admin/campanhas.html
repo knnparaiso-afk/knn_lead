@@ -86,10 +86,22 @@ Campanhas | Inglês Secreto
 
                 <td>
 
-                    {% if campanha.ativa %}
+                    {% if situacoes[campanha.id] == 'ativa' %}
 
                     <span class="status active">
                         ATIVA
+                    </span>
+
+                    {% elif situacoes[campanha.id] == 'agendada' %}
+
+                    <span class="status">
+                        AGENDADA
+                    </span>
+
+                    {% elif situacoes[campanha.id] == 'encerrada' %}
+
+                    <span class="status">
+                        ENCERRADA
                     </span>
 
                     {% else %}

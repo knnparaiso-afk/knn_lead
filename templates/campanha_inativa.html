@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Missão Encerrada | KNN{% endblock %}
+{% block title %}{% if situacao == 'agendada' %}Missão em Breve{% elif situacao == 'encerrada' %}Missão Encerrada{% else %}Missão Indisponível{% endif %} | KNN{% endblock %}
 
 {% block body_class %}public-page public-challenge{% endblock %}
 
@@ -20,8 +20,9 @@
             <div class="inativa-icon">⏰</div>
         </div>
 
-        <h1 class="inativa-title">Missão<br><em>Encerrada!</em></h1>
+        <h1 class="inativa-title">Missão<br><em>{% if situacao == 'agendada' %}em breve!{% elif situacao == 'encerrada' %}encerrada!{% else %}indisponível{% endif %}</em></h1>
 
+        {% if situacao == 'encerrada' %}
         <div class="inativa-card">
             <span class="inativa-card-tag">FRASE DA SEMANA {{ '%02d'|format(qr.semana) }}</span>
             <strong class="inativa-card-frase">{{ qr.frase }}</strong>
@@ -29,10 +30,16 @@
             <span class="inativa-card-traducao">{{ qr.traducao.split('|')[0].strip() }}</span>
             {% endif %}
         </div>
+        {% endif %}
 
         <p class="inativa-desc">
-            Essa missão já foi concluída, mas <strong>novas frases secretas</strong> estão espalhadas pela cidade!
-            Continue explorando para encontrar o próximo QR Code e concorrer a prêmios.
+            {% if situacao == 'agendada' %}
+            Esta missão começa em {{ qr.data_inicio | data_br }}. Volte nessa data para participar.
+            {% elif situacao == 'encerrada' %}
+            Essa missão já foi concluída. Continue explorando para encontrar o próximo QR Code.
+            {% else %}
+            Esta missão não está disponível no momento. Confira as outras campanhas da KNN.
+            {% endif %}
         </p>
 
         <div class="inativa-next-steps">

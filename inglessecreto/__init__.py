@@ -28,7 +28,7 @@ def create_app():
         PERMANENT_SESSION_LIFETIME=timedelta(hours=4),
         SESSION_REFRESH_EACH_REQUEST=False,
         WTF_CSRF_TIME_LIMIT=7200,
-        SEND_FILE_MAX_AGE_DEFAULT=31536000,
+        SEND_FILE_MAX_AGE_DEFAULT=300,
     )
 
     # Render fica atrás de um proxy reverso. Só confiamos um salto e não
@@ -40,6 +40,6 @@ def create_app():
     init_db()
 
     assets.register(app)
-    security.register(app)      # ordem dos before_request preservada
+    security.register(app)
     register_blueprints(app)
     return app

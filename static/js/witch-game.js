@@ -13,7 +13,33 @@
     const participarUrl = cfg.participarUrl || '/participar';
     const responderUrl = cfg.responderUrl || '';
     const hasCustomCauldron = Boolean(cfg.hasCustomCauldron);
-    const installedGlbIngredients = Array.isArray(cfg.installedGlbIngredients) ? cfg.installedGlbIngredients : [];
+    const ingredientUrls = cfg.ingredientUrls && typeof cfg.ingredientUrls === 'object' ? cfg.ingredientUrls : {};
+    const MODEL_LOAD_TIMEOUT_MS = 30000;
+
+    function loadGltf(url) {
+        return new Promise((resolve, reject) => {
+            let finished = false;
+            const complete = (callback, value) => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(timer);
+                callback(value);
+            };
+            const timer = setTimeout(() => {
+                complete(reject, new Error(`Tempo esgotado ao carregar ${url}`));
+            }, MODEL_LOAD_TIMEOUT_MS);
+            try {
+                new THREE.GLTFLoader().load(
+                    url,
+                    gltf => complete(resolve, gltf),
+                    undefined,
+                    error => complete(reject, error || new Error(`Falha ao carregar ${url}`))
+                );
+            } catch (error) {
+                complete(reject, error);
+            }
+        });
+    }
 
     // ========================================================
     // 1. ÁUDIO PROCEDURAL (ZERO DOWNLOADS DE ARQUIVOS DE SOM)
@@ -274,9 +300,7 @@
 
             this._setupLighting();
             this._buildEnvironment();
-            this._loadForestBackground();
             this._buildCauldron();
-            this._loadWitch();
 
             window.addEventListener('resize', () => this.onResize());
             this.canvas.addEventListener('click', (e) => this.onPointer(e.clientX, e.clientY));
@@ -511,39 +535,42 @@
                 this.bubbles.push(b);
             }
 
-            if (hasCustomCauldron) {
-                const cauldronLoader = new THREE.GLTFLoader();
-                cauldronLoader.load(
-                    cauldronUrl,
-                    (gltf) => {
-                        const m = gltf.scene;
-                        const box = new THREE.Box3().setFromObject(m);
-                        const size = box.getSize(new THREE.Vector3());
-                        const center = box.getCenter(new THREE.Vector3());
-                        const maxDim = Math.max(size.x, size.y, size.z);
-                        if (maxDim > 0) {
-                            const targetScale = 1.15 / maxDim;
-                            m.scale.set(targetScale, targetScale, targetScale);
-                            m.position.x = -center.x * targetScale;
-                            m.position.y = -box.min.y * targetScale;
-                            m.position.z = -center.z * targetScale;
-                        }
-                        m.traverse(node => {
-                            if (node.isMesh) {
-                                node.castShadow = true;
-                                node.receiveShadow = true;
-                            }
-                        });
-                        procCauldron.visible = false;
-                        grp.add(m);
-                    },
-                    undefined,
-                    () => {}
-                );
-            }
-
+            this.proceduralCauldron = procCauldron;
             this.cauldron = grp;
             this.scene.add(this.cauldron);
+        }
+
+        _loadCustomCauldron() {
+            if (!hasCustomCauldron || this.customCauldronLoaded) return Promise.resolve();
+            if (this.cauldronLoadPromise) return this.cauldronLoadPromise;
+
+            this.cauldronLoadPromise = loadGltf(cauldronUrl).then(gltf => {
+                const m = gltf.scene;
+                if (!m) throw new Error('Modelo do caldeirão vazio.');
+                const box = new THREE.Box3().setFromObject(m);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                if (maxDim > 0) {
+                    const targetScale = 1.15 / maxDim;
+                    m.scale.set(targetScale, targetScale, targetScale);
+                    m.position.x = -center.x * targetScale;
+                    m.position.y = -box.min.y * targetScale;
+                    m.position.z = -center.z * targetScale;
+                }
+                m.traverse(node => {
+                    if (node.isMesh) {
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
+                this.proceduralCauldron.visible = false;
+                this.cauldron.add(m);
+                this.customCauldronLoaded = true;
+            }).catch(error => {
+                console.warn('Caldeirão 3D indisponível; usando o modelo simples.', error);
+            });
+            return this.cauldronLoadPromise;
         }
 
         _createWoodLabel(name, icon) {
@@ -594,7 +621,10 @@
             if (this.ingredients[id]) return this.ingredients[id];
 
             const item = INGREDIENTS_DATABASE.find(i => i.id === id);
-            if (!item) return null;
+            const cachedGltf = this.glbCache && this.glbCache[id];
+            if (!item || !cachedGltf || !cachedGltf.scene) {
+                throw new Error(`Ingrediente ${id} não está pronto.`);
+            }
 
             const surfaceY = 0.55;
             const grp = new THREE.Group();
@@ -616,7 +646,6 @@
             grp.add(plate);
 
             // Usa o GLB pré-carregado do cache (sem fallback procedural)
-            const cachedGltf = this.glbCache && this.glbCache[item.id];
             if (cachedGltf) {
                 const m = cachedGltf.scene.clone();
                 const box = new THREE.Box3().setFromObject(m);
@@ -673,89 +702,125 @@
             return grp;
         }
 
-        /**
-         * Pré-carrega a bruxa E todos os GLBs de ingredientes durante a loading screen.
-         * Só libera o jogo quando tudo estiver em cache — zero flash ao spawnar.
-         */
-        _loadWitch() {
+        _showLoading(message) {
+            const overlay = document.getElementById('loading-overlay');
+            const status = document.getElementById('loading-status');
             const bar = document.getElementById('loading-bar');
-            const st = document.getElementById('loading-status');
-            this.glbCache = {};
+            const retry = document.getElementById('btn-retry-loading');
+            clearTimeout(this.loadingHideTimer);
+            if (overlay) {
+                overlay.style.display = 'flex';
+                overlay.style.opacity = '1';
+                overlay.style.pointerEvents = 'auto';
+            }
+            if (status) status.textContent = message;
+            if (bar) bar.style.width = '0%';
+            if (retry) retry.style.display = 'none';
+        }
 
-            const glbIds = installedGlbIngredients.length > 0
-                ? installedGlbIngredients
-                : INGREDIENTS_DATABASE.map(i => i.id);
+        _updateLoading(completed, total) {
+            const bar = document.getElementById('loading-bar');
+            if (bar) bar.style.width = `${Math.round(100 * completed / total)}%`;
+        }
 
-            // Total de assets: 1 bruxa + N ingredientes
-            const total = 1 + glbIds.length;
-            let loaded = 0;
+        _showLoadError(onRetry) {
+            const status = document.getElementById('loading-status');
+            const retry = document.getElementById('btn-retry-loading');
+            if (status) status.textContent = 'Não foi possível carregar os modelos. Confira sua conexão e tente novamente.';
+            if (retry) {
+                retry.onclick = onRetry;
+                retry.style.display = 'block';
+            }
+        }
 
-            const onOneLoaded = () => {
-                loaded++;
-                if (bar) bar.style.width = Math.round((loaded / total) * 95) + '%';
-            };
+        _hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            if (!overlay) return;
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+            clearTimeout(this.loadingHideTimer);
+            this.loadingHideTimer = setTimeout(() => { overlay.style.display = 'none'; }, 500);
+        }
 
-            const tryFinish = () => {
-                if (loaded < total) return;
-                if (bar) bar.style.width = '100%';
-                setTimeout(() => {
-                    const overlay = document.getElementById('loading-overlay');
-                    if (overlay) {
-                        overlay.style.opacity = '0';
-                        setTimeout(() => overlay.style.display = 'none', 500);
-                    }
-                    this.isReady = true;
-                }, 350);
-            };
-
-            // 1. Carrega a bruxa
-            const witchLoader = new THREE.GLTFLoader();
-            witchLoader.load(
-                modelUrl,
-                (gltf) => {
-                    const model = gltf.scene;
-                    model.scale.set(0.92, 0.92, 0.92);
-                    model.position.set(-0.42, 0, -0.32);
-                    model.rotation.y = 0.35;
-                    model.traverse(node => {
-                        if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; }
-                    });
-                    this.scene.add(model);
-                    if (window.WitchReactions) {
+        _loadWitchModel() {
+            if (this.witchModelLoaded) return Promise.resolve();
+            if (this.witchLoadPromise) return this.witchLoadPromise;
+            const load = loadGltf(modelUrl).then(gltf => {
+                const model = gltf.scene;
+                if (!model) throw new Error('Modelo da bruxa vazio.');
+                model.scale.set(0.92, 0.92, 0.92);
+                model.position.set(-0.42, 0, -0.32);
+                model.rotation.y = 0.35;
+                model.traverse(node => {
+                    if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; }
+                });
+                this.scene.add(model);
+                this.witchModelLoaded = true;
+                if (window.WitchReactions) {
+                    try {
                         this.witch = new window.WitchReactions();
                         this.witch.init(gltf);
+                    } catch (error) {
+                        console.warn('Animação da bruxa indisponível.', error);
                     }
-                    onOneLoaded();
-                    tryFinish();
-                },
-                undefined,
-                (err) => {
-                    console.error("Erro ao carregar bruxa:", err);
-                    if (st) st.textContent = "Erro ao carregar modelo 3D.";
-                    onOneLoaded();
-                    tryFinish();
                 }
-            );
-
-            // 2. Pré-carrega todos os GLBs de ingredientes em paralelo
-            if (st) st.textContent = 'Preparando ingredientes mágicos...';
-            glbIds.forEach((id) => {
-                const ingLoader = new THREE.GLTFLoader();
-                ingLoader.load(
-                    `${ingredientsBaseUrl}${id}.glb`,
-                    (gltf) => {
-                        this.glbCache[id] = gltf;
-                        onOneLoaded();
-                        tryFinish();
-                    },
-                    undefined,
-                    () => {
-                        // Falha silenciosa: ingrediente simplesmente não aparecerá
-                        onOneLoaded();
-                        tryFinish();
-                    }
-                );
             });
+            this.witchLoadPromise = load;
+            load.catch(() => { this.witchLoadPromise = null; });
+            return load;
+        }
+
+        _loadIngredient(id) {
+            if (this.glbCache[id]) return Promise.resolve(this.glbCache[id]);
+            if (this.ingredientLoads[id]) return this.ingredientLoads[id];
+            const url = ingredientUrls[id] || `${ingredientsBaseUrl}${id}.glb`;
+            const load = loadGltf(url).then(gltf => {
+                if (!gltf || !gltf.scene) throw new Error(`Modelo do ingrediente ${id} vazio.`);
+                this.glbCache[id] = gltf;
+                return gltf;
+            });
+            this.ingredientLoads[id] = load;
+            load.then(
+                () => { delete this.ingredientLoads[id]; },
+                () => { delete this.ingredientLoads[id]; }
+            );
+            return load;
+        }
+
+        async ensureIngredients(ids, onProgress) {
+            let completed = 0;
+            const results = await Promise.allSettled(ids.map(id =>
+                this._loadIngredient(id).finally(() => {
+                    completed++;
+                    if (onProgress) onProgress(completed, ids.length);
+                })
+            ));
+            if (results.some(result => result.status === 'rejected')) {
+                throw new Error('Um ou mais ingredientes não carregaram.');
+            }
+        }
+
+        async prepareFirstTask(task, onReady) {
+            this._showLoading('Carregando bruxa, caldeirão e ingredientes do primeiro passo...');
+            if (!this.glbCache) this.glbCache = {};
+            if (!this.ingredientLoads) this.ingredientLoads = {};
+            const ids = [task.target, ...task.distractors];
+            const total = ids.length + 2;
+            let completed = 0;
+            const track = promise => promise.finally(() => this._updateLoading(++completed, total));
+            const results = await Promise.allSettled([
+                track(this._loadWitchModel()),
+                track(this._loadCustomCauldron()),
+                ...ids.map(id => track(this._loadIngredient(id)))
+            ]);
+            if (results.some(result => result.status === 'rejected')) {
+                this._showLoadError(() => this.prepareFirstTask(task, onReady));
+                return;
+            }
+            this.isReady = true;
+            this._hideLoading();
+            this._loadForestBackground();
+            if (onReady) onReady();
         }
 
         onPointer(clientX, clientY) {
@@ -1043,6 +1108,9 @@
             this.score = 0;
             this.mistakes = 0;
             this.isBusy = false;
+            this.loadGeneration = 0;
+            this.victoryConfirmed = false;
+            this.confirmingVictory = false;
 
             this._bindUI();
         }
@@ -1069,12 +1137,14 @@
             const btnClaim = document.getElementById('btn-claim-rewards');
             if (btnClaim) {
                 btnClaim.addEventListener('click', () => {
-                    window.location.href = participarUrl;
+                    if (this.victoryConfirmed) window.location.href = participarUrl;
+                    else this._notifyBackendVictory();
                 });
             }
         }
 
         startGame() {
+            if (!this.view3D.isReady) return;
             const intro = document.getElementById('screen-intro');
             if (intro) intro.style.display = 'none';
 
@@ -1084,30 +1154,65 @@
             this.loadCurrentTask();
         }
 
-        loadCurrentTask() {
+        currentTask() {
+            return this.recipes[this.recipeIdx].tasks[this.taskIdx];
+        }
+
+        prefetchNextTask() {
+            const recipe = this.recipes[this.recipeIdx];
+            const nextTask = recipe.tasks[this.taskIdx + 1]
+                || this.recipes[this.recipeIdx + 1]?.tasks[0];
+            if (!nextTask) return;
+            this.view3D.ensureIngredients([nextTask.target, ...nextTask.distractors])
+                .catch(error => console.warn('Pré-carregamento do próximo passo falhou.', error));
+        }
+
+        async loadCurrentTask() {
+            const generation = ++this.loadGeneration;
             const recipe = this.recipes[this.recipeIdx];
             const task = recipe.tasks[this.taskIdx];
-            this.mistakes = 0;
-            this.isBusy = false;
-
-            const nameEl = document.getElementById('hud-recipe-name');
-            if (nameEl) nameEl.textContent = `📜 ${recipe.tag}: ${recipe.name}`;
-
-            const stepEl = document.getElementById('hud-step-pill');
-            if (stepEl) stepEl.textContent = `Etapa ${this.taskIdx + 1}/${recipe.tasks.length}`;
-
-            const enEl = document.getElementById('task-text-en');
-            if (enEl) enEl.innerHTML = `${task.prefixEn} <span class="hud-keyword">${task.keywordEn}</span>!`;
-
-            this.hideToast();
-
-            const chosen3 = [task.target, task.distractors[0], task.distractors[1]];
-            for (let i = chosen3.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [chosen3[i], chosen3[j]] = [chosen3[j], chosen3[i]];
+            const ids = [task.target, ...task.distractors];
+            this.isBusy = true;
+            this.view3D.isBusy = true;
+            if (!ids.every(id => this.view3D.glbCache[id])) {
+                this.view3D._showLoading('Preparando ingredientes do próximo passo...');
             }
 
-            this.view3D.spawnActiveIngredients(chosen3);
+            try {
+                await this.view3D.ensureIngredients(ids, (completed, total) => {
+                    if (generation === this.loadGeneration) this.view3D._updateLoading(completed, total);
+                });
+                if (generation !== this.loadGeneration) return;
+                this.mistakes = 0;
+
+                const nameEl = document.getElementById('hud-recipe-name');
+                if (nameEl) nameEl.textContent = `📜 ${recipe.tag}: ${recipe.name}`;
+
+                const stepEl = document.getElementById('hud-step-pill');
+                if (stepEl) stepEl.textContent = `Etapa ${this.taskIdx + 1}/${recipe.tasks.length}`;
+
+                const enEl = document.getElementById('task-text-en');
+                if (enEl) enEl.innerHTML = `${task.prefixEn} <span class="hud-keyword">${task.keywordEn}</span>!`;
+
+                this.hideToast();
+
+                const chosen3 = [...ids];
+                for (let i = chosen3.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [chosen3[i], chosen3[j]] = [chosen3[j], chosen3[i]];
+                }
+
+                this.view3D.spawnActiveIngredients(chosen3);
+                this.view3D._hideLoading();
+                this.isBusy = false;
+                this.view3D.isBusy = false;
+                this.prefetchNextTask();
+            } catch (error) {
+                if (generation !== this.loadGeneration) return;
+                console.error('Erro ao preparar ingredientes:', error);
+                this.view3D._showLoading('Preparando ingredientes do próximo passo...');
+                this.view3D._showLoadError(() => this.loadCurrentTask());
+            }
         }
 
         selectIngredient(id) {
@@ -1139,7 +1244,6 @@
                             this.finishRecipe();
                         } else {
                             this.loadCurrentTask();
-                            this.view3D.isBusy = false;
                         }
                     }, 400);
                 });
@@ -1182,7 +1286,6 @@
                 const hud = document.getElementById('screen-hud');
                 if (hud) hud.style.display = 'block';
                 this.loadCurrentTask();
-                this.view3D.isBusy = false;
             }
         }
 
@@ -1201,23 +1304,49 @@
             if (finalScoreEl) finalScoreEl.textContent = this.score;
 
             this.view3D.reactHappy();
+            this.victoryConfirmed = false;
             this._notifyBackendVictory();
         }
 
         async _notifyBackendVictory() {
-            if (!responderUrl) return;
+            if (this.confirmingVictory || this.victoryConfirmed) return;
+            const button = document.getElementById('btn-claim-rewards');
+            const status = document.getElementById('victory-status');
+            let serverMessage = '';
+            this.confirmingVictory = true;
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'LIBERANDO SEU PRÊMIO...';
+            }
+            if (status) status.textContent = 'Confirmando sua vitória...';
             try {
+                if (!responderUrl) throw new Error('Endereço de confirmação ausente.');
                 const formData = new FormData();
                 formData.append('resposta', 'GAME_COMPLETE');
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-                await fetch(responderUrl, {
+                const response = await fetch(responderUrl, {
                     method: 'POST',
                     headers: { 'X-CSRFToken': csrf || '' },
                     body: formData,
                     credentials: 'same-origin'
                 });
+                const result = await response.json();
+                if (!response.ok || !result.ok) {
+                    serverMessage = result.mensagem || '';
+                    throw new Error(serverMessage || 'Confirmação não recebida.');
+                }
+                this.victoryConfirmed = true;
+                if (status) status.textContent = 'Vitória confirmada! Seu cadastro está liberado.';
+                if (button) button.textContent = 'LIBERAR MEU PRÊMIO NA KNN ➔';
             } catch (e) {
-                console.warn("Backend notified silently:", e);
+                console.warn('Falha ao confirmar a vitória:', e);
+                if (status) status.textContent = serverMessage
+                    ? `${serverMessage} Toque para tentar novamente.`
+                    : 'Não foi possível liberar o cadastro. Confira sua conexão e tente novamente.';
+                if (button) button.textContent = 'TENTAR NOVAMENTE';
+            } finally {
+                this.confirmingVictory = false;
+                if (button) button.disabled = false;
             }
         }
 
@@ -1240,7 +1369,6 @@
             if (hud) hud.style.display = 'block';
 
             this.loadCurrentTask();
-            this.view3D.isBusy = false;
         }
 
         showToast(msg, type) {
@@ -1262,7 +1390,9 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         const scene3D = new WitchScene3D();
-        window.gameLogic = new GameController(scene3D);
+        const gameLogic = new GameController(scene3D);
+        window.gameLogic = gameLogic;
+        scene3D.prepareFirstTask(gameLogic.currentTask(), () => gameLogic.prefetchNextTask());
     });
 
 })();

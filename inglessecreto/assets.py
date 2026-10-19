@@ -1,6 +1,7 @@
 import gzip
 import hashlib
 import os
+import re
 
 ASSET_VERSION = "20261017.5"  # fallback, só usado se o arquivo não for encontrado
 
@@ -16,31 +17,42 @@ def _hash_arquivo(path):
 
 
 def _versao_do_arquivo(url_path):
-    """Versão automática = hash do conteúdo. Muda sozinha quando o arquivo muda.
-    Para .css, inclui também as imagens de static/img (usadas via url() no CSS)."""
+    """Versão automática do conteúdo, recalculada se o arquivo mudar."""
     from flask import current_app
 
-    if url_path in _cache_versoes:
-        return _cache_versoes[url_path]
-    versao = ASSET_VERSION
     try:
         static_dir = current_app.static_folder
         rel = url_path.split("/static/", 1)[1]
         arquivo = os.path.join(static_dir, *rel.split("/"))
-        h = hashlib.md5(_hash_arquivo(arquivo).encode())
-        if arquivo.lower().endswith(".css"):
-            img_dir = os.path.join(static_dir, "img")
-            if os.path.isdir(img_dir):
-                for nome in sorted(os.listdir(img_dir)):
-                    caminho = os.path.join(img_dir, nome)
-                    if os.path.isfile(caminho):
-                        h.update(nome.encode())
-                        h.update(_hash_arquivo(caminho).encode())
-        versao = h.hexdigest()[:10]
-        _cache_versoes[url_path] = versao
-    except Exception:
-        pass
-    return versao
+        stat = os.stat(arquivo)
+        assinatura = (stat.st_mtime_ns, stat.st_size)
+        cached = _cache_versoes.get(url_path)
+        if cached and cached[0] == assinatura:
+            return cached[1]
+        versao = hashlib.md5(_hash_arquivo(arquivo).encode()).hexdigest()[:10]
+        _cache_versoes[url_path] = (assinatura, versao)
+        return versao
+    except (OSError, IndexError):
+        return ASSET_VERSION
+
+
+def asset_tem_versao_atual(url_path, versao):
+    """Só permite cache imutável quando ?v corresponde ao arquivo servido."""
+    from flask import current_app
+
+    if not re.fullmatch(r"[0-9a-f]{10}", versao or ""):
+        return False
+    if not url_path.startswith("/static/"):
+        return False
+    static_dir = os.path.realpath(current_app.static_folder)
+    rel = url_path[len("/static/"):]
+    arquivo = os.path.realpath(os.path.join(static_dir, *rel.split("/")))
+    try:
+        if os.path.commonpath((static_dir, arquivo)) != static_dir:
+            return False
+        return os.path.isfile(arquivo) and versao == _versao_do_arquivo(url_path)
+    except ValueError:
+        return False
 
 
 def versioned_asset(url):

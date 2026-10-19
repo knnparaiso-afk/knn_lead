@@ -366,7 +366,7 @@
     }
 
     .loading-bar-fill {
-        width: 30%;
+        width: 0;
         height: 100%;
         background: linear-gradient(90deg, #7c3aed, #39ff14);
         border-radius: 999px;
@@ -377,6 +377,12 @@
         font-size: 11px;
         color: #a1a1aa;
         margin: 0;
+        text-align: center;
+    }
+
+    .loading-retry {
+        max-width: 240px;
+        margin-top: 20px;
     }
 
     /* UI LAYER */
@@ -574,4 +580,17 @@
         font-size: 22px;
         font-family: "Barlow Condensed", Impact, sans-serif;
         margin-left: 4px;
+    }
+
+    .victory-status {
+        min-height: 20px;
+        margin: -6px 0 12px;
+        color: #d4d4d8;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    #btn-claim-rewards:disabled {
+        opacity: 0.65;
+        cursor: wait;
     }

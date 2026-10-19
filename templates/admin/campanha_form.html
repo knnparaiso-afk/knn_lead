@@ -10,6 +10,7 @@ Nova Campanha
 {% endblock %}
 
 {% block content %}
+{% set form_values = form_data or campanha %}
 
 <div class="admin-header" style="margin-bottom: 24px;">
     <div>
@@ -40,7 +41,7 @@ Nova Campanha
             style="display: block; font-size: 13px; font-weight: 800; color: #1f2937; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em;">
             Nome da campanha
         </label>
-        <input id="nome" type="text" name="nome" value="{{ campanha.nome if campanha else '' }}" placeholder="" required
+        <input id="nome" type="text" name="nome" value="{{ form_values.nome if form_values else '' }}" placeholder="" required
             style="width: 100%; height: 50px; border-radius: 10px; border: 1.5px solid #d1d5db; padding: 0 16px; font-size: 15px; font-weight: 600; color: #111827; background: #fafafa; transition: all 0.2s;">
     </div>
 
@@ -53,14 +54,14 @@ Nova Campanha
 
         <!-- Hidden input mantido para o POST -->
         <input type="hidden" id="categoria_input" name="categoria"
-            value="{{ campanha.categoria if campanha and campanha.categoria else 'frases' }}">
+            value="{{ form_values.categoria if form_values and form_values.categoria else 'frases' }}">
 
         <!-- Cards Visuais para Seleção -->
         <div
             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 16px;">
 
             <!-- Opção Frases -->
-            <div class="cat-card {% if not campanha or campanha.categoria == 'frases' %}active{% endif %}"
+            <div class="cat-card {% if not form_values or form_values.categoria == 'frases' %}active{% endif %}"
                 onclick="selecionarCategoria('frases')" id="card-cat-frases">
                 <div class="cat-card-header">
                     <span class="cat-icon-badge" style="background: rgba(124, 58, 237, 0.1); color: #7c3aed;">🎃</span>
@@ -73,7 +74,7 @@ Nova Campanha
             </div>
 
             <!-- Opção Jogos -->
-            <div class="cat-card {% if campanha and campanha.categoria == 'jogos' %}active{% endif %}"
+            <div class="cat-card {% if form_values and form_values.categoria == 'jogos' %}active{% endif %}"
                 onclick="selecionarCategoria('jogos')" id="card-cat-jogos">
                 <div class="cat-card-header">
                     <span class="cat-icon-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">🧪</span>
@@ -101,7 +102,7 @@ Nova Campanha
                     Data de início
                 </label>
                 <input id="data_inicio" type="date" name="data_inicio"
-                    value="{{ campanha.data_inicio if campanha and campanha.data_inicio else '' }}"
+                    value="{{ form_values.data_inicio if form_values and form_values.data_inicio else '' }}"
                     style="width: 100%; height: 46px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; background: #fff;">
             </div>
 
@@ -111,7 +112,7 @@ Nova Campanha
                     Data de término
                 </label>
                 <input id="data_fim" type="date" name="data_fim"
-                    value="{{ campanha.data_fim if campanha and campanha.data_fim else '' }}"
+                    value="{{ form_values.data_fim if form_values and form_values.data_fim else '' }}"
                     style="width: 100%; height: 46px; border-radius: 8px; border: 1px solid #d1d5db; padding: 0 14px; font-size: 14px; background: #fff;">
             </div>
         </div>
@@ -128,10 +129,9 @@ Nova Campanha
                 style="font-size: 15px; font-weight: 800; color: #111827; cursor: pointer; display: block; margin-bottom: 2px;">
                 Campanha Ativa
             </label>
-            <span style="font-size: 12px; color: #6b7280;">Quando ativa, o QR Code exibe a experiência imediatamente ao
-                ser escaneado.</span>
+            <span style="font-size: 12px; color: #6b7280;">Quando ativa, a experiência fica disponível entre as datas de início e término informadas.</span>
         </div>
-        <input type="checkbox" id="ativa" name="ativa" {% if not campanha or campanha.ativa %}checked{% endif %}
+        <input type="checkbox" id="ativa" name="ativa" {% if not form_values or form_values.ativa %}checked{% endif %}
             style="width: 22px; height: 22px; accent-color: #ED1B2F; cursor: pointer;">
     </div>
 

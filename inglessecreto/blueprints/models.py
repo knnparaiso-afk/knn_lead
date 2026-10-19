@@ -6,9 +6,6 @@ from flask import Blueprint, current_app, make_response, request, send_file
 
 bp = Blueprint("models", __name__)
 
-CACHE = "public, max-age=31536000, immutable"
-
-
 @bp.route("/static/models/<path:filename>")
 def servir_modelo_estatico(filename):
     models_dir = os.path.realpath(os.path.join(current_app.root_path, "static", "models"))
@@ -22,7 +19,6 @@ def servir_modelo_estatico(filename):
         response = make_response(send_file(gz_path, mimetype="model/gltf-binary"))
         response.headers["Content-Encoding"] = "gzip"
         response.headers["Vary"] = "Accept-Encoding"
-        response.headers["Cache-Control"] = CACHE
         return response
 
     if os.path.isfile(safe_path):
@@ -32,7 +28,6 @@ def servir_modelo_estatico(filename):
             mime = mimetypes.guess_type(safe_path)[0] or "application/octet-stream"
         response = make_response(send_file(safe_path, mimetype=mime))
         response.headers["Vary"] = "Accept-Encoding"
-        response.headers["Cache-Control"] = CACHE
         return response
 
     return ("Modelo não encontrado", 404)

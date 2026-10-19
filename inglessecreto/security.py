@@ -7,8 +7,7 @@ from flask_wtf.csrf import CSRFError
 
 from config import SECRET_KEY, IS_PRODUCTION
 from database import get_connection
-
-from .services.campaigns import desativar_campanhas_expiradas
+from .assets import asset_tem_versao_atual
 
 FIELD_MAX_LENGTHS = {
     "username": 100, "password": 256,
@@ -80,13 +79,25 @@ def adicionar_cabecalhos_de_seguranca(response):
     h.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     h.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
     h.setdefault("Content-Security-Policy", CSP)
-    if request.path.startswith(("/admin", "/participar", "/nada")):
+    if request.path.startswith(("/admin", "/participar", "/nada", "/conquista", "/e/")):
         h["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         h["Pragma"] = "no-cache"
-        h["X-Robots-Tag"] = "noindex, nofollow, noarchive"
-    elif request.path.startswith("/static/"):
+        h.pop("Expires", None)
+        if request.path.startswith(("/admin", "/participar", "/nada", "/conquista")):
+            h["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+    elif request.path.startswith(("/static/", "/models/")):
         if response.status_code in (200, 304):
-            h["Cache-Control"] = "public, max-age=31536000, immutable"
+            versoes = request.args.getlist("v")
+            if (request.path.startswith("/static/") and len(versoes) == 1
+                    and asset_tem_versao_atual(request.path, versoes[0])):
+                h["Cache-Control"] = "public, max-age=31536000, immutable"
+                h.pop("Expires", None)
+            else:
+                h["Cache-Control"] = "public, max-age=300, must-revalidate"
+    elif request.method not in ("GET", "HEAD"):
+        h["Cache-Control"] = "no-store"
+    elif response.mimetype == "text/html":
+        h["Cache-Control"] = "private, no-cache, max-age=0, must-revalidate"
     if IS_PRODUCTION and request.is_secure:
         h.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
     return response
@@ -102,6 +113,5 @@ def csrf_error(_error):
 
 def register(app):
     app.before_request(validar_tamanho_de_entrada)
-    app.before_request(desativar_campanhas_expiradas)
     app.after_request(adicionar_cabecalhos_de_seguranca)
     app.register_error_handler(CSRFError, csrf_error)
