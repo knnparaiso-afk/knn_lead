@@ -59,15 +59,7 @@ English Pass | Inglês Secreto
                 </th>
 
                 <th>
-                    Recompensa
-                </th>
-
-                <th>
                     Status
-                </th>
-
-                <th>
-                    Ação
                 </th>
 
             </tr>
@@ -90,11 +82,7 @@ English Pass | Inglês Secreto
                     {{ premio.whatsapp }}
                 </td>
 
-                <td>
-                    {{ premio.recompensa_nome }}
-                </td>
-
-                <td>
+                <td class="pass-status-cell">
 
                     {% if premio.status == 'utilizado' %}
 
@@ -107,28 +95,10 @@ English Pass | Inglês Secreto
                     <span class="status active">
                         DISPONÍVEL
                     </span>
-
-                    {% endif %}
-
-                </td>
-
-                <td>
-
-                    {% if premio.status != 'utilizado' %}
-
-                    <form method="POST" action="{{ url_for('reports.utilizar_premio', premio_id=premio.id) }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                        <button type="submit" class="table-button">
-                            MARCAR UTILIZADO
-                        </button>
-
+                    <form class="pass-action-form" method="POST" action="{{ url_for('reports.utilizar_premio', premio_id=premio.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="table-button">MARCAR UTILIZADO</button>
                     </form>
-
-                    {% else %}
-
-                    —
-
                     {% endif %}
 
                 </td>
@@ -139,7 +109,7 @@ English Pass | Inglês Secreto
 
             <tr>
 
-                <td colspan="5" class="empty-table">
+                <td colspan="3" class="empty-table">
                     Nenhum English Pass desbloqueado ainda.
                 </td>
 

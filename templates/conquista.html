@@ -45,7 +45,7 @@
             </div>
             <h1 class="nada-title">
                 {% if not novo_registro %}
-                    Você já encontrou a frase deste <span class="highlight">{{ local_nome or 'local' }}</span>!
+                    Você já encontrou a frase deste <span class="highlight">local</span>!
                 {% elif nome %}
                     Parabéns, <span class="highlight">{{ nome }}</span>!
                 {% else %}
@@ -60,7 +60,7 @@
                     📍 LOCAL JÁ CONTABILIZADO
                 </div>
                 <div style="font-size: 18px; font-weight: 800; color: #fff; margin: 6px 0;">
-                    Você já havia pontuado com o QR Code de <u>{{ local_nome or 'este local' }}</u>.
+                    Você já havia pontuado com este QR Code.
                 </div>
                 <p style="margin: 4px 0 0; font-size: 13px; color: #fde047;">
                     Seu saldo atual continua em <strong>{{ descobertas }} de {{ pass_required }} QR Codes</strong>. Encontre QR Codes em outros locais parceiros para pontuar novamente!

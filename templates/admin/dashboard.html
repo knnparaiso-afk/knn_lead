@@ -18,12 +18,26 @@
     <article class="metric-card metric-card-dark"><span>ENGLISH PASS</span><strong>{{ passes }}</strong><p>prêmios desbloqueados</p></article>
 </section>
 
-{% if campanha_atual %}
+{% if campanhas_ativas_lista %}
+{% for campanha in campanhas_ativas_lista %}
 <section class="current-campaign">
-    <div class="current-campaign-top"><div><h2>{{ campanha_atual.nome }}</h2></div><span class="live-badge">AO VIVO</span></div>
-    <div class="campaign-phrase"><strong>{{ campanha_atual.frase }}</strong></div>
-    <div class="campaign-health"><div><strong>{{ campanha_atual.total_qrs }}</strong><span>QR Codes gerados</span></div><div><strong>{{ campanha_atual.total_descobertas }}</strong><span>Leads desta campanha</span></div><a href="{{ url_for('qr.gerenciar_qr', campanha_id=campanha_atual.id) }}" class="btn btn-secondary">GERENCIAR PONTOS <span>→</span></a></div>
+    <div class="current-campaign-top">
+        <div>
+            <span class="admin-kicker">{% if campanha.categoria == 'jogos' %}JOGOS INTERATIVOS{% else %}FRASES EM INGLÊS{% endif %}</span>
+            <h2>{{ campanha.nome or campanha.frase }}</h2>
+        </div>
+        <span class="live-badge">AO VIVO</span>
+    </div>
+    {% if campanha.frase|trim %}
+    <div class="campaign-phrase"><strong>{{ campanha.frase }}</strong></div>
+    {% endif %}
+    <div class="campaign-health">
+        <div><strong>{{ campanha.total_qrs }}</strong><span>QR Codes gerados</span></div>
+        <div><strong>{{ campanha.total_descobertas }}</strong><span>Leads desta campanha</span></div>
+        <a href="{{ url_for('qr.gerenciar_qr', campanha_id=campanha.id) }}" class="btn btn-secondary">GERENCIAR PONTOS <span>→</span></a>
+    </div>
 </section>
+{% endfor %}
 {% else %}
 <section class="setup-card"><span class="setup-number">01</span><div><h2>Crie a primeira campanha.</h2><p>Defina o nome, a modalidade de desafio e os locais que receberão um QR Code.</p></div><a href="{{ url_for('campaigns.nova_campanha') }}" class="btn btn-primary">CRIAR CAMPANHA <span>→</span></a></section>
 {% endif %}

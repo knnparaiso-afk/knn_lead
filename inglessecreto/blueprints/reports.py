@@ -19,16 +19,11 @@ def _contar(connection, sql, parameters=()):
 @admin_required
 def admin_dashboard():
     connection = get_connection()
-    campanhas_ativas = _contar(
-        connection,
-        f"SELECT COUNT(*) AS total FROM campanhas WHERE {filtro_campanha_vigente()}",
-        parametros_vigencia(),
-    )
     participantes = _contar(connection, "SELECT COUNT(*) AS total FROM usuarios")
     descobertas = _contar(connection, "SELECT COUNT(*) AS total FROM descobertas")
     passes = _contar(connection, "SELECT COUNT(*) AS total FROM premios")
     locais_ativos = _contar(connection, "SELECT COUNT(*) AS total FROM locais WHERE ativo = 1")
-    campanha_atual = connection.execute(
+    campanhas_ativas = connection.execute(
         f"""
         SELECT
             campanhas.*,
@@ -40,20 +35,20 @@ def admin_dashboard():
         WHERE {filtro_campanha_vigente()}
         GROUP BY campanhas.id
         ORDER BY campanhas.id DESC
-        LIMIT 1
         """,
         parametros_vigencia(),
-    ).fetchone()
+    ).fetchall()
+    total_campanhas_ativas = len(campanhas_ativas)
     connection.close()
 
     return render_template(
         "admin/dashboard.html",
-        campanhas_ativas=campanhas_ativas,
+        campanhas_ativas=total_campanhas_ativas,
         participantes=participantes,
         descobertas=descobertas,
         passes=passes,
         locais_ativos=locais_ativos,
-        campanha_atual=campanha_atual,
+        campanhas_ativas_lista=campanhas_ativas,
     )
 
 
@@ -127,7 +122,28 @@ def descobertas():
         """
     ).fetchall()
     connection.close()
-    return render_template("admin/descobertas.html", descobertas=lista)
+
+    pessoas = {}
+    for registro in lista:
+        descoberta = dict(registro)
+        usuario_id = descoberta["usuario_id"]
+        if usuario_id not in pessoas:
+            pessoas[usuario_id] = {
+                "id": usuario_id,
+                "nome": descoberta["usuario_nome"],
+                "whatsapp": descoberta["whatsapp"],
+                "total_qrs": descoberta["total_qrs_pessoa"],
+                "descobertas": [],
+            }
+        pessoas[usuario_id]["descobertas"].append(descoberta)
+
+    for pessoa in pessoas.values():
+        pessoa["descobertas"].sort(key=lambda item: (item["ordem_qr"], item["id"]))
+
+    return render_template(
+        "admin/descobertas.html",
+        pessoas=list(pessoas.values()),
+    )
 
 
 @bp.route("/admin/pass")

@@ -30,13 +30,17 @@ if IS_PRODUCTION and not _secret_key:
     )
 SECRET_KEY = _secret_key or "dev-secret-key-apenas-para-uso-local"
 
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin").strip() or "admin"
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "").strip()
 _admin_password = os.getenv("ADMIN_PASSWORD", "").strip()
-if IS_PRODUCTION and not _admin_password:
+if not ADMIN_USERNAME:
     raise RuntimeError(
-        "Configure ADMIN_PASSWORD nas variáveis de ambiente antes de iniciar em produção."
+        "Configure ADMIN_USERNAME nas variáveis de ambiente antes de iniciar a aplicação."
     )
-ADMIN_PASSWORD = _admin_password or "knn123"
+if not _admin_password:
+    raise RuntimeError(
+        "Configure ADMIN_PASSWORD nas variáveis de ambiente antes de iniciar a aplicação."
+    )
+ADMIN_PASSWORD = _admin_password
 
 BASE_URL = os.getenv(
     "BASE_URL",

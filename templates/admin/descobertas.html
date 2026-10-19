@@ -1,134 +1,98 @@
 {% extends "base.html" %}
 
-{% block title %}
-Descobertas | Inglês Secreto
-{% endblock %}
-
+{% block title %}Descobertas | Inglês Secreto{% endblock %}
 
 {% block content %}
-
 <div class="admin-header">
-
     <div>
+        <h1>Descobertas</h1>
+        <p>Selecione uma pessoa para ver os QR Codes encontrados.</p>
+    </div>
+</div>
 
-        <h1>
-            Descobertas
-        </h1>
-        <p>Um registro por QR concluído, com a ordem de cada pessoa.</p>
+<div class="table-container discoveries-people-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Pessoa</th>
+                <th>Telefone</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pessoa in pessoas %}
+            <tr>
+                <td>
+                    <button type="button" class="discoveries-person-button"
+                        data-discoveries-dialog="discoveries-dialog-{{ pessoa.id }}"
+                        aria-haspopup="dialog">
+                        {{ pessoa.nome }}
+                    </button>
+                </td>
+                <td>{{ pessoa.whatsapp }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="2" class="empty-table">Nenhuma descoberta registrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
+{% for pessoa in pessoas %}
+<dialog class="discoveries-dialog" id="discoveries-dialog-{{ pessoa.id }}"
+    aria-labelledby="discoveries-title-{{ pessoa.id }}">
+    <div class="discoveries-dialog-header">
+        <div>
+            <span class="small-label">PROGRESSO DA PESSOA</span>
+            <h2 id="discoveries-title-{{ pessoa.id }}">{{ pessoa.nome }}</h2>
+            <p>{{ pessoa.whatsapp }} · {{ pessoa.total_qrs }} QR Codes encontrados</p>
+        </div>
+        <button type="button" class="discoveries-dialog-close"
+            data-close-discoveries-dialog aria-label="Fechar">&times;</button>
     </div>
 
-</div>
+    <div class="discoveries-dialog-content">
+        <table>
+            <thead>
+                <tr>
+                    <th>Leitura</th>
+                    <th>Campanha</th>
+                    <th>Local</th>
+                    <th>Parceiro</th>
+                    <th>QR</th>
+                    <th>Horário (Brasília)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for descoberta in pessoa.descobertas %}
+                <tr>
+                    <td>{{ descoberta.ordem_qr }}º QR</td>
+                    <td>{{ descoberta.campanha_nome or descoberta.frase }}</td>
+                    <td>{{ descoberta.local_nome }}</td>
+                    <td>{{ descoberta.parceiro or '—' }}</td>
+                    <td>{{ descoberta.qr_codigo }}</td>
+                    <td>{{ descoberta.data_hora | data_hora_brasilia }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</dialog>
+{% endfor %}
 
+<script>
+    document.querySelectorAll("[data-discoveries-dialog]").forEach((button) => {
+        button.addEventListener("click", () => {
+            document.getElementById(button.dataset.discoveriesDialog)?.showModal();
+        });
+    });
 
-<div class="table-container">
-
-    <table>
-
-        <thead>
-
-            <tr>
-
-                <th>
-                    Pessoa
-                </th>
-
-                <th>
-                    Total de QRs
-                </th>
-
-                <th>
-                    Leitura
-                </th>
-
-                <th>
-                    Campanha
-                </th>
-
-                <th>
-                    Local
-                </th>
-
-                <th>
-                    Parceiro
-                </th>
-
-                <th>
-                    QR
-                </th>
-
-                <th>
-                    Horário (Brasília)
-                </th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            {% for descoberta in descobertas %}
-
-            <tr>
-
-                <td>
-
-                    <strong>
-                        {{ descoberta.usuario_nome }}
-                    </strong>
-
-                    <small>
-                        {{ descoberta.whatsapp }}
-                    </small>
-
-                </td>
-
-                <td>
-                    <strong>{{ descoberta.total_qrs_pessoa }}</strong>
-                </td>
-
-                <td>
-                    {{ descoberta.ordem_qr }}º QR
-                </td>
-
-                <td>
-                    {{ descoberta.campanha_nome or descoberta.frase }}
-                </td>
-
-                <td>
-                    {{ descoberta.local_nome }}
-                </td>
-
-                <td>
-                    {{ descoberta.parceiro or '—' }}
-                </td>
-
-                <td>
-                    {{ descoberta.qr_codigo }}
-                </td>
-
-                <td>
-                    {{ descoberta.data_hora | data_hora_brasilia }}
-                </td>
-
-            </tr>
-
-            {% else %}
-
-            <tr>
-
-                <td colspan="8" class="empty-table">
-                    Nenhuma descoberta registrada.
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-        </tbody>
-
-    </table>
-
-</div>
-
+    document.querySelectorAll(".discoveries-dialog").forEach((dialog) => {
+        dialog.querySelector("[data-close-discoveries-dialog]").addEventListener("click", () => dialog.close());
+        dialog.addEventListener("click", (event) => {
+            if (event.target === dialog) dialog.close();
+        });
+    });
+</script>
 {% endblock %}

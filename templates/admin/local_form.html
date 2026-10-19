@@ -25,6 +25,14 @@ Novo local | Inglês Secreto
         <input type="text" name="endereco" maxlength="250" placeholder="Endereço completo:" style="width: 100%; height: 46px; border-radius: 4px; padding: 0 14px;">
     </div>
 
+    <div style="margin-bottom: 24px;">
+        <label for="parceiro">Parceiro (opcional)</label>
+        <input id="parceiro" type="text" name="parceiro" maxlength="150"
+            placeholder="Nome da empresa ou organização parceira"
+            style="width: 100%; height: 46px; border-radius: 4px; padding: 0 14px;">
+        <small>Será exibido junto ao local na identificação do QR Code e nos relatórios.</small>
+    </div>
+
     <div class="form-actions">
         <a href="{{ url_for('locations.locais') }}" class="btn">
             CANCELAR

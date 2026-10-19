@@ -41,7 +41,7 @@ python -m pip install -r requirements.txt
 python app.py
 ```
 
-Para usar SQLite localmente, não defina `DATABASE_URL`. Copie `.env.example` para `.env` se quiser personalizar as variáveis locais. Ajuste `BASE_URL` para o IP da rede local usado pelos celulares que leem os QR Codes.
+Para usar SQLite localmente, não defina `DATABASE_URL`. Copie `.env.example` para `.env` e troque `ADMIN_USERNAME` e `ADMIN_PASSWORD` por credenciais locais suas antes de iniciar. O arquivo `.env` é ignorado pelo Git. Ajuste `BASE_URL` para o IP da rede local usado pelos celulares que leem os QR Codes.
 
 ## Preparar no Render
 
@@ -52,7 +52,8 @@ Configurações iniciais do Web Service:
 - **Start Command opcional após medir:** `gunicorn -c gunicorn_render.py app:app`.
 - Configure `DATABASE_URL` usando a **Internal Database URL** do PostgreSQL do Render.
 - Configure `SECRET_KEY` com um valor aleatório longo.
-- Configure `ADMIN_USERNAME` e uma senha forte em `ADMIN_PASSWORD`.
+- Configure `ADMIN_USERNAME` e `ADMIN_PASSWORD` como variáveis de ambiente. A aplicação agora falha ao iniciar se qualquer uma estiver ausente; não há mais usuário/senha padrão.
+- Prefira armazenar `ADMIN_PASSWORD` como hash do Werkzeug (`pbkdf2:`, `scrypt:` ou `argon2:`), formato que o login já valida. Gere o valor localmente com `python -c "from werkzeug.security import generate_password_hash; print(generate_password_hash(input('Nova senha: ')))"` e salve apenas o resultado como variável de ambiente.
 - Configure `BASE_URL` para a URL pública final do serviço/domínio, sem barra no final.
 - Configure `PRIVACY_CONTROLLER_NAME`, `PRIVACY_CONTROLLER_CNPJ` e `PRIVACY_CONTACT_EMAIL` com os dados reais da empresa responsável.
 - Mantenha o Web Service e o PostgreSQL na mesma região.
@@ -158,7 +159,7 @@ O `requirements.txt` deste pacote inclui as dependências necessárias ao app e 
 
 Defina `PRIVACY_CONTROLLER_NAME`, `PRIVACY_CONTROLLER_CNPJ` e `PRIVACY_CONTACT_EMAIL` com os dados reais da empresa/franqueada responsável. A página de privacidade sinaliza quando os valores ainda não foram preenchidos. A minuta deve ser revisada pela pessoa responsável pela privacidade/jurídico da unidade, especialmente as regras de crianças e adolescentes, bases legais, retenção e verificação do responsável. A declaração no formulário não verifica, sozinha, a identidade do responsável legal.
 
-Verifique também `SECRET_KEY` e `ADMIN_PASSWORD` no Render. Use uma chave aleatória e uma senha administrativa longa e exclusiva. Não compartilhe os valores no GitHub, em mensagens ou em capturas de tela.
+Verifique também `SECRET_KEY`, `ADMIN_USERNAME` e `ADMIN_PASSWORD` no Render. Use uma chave aleatória e uma senha administrativa longa, exclusiva e armazenada como hash. Não compartilhe credenciais no GitHub, em mensagens ou em capturas de tela. Para execução local, defina essas mesmas variáveis no ambiente ou em um arquivo `.env` ignorado pelo Git.
 
 ### Testes de segurança recomendados após o deploy
 
