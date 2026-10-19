@@ -147,12 +147,15 @@ def gerar_arte_qrcode(codigo, campanha, local):
     # 3. QR Code
     qr = qrcode.QRCode(
         version=None, error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=16, border=2,
+        box_size=1, border=4,
     )
     qr.add_data(f"{BASE_URL}/e/{codigo}")
     qr.make(fit=True)
-    qr_tam = 600
-    qr_img = qr.make_image(fill_color="#111827", back_color="white").convert("RGB").resize((qr_tam, qr_tam))
+    # A arte inteira é impressa em A4; 280 px ocupam cerca de 5,3 cm,
+    # deixando folga dentro do campo de aproximadamente 6,5 cm do cartaz.
+    qr.box_size = max(1, 280 // (qr.modules_count + qr.border * 2))
+    qr_img = qr.make_image(fill_color="#111827", back_color="white").convert("RGB")
+    qr_tam = qr_img.width
     qr_x, qr_y = int((W - qr_tam) / 2), box_y2 + 40
     draw.rounded_rectangle(
         [(qr_x - 18, qr_y - 18), (qr_x + qr_tam + 18, qr_y + qr_tam + 18)],
