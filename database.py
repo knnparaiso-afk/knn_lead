@@ -3,6 +3,7 @@ import re
 import sqlite3
 
 from config import DATABASE_PATH, DATABASE_URL, QR_LOCAL_GENERICO
+from telefones import normalizar_whatsapp
 
 
 # O esquema fica escrito em sintaxe SQLite, para preservar o comportamento local.
@@ -257,6 +258,7 @@ def get_connection():
     os.makedirs(os.path.dirname(os.path.abspath(DATABASE_PATH)), exist_ok=True)
     connection = sqlite3.connect(DATABASE_PATH)
     connection.row_factory = sqlite3.Row
+    connection.create_function("normalizar_whatsapp", 1, normalizar_whatsapp, deterministic=True)
     connection.execute("PRAGMA foreign_keys = ON")
     return connection
 

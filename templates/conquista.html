@@ -45,7 +45,7 @@
             </div>
             <h1 class="nada-title">
                 {% if not novo_registro %}
-                    Você já escaneou <span class="highlight">aqui</span>.
+                    Este QR Code <span class="highlight">já foi contabilizado</span>.
                 {% elif nome %}
                     Parabéns, <span class="highlight">{{ nome }}</span>!
                 {% else %}
@@ -60,10 +60,14 @@
                     QR CODE JÁ CONTABILIZADO
                 </div>
                 <div style="font-size: 18px; font-weight: 800; color: #fff; margin: 6px 0;">
-                    Você já escaneou aqui.
+                    Este QR Code já foi contabilizado.
                 </div>
                 <p style="margin: 4px 0 0; font-size: 13px; color: #fde047;">
-                    Seu progresso continua em <strong>{{ descobertas }} de {{ pass_required }} QR Codes</strong>. Encontre outros QR Codes para avançar!
+                    {% if descobertas >= pass_required %}
+                        Você já desbloqueou o prêmio máximo: o <strong>English Pass</strong>. Esta leitura repetida não altera seu progresso.
+                    {% else %}
+                        Seu progresso continua em <strong>{{ descobertas }} de {{ pass_required }} QR Codes</strong>. Encontre outros QR Codes para avançar!
+                    {% endif %}
                 </p>
             </div>
             {% else %}
@@ -80,7 +84,7 @@
                     {% elif descobertas == 3 %}
                         🏆 ENGLISH PASS DESBLOQUEADO!
                     {% else %}
-                        🎉 VOCÊ JÁ ENCONTROU TODOS OS QR CODES!
+                        🏆 VOCÊ JÁ DESBLOQUEOU O PRÊMIO MÁXIMO!
                     {% endif %}
                 </div>
                 <p style="margin: 4px 0 0; font-size: 13px; color: #c4b5fd;">
@@ -91,7 +95,7 @@
                     {% elif descobertas == 3 %}
                         Você desbloqueou o English Pass: <strong>50% DE DESCONTO</strong> e <strong>ISENÇÃO NA TAXA DE MATRÍCULA</strong>, com pagamento após um mês do início dos estudos.
                     {% else %}
-                        Você já encontrou todos os QR Codes e desbloqueou seu prêmio. Venha retirar o prêmio em nossa escola.
+                        Você já desbloqueou o prêmio máximo: o <strong>English Pass</strong>, ao completar {{ pass_required }} QR Codes diferentes. Esta nova descoberta foi registrada, mas não gera um prêmio adicional. Venha retirar o prêmio em nossa escola.
                     {% endif %}
                 </p>
                 <p style="margin: 10px 0 0; font-size: 12px; color: #d8c9ef;">

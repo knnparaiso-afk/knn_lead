@@ -12,7 +12,7 @@ from ..services.campaigns import (filtro_campanha_vigente,
 from ..services.participants import (criar_pass_se_necessario,
                                      salvar_participacao, validar_formulario,
                                      gerar_token_participante, obter_id_por_token,
-                                     quantidade_descobertas)
+                                     quantidade_descobertas, descoberta_ja_registrada)
 
 bp = Blueprint("public", __name__)
 
@@ -128,12 +128,9 @@ def participar(codigo):
 
         if participante_reconhecido:
             # A mesma pessoa só contabiliza cada QR Code uma vez, em qualquer local.
-            descoberta_existente = connection.execute(
-                "SELECT id FROM descobertas WHERE usuario_id = ? AND qr_code_id = ?",
-                (participante_reconhecido["id"], qr["id"]),
-            ).fetchone()
-            if descoberta_existente:
-                ja_encontrou_este_qr = True
+            ja_encontrou_este_qr = descoberta_ja_registrada(
+                connection, participante_reconhecido["id"], qr["id"]
+            )
 
     if request.method != "POST":
         connection.close()

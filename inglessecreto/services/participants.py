@@ -1,6 +1,7 @@
 from itsdangerous import URLSafeTimedSerializer
 from config import ENGLISH_PASS_REQUIRED, SECRET_KEY
-from database import get_connection
+from database import get_connection, PostgreSQLConnection
+from telefones import normalizar_whatsapp
 
 _signer = URLSafeTimedSerializer(SECRET_KEY, salt="knn-participante-salt")
 
@@ -50,7 +51,7 @@ def validar_formulario(nome, whatsapp, email, idade):
     if len(nome) > 120 or len(whatsapp) > 32 or len(email) > 254:
         return None, "Revise os campos: um dos valores excede o limite permitido."
 
-    digitos = "".join(c for c in whatsapp if c.isdigit())
+    digitos = normalizar_whatsapp(whatsapp)
     if len(digitos) not in (10, 11):
         return None, "Informe um WhatsApp válido com DDD."
 
@@ -70,20 +71,61 @@ def registrar_consentimento(connection, usuario_id, tipo, texto, versao=None):
     )
 
 
+def _bloquear_gravacao(connection):
+    # Serializa identificação + descoberta, inclusive entre workers do servidor.
+    # O bloqueio termina no commit/rollback da transação de quem chama.
+    if isinstance(connection, PostgreSQLConnection):
+        connection.execute("SELECT pg_advisory_xact_lock(?)", (7193042107,))
+    elif not connection.in_transaction:
+        connection.execute("BEGIN IMMEDIATE")
+
+
+def _ids_por_whatsapp(connection, whatsapp):
+    # Reconhece também máscaras antigas, sem apagar cadastros, consentimentos
+    # ou cookies existentes. Novas participações usam o cadastro mais antigo.
+    expressao = (
+        "regexp_replace(whatsapp, '[^0-9]', '', 'g')"
+        if isinstance(connection, PostgreSQLConnection)
+        else "normalizar_whatsapp(whatsapp)"
+    )
+    return [row["id"] for row in connection.execute(
+        f"SELECT id FROM usuarios WHERE {expressao} = ? ORDER BY id",
+        (normalizar_whatsapp(whatsapp),),
+    ).fetchall()]
+
+
+def _ids_do_participante(connection, usuario_id):
+    usuario = connection.execute(
+        "SELECT whatsapp FROM usuarios WHERE id = ?", (usuario_id,)
+    ).fetchone()
+    return _ids_por_whatsapp(connection, usuario["whatsapp"]) if usuario else [usuario_id]
+
+
+def descoberta_ja_registrada(connection, usuario_id, qr_id):
+    ids = _ids_do_participante(connection, usuario_id)
+    placeholders = ",".join("?" for _ in ids)
+    return connection.execute(
+        f"SELECT id FROM descobertas WHERE usuario_id IN ({placeholders}) "
+        "AND qr_code_id = ? LIMIT 1", (*ids, qr_id),
+    ).fetchone() is not None
+
+
 def salvar_participacao(connection, qr, nome, whatsapp, email, idade):
     """Cria/atualiza o usuário, registra a descoberta e os consentimentos.
 
     Não faz commit: quem chama controla a transação.
     """
-    usuario = connection.execute(
-        "SELECT id FROM usuarios WHERE whatsapp = ?", (whatsapp,)
-    ).fetchone()
+    whatsapp = normalizar_whatsapp(whatsapp)
+    if len(whatsapp) not in (10, 11):
+        raise ValueError("Informe um WhatsApp válido com DDD.")
+    _bloquear_gravacao(connection)
+    ids = _ids_por_whatsapp(connection, whatsapp)
 
-    if usuario:
-        usuario_id = usuario["id"]
+    if ids:
+        usuario_id = ids[0]
         connection.execute(
-            "UPDATE usuarios SET nome = ?, email = ?, idade = ? WHERE id = ?",
-            (nome, email, idade, usuario_id),
+            "UPDATE usuarios SET nome = ?, email = ?, idade = ?, whatsapp = ? WHERE id = ?",
+            (nome, email, idade, whatsapp, usuario_id),
         )
     else:
         cursor = connection.execute(
@@ -96,21 +138,20 @@ def salvar_participacao(connection, qr, nome, whatsapp, email, idade):
         )
         usuario_id = cursor.fetchone()["id"]
 
-    ja_encontrou = connection.execute(
-        "SELECT id FROM descobertas WHERE usuario_id = ? AND qr_code_id = ?",
-        (usuario_id, qr["id"]),
-    ).fetchone()
+    ja_encontrou = descoberta_ja_registrada(connection, usuario_id, qr["id"])
 
     novo_registro = False
     if not ja_encontrou:
-        connection.execute(
+        inserida = connection.execute(
             """
             INSERT INTO descobertas (usuario_id, campanha_id, local_id, qr_code_id)
             VALUES (?, ?, ?, ?)
+            ON CONFLICT (usuario_id, qr_code_id) DO NOTHING
+            RETURNING id
             """,
             (usuario_id, qr["campanha_id"], qr["local_id"], qr["id"]),
-        )
-        novo_registro = True
+        ).fetchone()
+        novo_registro = inserida is not None
 
     registrar_consentimento(
         connection, usuario_id, "participacao_e_mensagens", PARTICIPATION_CONSENT_TEXT
@@ -125,9 +166,11 @@ def salvar_participacao(connection, qr, nome, whatsapp, email, idade):
 def quantidade_descobertas(usuario_id):
     connection = get_connection()
     try:
+        ids = _ids_do_participante(connection, usuario_id)
+        placeholders = ",".join("?" for _ in ids)
         return connection.execute(
-            "SELECT COUNT(*) AS total FROM descobertas WHERE usuario_id = ?",
-            (usuario_id,),
+            "SELECT COUNT(DISTINCT qr_code_id) AS total FROM descobertas "
+            f"WHERE usuario_id IN ({placeholders})", ids,
         ).fetchone()["total"]
     finally:
         connection.close()
@@ -143,8 +186,11 @@ def criar_pass_se_necessario(usuario_id):
 
     connection = get_connection()
     try:
+        _bloquear_gravacao(connection)
+        ids = _ids_do_participante(connection, usuario_id)
+        placeholders = ",".join("?" for _ in ids)
         existe = connection.execute(
-            "SELECT id FROM premios WHERE usuario_id = ?", (usuario_id,)
+            f"SELECT id FROM premios WHERE usuario_id IN ({placeholders})", ids,
         ).fetchone()
         if not existe:
             recompensa = connection.execute(
@@ -152,8 +198,9 @@ def criar_pass_se_necessario(usuario_id):
             ).fetchone()
             if recompensa:
                 connection.execute(
-                    "INSERT INTO premios (usuario_id, recompensa_id) VALUES (?, ?)",
-                    (usuario_id, recompensa["id"]),
+                    "INSERT INTO premios (usuario_id, recompensa_id) VALUES (?, ?) "
+                    "ON CONFLICT (usuario_id) DO NOTHING",
+                    (ids[0], recompensa["id"]),
                 )
         connection.commit()
     finally:

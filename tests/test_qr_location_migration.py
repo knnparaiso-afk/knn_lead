@@ -296,10 +296,11 @@ class QRLocationMigrationTests(unittest.TestCase):
         response = client.get("/conquista")
         self.assertEqual(response.status_code, 200)
         self.assertIn(
-            "Você já encontrou todos os QR Codes".encode("utf-8"),
+            "Você já desbloqueou o prêmio máximo".encode("utf-8"),
             response.data,
         )
         self.assertIn("Venha retirar o prêmio em nossa escola".encode("utf-8"), response.data)
+        self.assertNotIn("encontrou todos os QR Codes".encode("utf-8"), response.data)
 
 
 if __name__ == "__main__":
