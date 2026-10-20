@@ -3,6 +3,7 @@ import os
 from flask import (Blueprint, flash, make_response, redirect,
                    render_template, request, send_file, url_for)
 
+from config import BASE_URL
 from database import get_connection
 
 from ..decorators import admin_required
@@ -77,7 +78,13 @@ def gerenciar_qr(campanha_id):
         (campanha_id,),
     ).fetchall()
     connection.close()
-    return render_template("admin/locais.html", locais=locais, campanha_qr=campanha, qrs=qrs)
+    return render_template(
+        "admin/locais.html",
+        locais=locais,
+        campanha_qr=campanha,
+        qrs=qrs,
+        base_url=BASE_URL,
+    )
 
 
 @bp.route("/admin/qr/<int:campanha_id>/<int:local_id>/gerar", methods=["POST"])
@@ -143,7 +150,10 @@ def imagem_qr(codigo):
     caminho = caminho_qr(codigo, arte)
     if not os.path.exists(caminho):
         caminho = _arte_do_qr(qr, arte)
-    return send_file(caminho, mimetype="image/png")
+    response = send_file(caminho, mimetype="image/png", max_age=3600)
+    response.cache_control.public = False
+    response.cache_control.private = True
+    return response
 
 
 @bp.route("/admin/qr/<codigo>/imprimir")

@@ -169,6 +169,12 @@
         const artChoices = document.querySelectorAll(".art-choice");
 
         artChoices.forEach((choice) => {
+            if (choice.dataset.imageUrl !== preview.src) {
+                const preload = new Image();
+                preload.decoding = "async";
+                preload.src = choice.dataset.imageUrl;
+            }
+
             choice.addEventListener("click", (event) => {
                 event.preventDefault();
                 preview.src = choice.dataset.imageUrl;

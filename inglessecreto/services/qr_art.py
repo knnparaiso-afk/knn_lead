@@ -10,12 +10,12 @@ QR_DIR = os.path.join("instance", "qrcodes")
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 QR_ARTES = {
     "pista-001": {
-        "nome": "Pista 001",
+        "nome": "Arte 1",
         "preview": "images/qr-templates/pista-001.png",
         "thumbnail": "images/qr-templates/pista-001-thumb.jpg",
     },
     "pista-003": {
-        "nome": "Pista 003",
+        "nome": "Arte 2",
         "preview": "images/qr-templates/pista-003.png",
         "thumbnail": "images/qr-templates/pista-003-thumb.jpg",
     },
@@ -56,6 +56,10 @@ def remover_arquivos_qr(codigos):
 def gerar_arte_qrcode(codigo, arte=ARTE_QR_PADRAO):
     """Aplica o QR no espaço central da arte A4 escolhida e salva o PNG."""
     arte = normalizar_arte_qr(arte)
+    caminho = caminho_qr(codigo, arte)
+    if os.path.isfile(caminho):
+        return caminho
+
     dados_arte = QR_ARTES[arte]
     caminho_fundo = os.path.join(ROOT_DIR, "static", dados_arte["preview"])
 
@@ -80,6 +84,6 @@ def gerar_arte_qrcode(codigo, arte=ARTE_QR_PADRAO):
     img.paste(qr_img, (qr_x, qr_y))
 
     os.makedirs(QR_DIR, exist_ok=True)
-    caminho = caminho_qr(codigo, arte)
-    img.save(caminho, format="PNG", optimize=True, dpi=(300, 300))
+    # Evita o modo optimize, que recomprime cada cartaz A4 e torna a troca de arte lenta.
+    img.save(caminho, format="PNG", compress_level=3, dpi=(300, 300))
     return caminho
