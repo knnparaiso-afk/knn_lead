@@ -13,9 +13,9 @@ Descoberta registrada | Inglês Secreto
     <div class="success-seal">✓</div>
     <span class="eyebrow">MISSÃO CONTABILIZADA</span>
     <h1>Boa, {{ nome }}.<br><em>Você está no jogo.</em></h1>
-    <p class="success-copy">Sua descoberta foi registrada. A próxima frase pode estar mais perto do que você imagina.</p>
-    <article class="journey-card"><div class="journey-top"><span>SEU CAMINHO ATÉ OS PRÊMIOS</span><strong>{{ total }} de 3</strong></div><div class="journey-track"><span class="journey-fill" id="progress-bar"></span></div><p>{% if pass_liberado %}Você completou a jornada. A equipe KNN entrará em contato sobre seu prêmio.{% else %}Encontre mais {{ 3 - total }} {% if 3 - total == 1 %}frase para liberar seu prêmio.{% else %}frases para liberar seu prêmio.{% endif %}{% endif %}</p></article>
-    {% if pass_liberado %}<div class="reward-callout"><span>★</span><div><strong>English Pass desbloqueado</strong><p>Seu prêmio está a caminho.</p></div></div>{% else %}<div class="next-mission"><span>PRÓXIMA PISTA</span><strong>Continue explorando os locais da campanha.</strong></div>{% endif %}
+    <p class="success-copy">Sua descoberta foi registrada. Encontre outro QR Code para continuar avançando.</p>
+    <article class="journey-card"><div class="journey-top"><span>SEU CAMINHO ATÉ OS PRÊMIOS</span><strong>{{ total }} de 3</strong></div><div class="journey-track"><span class="journey-fill" id="progress-bar"></span></div><p>{% if pass_liberado %}Você completou a jornada. A equipe KNN entrará em contato sobre seu prêmio.{% else %}Encontre mais {{ 3 - total }} QR Codes para liberar seu prêmio.{% endif %}</p></article>
+    {% if pass_liberado %}<div class="reward-callout"><span>★</span><div><strong>English Pass desbloqueado</strong><p>Seu prêmio está a caminho.</p></div></div>{% else %}<div class="next-mission"><span>PRÓXIMA PISTA</span><strong>Continue procurando QR Codes da campanha.</strong></div>{% endif %}
 </section>
 
 <script>

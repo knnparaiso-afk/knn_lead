@@ -45,7 +45,7 @@
             </div>
             <h1 class="nada-title">
                 {% if not novo_registro %}
-                    Você já encontrou a frase deste <span class="highlight">local</span>!
+                    Você já escaneou <span class="highlight">aqui</span>.
                 {% elif nome %}
                     Parabéns, <span class="highlight">{{ nome }}</span>!
                 {% else %}
@@ -57,13 +57,13 @@
             <!-- Aviso de QR Code Repetido -->
             <div style="background: rgba(234, 179, 8, 0.12); border: 1.5px solid rgba(234, 179, 8, 0.4); border-radius: 12px; padding: 14px 18px; margin: 18px 0; text-align: center;">
                 <div style="font-size: 13px; font-weight: 800; color: #fef08a; letter-spacing: 0.05em; text-transform: uppercase;">
-                    📍 LOCAL JÁ CONTABILIZADO
+                    QR CODE JÁ CONTABILIZADO
                 </div>
                 <div style="font-size: 18px; font-weight: 800; color: #fff; margin: 6px 0;">
-                    Você já havia pontuado com este QR Code.
+                    Você já escaneou aqui.
                 </div>
                 <p style="margin: 4px 0 0; font-size: 13px; color: #fde047;">
-                    Seu saldo atual continua em <strong>{{ descobertas }} de {{ pass_required }} QR Codes</strong>. Encontre QR Codes em outros locais parceiros para pontuar novamente!
+                    Seu progresso continua em <strong>{{ descobertas }} de {{ pass_required }} QR Codes</strong>. Encontre outros QR Codes para avançar!
                 </p>
             </div>
             {% else %}
@@ -77,8 +77,10 @@
                         🌟 COMBO KNN DESBLOQUEADO!
                     {% elif descobertas == 2 %}
                         🎓 AULA GRATUITA COM CERTIFICADO DESBLOQUEADA!
-                    {% else %}
+                    {% elif descobertas == 3 %}
                         🏆 ENGLISH PASS DESBLOQUEADO!
+                    {% else %}
+                        🎉 VOCÊ JÁ ENCONTROU TODOS OS QR CODES!
                     {% endif %}
                 </div>
                 <p style="margin: 4px 0 0; font-size: 13px; color: #c4b5fd;">
@@ -86,8 +88,10 @@
                         Você desbloqueou o <strong>COMBO KNN</strong>. Venha retirar o combo em nossa escola.
                     {% elif descobertas == 2 %}
                         Você desbloqueou uma <strong>AULA GRATUITA COM CERTIFICADO</strong>. Venha retirar o acesso em nossa escola.
-                    {% else %}
+                    {% elif descobertas == 3 %}
                         Você desbloqueou o English Pass: <strong>50% DE DESCONTO</strong> e <strong>ISENÇÃO NA TAXA DE MATRÍCULA</strong>, com pagamento após um mês do início dos estudos.
+                    {% else %}
+                        Você já encontrou todos os QR Codes e desbloqueou seu prêmio. Venha retirar o prêmio em nossa escola.
                     {% endif %}
                 </p>
                 <p style="margin: 10px 0 0; font-size: 12px; color: #d8c9ef;">

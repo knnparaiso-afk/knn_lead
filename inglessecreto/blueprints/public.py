@@ -55,9 +55,7 @@ def mensagem(codigo):
             campanhas.categoria,
             campanhas.ativa,
             campanhas.data_inicio,
-            campanhas.data_fim,
-            locais.nome AS local_nome,
-            locais.parceiro
+            campanhas.data_fim
         FROM qr_codes
         INNER JOIN campanhas ON campanhas.id = qr_codes.campanha_id
         LEFT JOIN locais ON locais.id = qr_codes.local_id
@@ -99,8 +97,7 @@ def participar(codigo):
             campanhas.semana,
             campanhas.frase,
             campanhas.traducao,
-            campanhas.ativa,
-            locais.nome AS local_nome
+            campanhas.ativa
         FROM qr_codes
         INNER JOIN campanhas ON campanhas.id = qr_codes.campanha_id
         INNER JOIN locais ON locais.id = qr_codes.local_id
@@ -121,7 +118,7 @@ def participar(codigo):
     token_cookie = request.cookies.get("knn_lead_token")
     user_id_cookie = obter_id_por_token(token_cookie)
     participante_reconhecido = None
-    ja_encontrou_este_local = False
+    ja_encontrou_este_qr = False
 
     if user_id_cookie:
         participante_reconhecido = connection.execute(
@@ -130,13 +127,13 @@ def participar(codigo):
         ).fetchone()
 
         if participante_reconhecido:
-            # Verifica se já encontrou o QR Code deste local
+            # A mesma pessoa só contabiliza cada QR Code uma vez, em qualquer local.
             descoberta_existente = connection.execute(
                 "SELECT id FROM descobertas WHERE usuario_id = ? AND qr_code_id = ?",
                 (participante_reconhecido["id"], qr["id"]),
             ).fetchone()
             if descoberta_existente:
-                ja_encontrou_este_local = True
+                ja_encontrou_este_qr = True
 
     if request.method != "POST":
         connection.close()
@@ -144,7 +141,7 @@ def participar(codigo):
             "participar.html",
             qr=qr,
             participante=participante_reconhecido,
-            ja_encontrou=ja_encontrou_este_local,
+            ja_encontrou=ja_encontrou_este_qr,
         )
 
     # Verifica se enviou o form completo OU se confirmou identificação rápida
@@ -166,13 +163,13 @@ def participar(codigo):
             connection.close()
             flash("Preencha os campos obrigatórios e confirme sua participação e "
                   "autorização de contato para continuar.", "error")
-            return render_template("participar.html", qr=qr, participante=participante_reconhecido, ja_encontrou=ja_encontrou_este_local)
+            return render_template("participar.html", qr=qr, participante=participante_reconhecido, ja_encontrou=ja_encontrou_este_qr)
 
         idade, erro = validar_formulario(nome, whatsapp, email, idade)
         if erro:
             connection.close()
             flash(erro, "error")
-            return render_template("participar.html", qr=qr, participante=participante_reconhecido, ja_encontrou=ja_encontrou_este_local)
+            return render_template("participar.html", qr=qr, participante=participante_reconhecido, ja_encontrou=ja_encontrou_este_qr)
 
     try:
         usuario_id, novo_registro = salvar_participacao(connection, qr, nome, whatsapp, email, idade)
@@ -192,7 +189,6 @@ def participar(codigo):
     session["descobertas_usuario"] = total_descobertas
     session["nome_usuario"] = nome.split()[0] if nome else ""
     session["novo_registro"] = novo_registro
-    session["local_nome"] = qr["local_nome"]
 
     resp = make_response(redirect(url_for("public.conquista")))
     novo_token = gerar_token_participante(usuario_id)
@@ -261,7 +257,7 @@ def conquista():
     descobertas = session.pop("descobertas_usuario", 1)
     nome = session.pop("nome_usuario", "")
     novo_registro = session.pop("novo_registro", True)
-    local_nome = session.pop("local_nome", "")
+    session.pop("local_nome", None)
     return render_template(
         "conquista.html",
         nome=nome,
@@ -269,7 +265,6 @@ def conquista():
         pass_required=ENGLISH_PASS_REQUIRED,
         contato_autorizado=contato_autorizado,
         novo_registro=novo_registro,
-        local_nome=local_nome,
         instagram_url=UNIDADE.get("instagram", "https://www.instagram.com/knnparaisopolis/"),
     )
 

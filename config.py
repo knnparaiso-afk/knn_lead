@@ -47,6 +47,9 @@ BASE_URL = os.getenv(
     "http://192.168.1.44:5000"
 ).strip().rstrip("/")
 
+# QR Codes não são mais associados a estabelecimentos específicos.
+QR_LOCAL_GENERICO = "Ponto geral (sem rastreamento)"
+
 try:
     ENGLISH_PASS_REQUIRED = int(os.getenv("ENGLISH_PASS_REQUIRED", "3"))
 except ValueError as exc:

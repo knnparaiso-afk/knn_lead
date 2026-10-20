@@ -22,7 +22,7 @@ def admin_dashboard():
     participantes = _contar(connection, "SELECT COUNT(*) AS total FROM usuarios")
     descobertas = _contar(connection, "SELECT COUNT(*) AS total FROM descobertas")
     passes = _contar(connection, "SELECT COUNT(*) AS total FROM premios")
-    locais_ativos = _contar(connection, "SELECT COUNT(*) AS total FROM locais WHERE ativo = 1")
+    qrs_emitidos = _contar(connection, "SELECT COUNT(*) AS total FROM qr_codes")
     campanhas_ativas = connection.execute(
         f"""
         SELECT
@@ -47,7 +47,7 @@ def admin_dashboard():
         participantes=participantes,
         descobertas=descobertas,
         passes=passes,
-        locais_ativos=locais_ativos,
+        qrs_emitidos=qrs_emitidos,
         campanhas_ativas_lista=campanhas_ativas,
     )
 
@@ -103,8 +103,6 @@ def descobertas():
             campanhas.nome AS campanha_nome,
             campanhas.frase,
             campanhas.semana,
-            locais.nome AS local_nome,
-            locais.parceiro,
             qr_codes.codigo AS qr_codigo,
             COUNT(*) OVER (
                 PARTITION BY descobertas.usuario_id
@@ -116,7 +114,6 @@ def descobertas():
         FROM descobertas
         INNER JOIN usuarios ON usuarios.id = descobertas.usuario_id
         INNER JOIN campanhas ON campanhas.id = descobertas.campanha_id
-        INNER JOIN locais ON locais.id = descobertas.local_id
         INNER JOIN qr_codes ON qr_codes.id = descobertas.qr_code_id
         ORDER BY descobertas.data_hora DESC, descobertas.id DESC
         """

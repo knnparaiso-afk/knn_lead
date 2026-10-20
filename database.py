@@ -2,7 +2,7 @@ import os
 import re
 import sqlite3
 
-from config import DATABASE_PATH, DATABASE_URL
+from config import DATABASE_PATH, DATABASE_URL, QR_LOCAL_GENERICO
 
 
 # O esquema fica escrito em sintaxe SQLite, para preservar o comportamento local.
@@ -106,6 +106,11 @@ CREATE TABLE IF NOT EXISTS rate_limit_buckets (
 );
 CREATE INDEX IF NOT EXISTS idx_rate_limit_buckets_window_start
     ON rate_limit_buckets(window_start);
+
+CREATE TABLE IF NOT EXISTS app_migrations (
+    migration_key TEXT PRIMARY KEY,
+    applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 
@@ -354,6 +359,57 @@ def _migrate_postgres_schema(connection):
         connection.rollback()
 
 
+def _migrate_qr_location_tracking(connection):
+    """Reassocia os QR Codes existentes a um ponto genérico sem alterar os códigos."""
+    migration_key = "qr_location_tracking_disabled_v1"
+    if DATABASE_URL:
+        connection.execute("SELECT pg_advisory_xact_lock(?)", (7193042106,))
+    else:
+        connection.execute("BEGIN IMMEDIATE")
+
+    aplicada = connection.execute(
+        "SELECT migration_key FROM app_migrations WHERE migration_key = ?",
+        (migration_key,),
+    ).fetchone()
+    if aplicada:
+        connection.commit()
+        return
+
+    local = connection.execute(
+        "SELECT id FROM locais WHERE nome = ? ORDER BY id LIMIT 1",
+        (QR_LOCAL_GENERICO,),
+    ).fetchone()
+    if local:
+        local_id = local["id"]
+        connection.execute(
+            "UPDATE locais SET endereco = NULL, parceiro = NULL, ativo = 1 WHERE id = ?",
+            (local_id,),
+        )
+    else:
+        connection.execute(
+            "INSERT INTO locais (nome, endereco, parceiro, ativo) VALUES (?, NULL, NULL, 1)",
+            (QR_LOCAL_GENERICO,),
+        )
+        local_id = connection.execute(
+            "SELECT id FROM locais WHERE nome = ? ORDER BY id LIMIT 1",
+            (QR_LOCAL_GENERICO,),
+        ).fetchone()["id"]
+
+    # Preserve cada código e sua campanha (por exemplo, jogos e frases), alterando
+    # somente a referência ao estabelecimento. As descobertas ficam no mesmo ponto.
+    connection.execute("UPDATE qr_codes SET local_id = ?", (local_id,))
+    connection.execute("UPDATE descobertas SET local_id = ?", (local_id,))
+    connection.execute(
+        "UPDATE locais SET ativo = 0 WHERE id <> ?",
+        (local_id,),
+    )
+    connection.execute(
+        "INSERT INTO app_migrations (migration_key) VALUES (?)",
+        (migration_key,),
+    )
+    connection.commit()
+
+
 def init_db():
     connection = get_connection()
     try:
@@ -370,6 +426,8 @@ def init_db():
             connection.executescript(SCHEMA_SQLITE)
             _migrate_sqlite_schema(connection)
             connection.commit()
+
+        _migrate_qr_location_tracking(connection)
 
         # Corrige registros antigos de campanhas que ainda não tinham opções separadas.
         campanhas_existentes = connection.execute(

@@ -14,7 +14,7 @@
 <section class="metric-grid">
     <article class="metric-card"><span>LEADS CAPTADOS</span><strong>{{ participantes }}</strong><p>cadastros na base</p></article>
     <article class="metric-card"><span>DESCOBERTAS</span><strong>{{ descobertas }}</strong><p>missões contabilizadas</p></article>
-    <article class="metric-card"><span>LOCAIS ATIVOS</span><strong>{{ locais_ativos }}</strong><p>pontos para distribuir QR</p></article>
+    <article class="metric-card"><span>QR CODES EMITIDOS</span><strong>{{ qrs_emitidos }}</strong><p>códigos mantidos em circulação</p></article>
     <article class="metric-card metric-card-dark"><span>ENGLISH PASS</span><strong>{{ passes }}</strong><p>prêmios desbloqueados</p></article>
 </section>
 
@@ -34,13 +34,13 @@
     <div class="campaign-health">
         <div><strong>{{ campanha.total_qrs }}</strong><span>QR Codes gerados</span></div>
         <div><strong>{{ campanha.total_descobertas }}</strong><span>Leads desta campanha</span></div>
-        <a href="{{ url_for('qr.gerenciar_qr', campanha_id=campanha.id) }}" class="btn btn-secondary">GERENCIAR PONTOS <span>→</span></a>
+        <a href="{{ url_for('qr.gerenciar_qr', campanha_id=campanha.id) }}" class="btn btn-secondary">GERENCIAR QR CODES <span>→</span></a>
     </div>
 </section>
 {% endfor %}
 {% else %}
-<section class="setup-card"><span class="setup-number">01</span><div><h2>Crie a primeira campanha.</h2><p>Defina o nome, a modalidade de desafio e os locais que receberão um QR Code.</p></div><a href="{{ url_for('campaigns.nova_campanha') }}" class="btn btn-primary">CRIAR CAMPANHA <span>→</span></a></section>
+<section class="setup-card"><span class="setup-number">01</span><div><h2>Crie a primeira campanha.</h2><p>Defina o nome e a modalidade de desafio. Os QR Codes usarão o ponto geral.</p></div><a href="{{ url_for('campaigns.nova_campanha') }}" class="btn btn-primary">CRIAR CAMPANHA <span>→</span></a></section>
 {% endif %}
 
-<section class="workflow-section"><div><h2>Um fluxo claro, do planejamento ao prêmio.</h2></div><div class="workflow-grid"><a href="{{ url_for('campaigns.campanhas') }}"><b>01</b><strong>Campanhas</strong><span>Crie e gerencie suas campanhas.</span></a><a href="{{ url_for('locations.locais') }}"><b>02</b><strong>Locais</strong><span>Cadastre seus pontos parceiros.</span></a><a href="{{ url_for('reports.participantes') }}"><b>03</b><strong>Leads</strong><span>Acompanhe cada cadastro.</span></a><a href="{{ url_for('reports.admin_pass') }}"><b>04</b><strong>Prêmios</strong><span>Gerencie os Passes liberados.</span></a></div></section>
+<section class="workflow-section"><div><h2>Um fluxo claro, do planejamento ao prêmio.</h2></div><div class="workflow-grid"><a href="{{ url_for('campaigns.campanhas') }}"><b>01</b><strong>Campanhas</strong><span>Crie e gerencie suas campanhas.</span></a><a href="{{ url_for('locations.locais') }}"><b>02</b><strong>QR Codes</strong><span>Consulte os códigos em circulação.</span></a><a href="{{ url_for('reports.participantes') }}"><b>03</b><strong>Leads</strong><span>Acompanhe cada cadastro.</span></a><a href="{{ url_for('reports.admin_pass') }}"><b>04</b><strong>Prêmios</strong><span>Gerencie os Passes liberados.</span></a></div></section>
 {% endblock %}

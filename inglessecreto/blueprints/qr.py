@@ -3,7 +3,7 @@ import os
 from flask import (Blueprint, flash, make_response, redirect,
                    render_template, request, send_file, url_for)
 
-from config import BASE_URL
+from config import BASE_URL, QR_LOCAL_GENERICO
 from database import get_connection
 
 from ..decorators import admin_required
@@ -65,13 +65,13 @@ def gerenciar_qr(campanha_id):
         "SELECT * FROM campanhas WHERE id = ?", (campanha_id,)
     ).fetchone()
     locais = connection.execute(
-        "SELECT * FROM locais WHERE ativo = 1 ORDER BY nome"
+        "SELECT * FROM locais WHERE ativo = 1 AND nome = ? ORDER BY id LIMIT 1",
+        (QR_LOCAL_GENERICO,),
     ).fetchall()
     qrs = connection.execute(
         """
-        SELECT qr_codes.*, locais.nome AS local_nome, locais.parceiro
+        SELECT qr_codes.*
         FROM qr_codes
-        INNER JOIN locais ON locais.id = qr_codes.local_id
         WHERE qr_codes.campanha_id = ?
         ORDER BY qr_codes.id DESC
         """,
@@ -84,6 +84,7 @@ def gerenciar_qr(campanha_id):
         campanha_qr=campanha,
         qrs=qrs,
         base_url=BASE_URL,
+        local_generico=QR_LOCAL_GENERICO,
     )
 
 
@@ -98,22 +99,14 @@ def gerar_qr(campanha_id, local_id):
         "SELECT * FROM campanhas WHERE id = ?", (campanha_id,)
     ).fetchone()
     local = connection.execute(
-        "SELECT * FROM locais WHERE id = ?", (local_id,)
+        "SELECT * FROM locais WHERE id = ? AND nome = ? AND ativo = 1",
+        (local_id, QR_LOCAL_GENERICO),
     ).fetchone()
 
     if not campanha or not local:
         connection.close()
         flash("Campanha ou local não encontrado.", "error")
         return redirect(url_for("campaigns.campanhas"))
-
-    existente = connection.execute(
-        "SELECT codigo FROM qr_codes WHERE campanha_id = ? AND local_id = ?",
-        (campanha_id, local_id),
-    ).fetchone()
-    if existente:
-        connection.close()
-        flash("Este local já possui um QR Code para esta campanha.", "error")
-        return redirect(url_for("qr.gerenciar_qr", campanha_id=campanha_id))
 
     codigo = gerar_codigo()
     connection.execute(
@@ -193,5 +186,5 @@ def excluir_qr(qr_id):
     connection.close()
 
     remover_arquivos_qr([qr["codigo"]])
-    flash("QR Code excluído. Você pode gerar outro para este local.", "success")
+    flash("QR Code excluído. Você pode gerar outro para esta campanha.", "success")
     return redirect(url_for("qr.gerenciar_qr", campanha_id=qr["campanha_id"]))

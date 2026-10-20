@@ -101,7 +101,7 @@ def nova_campanha():
     connection.commit()
     connection.close()
 
-    flash("Campanha criada! Agora selecione um local cadastrado para gerar o QR Code.", "success")
+    flash("Campanha criada! Agora gere o QR Code geral da campanha.", "success")
     return redirect(url_for("qr.gerenciar_qr", campanha_id=campanha_id))
 
 

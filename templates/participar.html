@@ -34,15 +34,15 @@
             </h2>
             {% if ja_encontrou %}
             <div class="wb-warning-box">
-                <div class="wb-warning-icon">📍</div>
+                <div class="wb-warning-icon">🔁</div>
                 <div class="wb-warning-text">
-                    <strong>Você já encontrou a frase deste local!</strong>
-                    <p>Ao avançar, você confirmará sua participação anterior sem duplicar o prêmio.</p>
+                    <strong>Você já escaneou aqui.</strong>
+                    <p>Ao avançar, você verá seu progresso sem contabilizar esta leitura novamente.</p>
                 </div>
             </div>
             {% else %}
             <p class="wb-subtitle">
-                Você acabou de encontrar um <strong>novo QR Code</strong> em <u>{{ qr.local_nome or 'ponto secreto' }}</u>!
+                Você acabou de encontrar um <strong>novo QR Code</strong>!
             </p>
             {% endif %}
         </div>

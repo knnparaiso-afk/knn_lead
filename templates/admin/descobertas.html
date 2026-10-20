@@ -58,8 +58,6 @@
                 <tr>
                     <th>Leitura</th>
                     <th>Campanha</th>
-                    <th>Local</th>
-                    <th>Parceiro</th>
                     <th>QR</th>
                     <th>Horário (Brasília)</th>
                 </tr>
@@ -69,8 +67,6 @@
                 <tr>
                     <td>{{ descoberta.ordem_qr }}º QR</td>
                     <td>{{ descoberta.campanha_nome or descoberta.frase }}</td>
-                    <td>{{ descoberta.local_nome }}</td>
-                    <td>{{ descoberta.parceiro or '—' }}</td>
                     <td>{{ descoberta.qr_codigo }}</td>
                     <td>{{ descoberta.data_hora | data_hora_brasilia }}</td>
                 </tr>
