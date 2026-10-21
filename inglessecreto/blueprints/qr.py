@@ -11,7 +11,8 @@ from ..security import permitir_requisicao
 from ..services.campaigns import gerar_codigo
 from ..services.qr_art import (ARTE_QR_PADRAO, artes_qr_disponiveis,
                                caminho_qr, gerar_arte_qrcode,
-                               normalizar_arte_qr, remover_arquivos_qr)
+                               normalizar_arte_qr, normalizar_tamanho_papel,
+                               remover_arquivos_qr, TAMANHOS_PAPEL)
 
 bp = Blueprint("qr", __name__)
 
@@ -41,11 +42,11 @@ def _buscar_qr(codigo):
         connection.close()
 
 
-def _arte_do_qr(qr, arte=ARTE_QR_PADRAO):
-    return gerar_arte_qrcode(qr["codigo"], arte)
+def _arte_do_qr(qr, arte=ARTE_QR_PADRAO, tamanho="a4"):
+    return gerar_arte_qrcode(qr["codigo"], arte, tamanho)
 
 
-def _nome_download(campanha_nome, local_nome, codigo, arte=ARTE_QR_PADRAO):
+def _nome_download(campanha_nome, local_nome, codigo, arte=ARTE_QR_PADRAO, tamanho="a4"):
     import re, unicodedata
     def slug(t):
         if not t: return "geral"
@@ -54,7 +55,8 @@ def _nome_download(campanha_nome, local_nome, codigo, arte=ARTE_QR_PADRAO):
         return re.sub(r"[^a-z0-9]+", "-", texto).strip("-")
     c_slug = slug(campanha_nome)
     l_slug = slug(local_nome)
-    return f"qr-{c_slug}-{l_slug}-{codigo}-{arte}.png"
+    sufixo_tamanho = "-a5" if tamanho == "a5" else ""
+    return f"qr-{c_slug}-{l_slug}-{codigo}-{arte}{sufixo_tamanho}.png"
 
 
 @bp.route("/admin/qr/<int:campanha_id>")
@@ -127,9 +129,10 @@ def download_qr(codigo):
         flash("QR Code não encontrado.", "error")
         return redirect(url_for("campaigns.campanhas"))
     arte = normalizar_arte_qr(request.args.get("arte"))
+    tamanho = normalizar_tamanho_papel(request.args.get("tamanho"))
     return send_file(
-        _arte_do_qr(qr, arte), mimetype="image/png", as_attachment=True,
-        download_name=_nome_download(qr["campanha_nome"], qr["local_nome"], codigo, arte),
+        _arte_do_qr(qr, arte, tamanho), mimetype="image/png", as_attachment=True,
+        download_name=_nome_download(qr["campanha_nome"], qr["local_nome"], codigo, arte, tamanho),
     )
 
 
@@ -140,9 +143,10 @@ def imagem_qr(codigo):
     if not qr:
         return "Não encontrado", 404
     arte = normalizar_arte_qr(request.args.get("arte"))
-    caminho = caminho_qr(codigo, arte)
+    tamanho = normalizar_tamanho_papel(request.args.get("tamanho"))
+    caminho = caminho_qr(codigo, arte, tamanho)
     if not os.path.exists(caminho):
-        caminho = _arte_do_qr(qr, arte)
+        caminho = _arte_do_qr(qr, arte, tamanho)
     response = send_file(caminho, mimetype="image/png", max_age=3600)
     response.cache_control.public = False
     response.cache_control.private = True
@@ -157,14 +161,19 @@ def imprimir_qr(codigo):
         flash("QR Code não encontrado.", "error")
         return redirect(url_for("campaigns.campanhas"))
     arte = normalizar_arte_qr(request.args.get("arte"))
-    _arte_do_qr(qr, arte)
+    tamanho = normalizar_tamanho_papel(request.args.get("tamanho"))
+    formato = TAMANHOS_PAPEL[tamanho]
+    _arte_do_qr(qr, arte, tamanho)
     return render_template(
         "admin/imprimir_qr.html",
         qr=qr,
         artes=artes_qr_disponiveis(),
         arte_selecionada=arte,
-        imagem_url=url_for("qr.imagem_qr", codigo=codigo, arte=arte),
-        download_url=url_for("qr.download_qr", codigo=codigo, arte=arte),
+        tamanho=tamanho,
+        formato=formato,
+        tamanhos_papel=TAMANHOS_PAPEL,
+        imagem_url=url_for("qr.imagem_qr", codigo=codigo, arte=arte, tamanho=tamanho),
+        download_url=url_for("qr.download_qr", codigo=codigo, arte=arte, tamanho=tamanho),
     )
 
 

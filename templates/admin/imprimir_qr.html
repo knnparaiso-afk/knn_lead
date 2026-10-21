@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartaz A4 · {{ qr.codigo }}</title>
+    <title>Cartaz {{ formato.nome }} · {{ qr.codigo }}</title>
     <style>
         :root {
             --knn-red: #ed1b2f;
@@ -71,6 +71,25 @@
         }
         .art-choice span { font-size: 12px; font-weight: 700; }
 
+        .paper-sizes { display: flex; align-items: center; gap: 6px; }
+        .paper-size {
+            min-height: 38px;
+            padding: 8px 13px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: #fff;
+            color: #374151;
+            font: 700 12px 'Segoe UI', Arial, sans-serif;
+            text-decoration: none;
+        }
+        .paper-size:hover { border-color: var(--knn-red); }
+        .paper-size[aria-current="page"] {
+            border-color: var(--knn-red);
+            background: #fff4f5;
+            color: var(--knn-red-dark);
+            box-shadow: 0 0 0 2px rgba(237,27,47,.1);
+        }
+
         .toolbar-actions { display: flex; align-items: center; gap: 8px; }
         .btn {
             display: inline-flex;
@@ -98,7 +117,7 @@
         }
         .paper-card {
             width: min(680px, 100%);
-            aspect-ratio: 210 / 297;
+            aspect-ratio: {{ formato.largura_mm }} / {{ formato.altura_mm }};
             overflow: hidden;
             background: #fff;
             box-shadow: 0 10px 30px rgba(0,0,0,.15);
@@ -108,6 +127,7 @@
         @media (max-width: 980px) {
             .toolbar-info { flex-basis: 100%; text-align: center; }
             .art-choices { flex: 1 1 auto; justify-content: center; }
+            .paper-sizes { flex: 1 1 auto; justify-content: center; }
             .toolbar-actions { flex: 1 1 auto; justify-content: center; }
         }
         @media (max-width: 540px) {
@@ -116,33 +136,35 @@
             .art-choices { width: 100%; }
             .art-choice { min-width: 0; flex: 1; justify-content: center; padding: 6px; }
             .art-choice img { width: 34px; height: 49px; }
+            .paper-sizes { width: 100%; }
+            .paper-size { flex: 1; text-align: center; }
             .toolbar-actions { width: 100%; flex-wrap: wrap; }
             .toolbar-actions .btn { flex: 1; }
             .print-canvas-area { padding: 16px 10px 28px; }
         }
 
-        @page { size: A4 portrait; margin: 0; }
+        @page { size: {{ formato.nome }} portrait; margin: 0; }
         @media print {
-            html, body { width: 210mm; height: 297mm; min-height: 297mm; margin: 0 !important; background: #fff !important; }
+            html, body { width: {{ formato.largura_mm }}mm; height: {{ formato.altura_mm }}mm; min-height: {{ formato.altura_mm }}mm; margin: 0 !important; background: #fff !important; }
             .toolbar { display: none !important; }
-            .print-canvas-area { display: block !important; width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; }
-            .paper-card { width: 210mm !important; height: 297mm !important; aspect-ratio: auto; box-shadow: none; }
-            .paper-card img { width: 210mm !important; height: 297mm !important; object-fit: fill !important; }
+            .print-canvas-area { display: block !important; width: {{ formato.largura_mm }}mm; height: {{ formato.altura_mm }}mm; margin: 0 !important; padding: 0 !important; }
+            .paper-card { width: {{ formato.largura_mm }}mm !important; height: {{ formato.altura_mm }}mm !important; aspect-ratio: auto; box-shadow: none; }
+            .paper-card img { width: {{ formato.largura_mm }}mm !important; height: {{ formato.altura_mm }}mm !important; object-fit: fill !important; }
         }
     </style>
 </head>
 <body>
     <header class="toolbar">
         <div class="toolbar-info">
-            <h1>Cartaz A4 <span>· {{ qr.codigo }}</span></h1>
-            <p>Escolha uma das artes. O QR Code aparece no campo central, pronto para imprimir.</p>
+            <h1>Cartaz <span id="paper-title">{{ formato.nome }}</span> <span>· {{ qr.codigo }}</span></h1>
+            <p>Escolha a arte e o tamanho do papel. O QR Code aparece no campo central.</p>
         </div>
 
         <nav class="art-choices" aria-label="Escolha a arte do cartaz">
             {% for arte in artes %}
-            <a class="art-choice" href="{{ url_for('qr.imprimir_qr', codigo=qr.codigo, arte=arte.id) }}"
-                data-image-url="{{ url_for('qr.imagem_qr', codigo=qr.codigo, arte=arte.id) }}"
-                data-download-url="{{ url_for('qr.download_qr', codigo=qr.codigo, arte=arte.id) }}"
+            <a class="art-choice" href="{{ url_for('qr.imprimir_qr', codigo=qr.codigo, arte=arte.id, tamanho=tamanho) }}"
+                data-image-url="{{ url_for('qr.imagem_qr', codigo=qr.codigo, arte=arte.id, tamanho=tamanho) }}"
+                data-download-url="{{ url_for('qr.download_qr', codigo=qr.codigo, arte=arte.id, tamanho=tamanho) }}"
                 aria-current="{{ 'page' if arte.id == arte_selecionada else 'false' }}">
                 <img src="{{ url_for('static', filename=arte.thumbnail) }}" alt="">
                 <span>{{ arte.nome }}</span>
@@ -150,16 +172,23 @@
             {% endfor %}
         </nav>
 
+        <nav class="paper-sizes" aria-label="Escolha o tamanho do papel">
+            {% for id, opcao in tamanhos_papel.items() %}
+            <a class="paper-size" href="{{ url_for('qr.imprimir_qr', codigo=qr.codigo, arte=arte_selecionada, tamanho=id) }}"
+                aria-current="{{ 'page' if id == tamanho else 'false' }}">{{ opcao.nome }}</a>
+            {% endfor %}
+        </nav>
+
         <div class="toolbar-actions">
             <a href="{{ url_for('qr.gerenciar_qr', campanha_id=qr.campanha_id) }}" class="btn">Voltar</a>
-            <a id="download-art" href="{{ download_url }}" class="btn">Baixar PNG A4</a>
+            <a id="download-art" href="{{ download_url }}" class="btn">Baixar PNG {{ formato.nome }}</a>
             <button type="button" onclick="window.print()" class="btn btn-primary">Imprimir</button>
         </div>
     </header>
 
     <main class="print-canvas-area">
         <div class="paper-card">
-            <img id="poster-preview" src="{{ imagem_url }}" alt="Cartaz A4 com o QR Code {{ qr.codigo }}">
+            <img id="poster-preview" src="{{ imagem_url }}" alt="Cartaz {{ formato.nome }} com o QR Code {{ qr.codigo }}">
         </div>
     </main>
 
