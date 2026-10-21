@@ -164,7 +164,8 @@
             {% for arte in artes %}
             <a class="art-choice" href="{{ url_for('qr.imprimir_qr', codigo=qr.codigo, arte=arte.id, tamanho=tamanho) }}"
                 data-image-url="{{ url_for('qr.imagem_qr', codigo=qr.codigo, arte=arte.id, tamanho=tamanho) }}"
-                data-download-url="{{ url_for('qr.download_qr', codigo=qr.codigo, arte=arte.id, tamanho=tamanho) }}"
+                data-download-a4-url="{{ url_for('qr.download_qr', codigo=qr.codigo, arte=arte.id, tamanho='a4') }}"
+                data-download-a5-url="{{ url_for('qr.download_qr', codigo=qr.codigo, arte=arte.id, tamanho='a5') }}"
                 aria-current="{{ 'page' if arte.id == arte_selecionada else 'false' }}">
                 <img src="{{ url_for('static', filename=arte.thumbnail) }}" alt="">
                 <span>{{ arte.nome }}</span>
@@ -181,7 +182,8 @@
 
         <div class="toolbar-actions">
             <a href="{{ url_for('qr.gerenciar_qr', campanha_id=qr.campanha_id) }}" class="btn">Voltar</a>
-            <a id="download-art" href="{{ download_url }}" class="btn">Baixar PNG {{ formato.nome }}</a>
+            <a id="download-a4" href="{{ url_for('qr.download_qr', codigo=qr.codigo, arte=arte_selecionada, tamanho='a4') }}" class="btn">Baixar PNG A4</a>
+            <a id="download-a5" href="{{ url_for('qr.download_qr', codigo=qr.codigo, arte=arte_selecionada, tamanho='a5') }}" class="btn btn-primary">Baixar PNG A5</a>
             <button type="button" onclick="window.print()" class="btn btn-primary">Imprimir</button>
         </div>
     </header>
@@ -194,7 +196,8 @@
 
     <script>
         const preview = document.getElementById("poster-preview");
-        const download = document.getElementById("download-art");
+        const downloadA4 = document.getElementById("download-a4");
+        const downloadA5 = document.getElementById("download-a5");
         const artChoices = document.querySelectorAll(".art-choice");
 
         artChoices.forEach((choice) => {
@@ -207,7 +210,8 @@
             choice.addEventListener("click", (event) => {
                 event.preventDefault();
                 preview.src = choice.dataset.imageUrl;
-                download.href = choice.dataset.downloadUrl;
+                downloadA4.href = choice.dataset.downloadA4Url;
+                downloadA5.href = choice.dataset.downloadA5Url;
                 artChoices.forEach((item) => item.setAttribute("aria-current", "false"));
                 choice.setAttribute("aria-current", "page");
                 window.history.replaceState({}, "", choice.href);

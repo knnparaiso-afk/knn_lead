@@ -173,7 +173,6 @@ def imprimir_qr(codigo):
         formato=formato,
         tamanhos_papel=TAMANHOS_PAPEL,
         imagem_url=url_for("qr.imagem_qr", codigo=codigo, arte=arte, tamanho=tamanho),
-        download_url=url_for("qr.download_qr", codigo=codigo, arte=arte, tamanho=tamanho),
     )
 
 
