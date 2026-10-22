@@ -79,16 +79,12 @@ def gerenciar_qr(campanha_id):
         """,
         (campanha_id,),
     ).fetchall()
-    total_qrs = connection.execute(
-        "SELECT COUNT(*) AS total FROM qr_codes"
-    ).fetchone()["total"]
     connection.close()
     return render_template(
         "admin/locais.html",
         locais=locais,
         campanha_qr=campanha,
         qrs=qrs,
-        total_qrs=total_qrs,
         base_url=BASE_URL,
         local_generico=QR_LOCAL_GENERICO,
     )
