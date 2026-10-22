@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% if jogo_da_bruxa %}
+    {% set emoji = "🧙‍♀️" %}
+    {% set categoria_texto = "POÇÃO DA BRUXA" %}
+    {% set chamada = "Entre no desafio da bruxa e prepare a poção mágica." %}
+{% else %}
+    {% set emoji = "👻" %}
+    {% set categoria_texto = "ENIGMA EM INGLÊS" %}
+    {% set chamada = "Descubra o que a frase misteriosa quer dizer." %}
+{% endif %}
+
+{% block title %}Um desafio de Halloween te espera | Inglês Secreto{% endblock %}
+{% block social_meta %}
+<meta property="og:type" content="website">
+<meta property="og:title" content="Seu amigo {{ nome_amigo }} te propôs um desafio | Inglês Secreto KNN">
+<meta property="og:description" content="Aceite o desafio de Halloween, jogue e concorra aos mesmos prêmios da campanha.">
+<meta property="og:url" content="{{ convite_url }}">
+<meta property="og:image" content="{{ imagem_compartilhamento_url }}">
+<meta property="og:image:alt" content="Paraisópolis está cheia de segredos — campanha Halloween da KNN">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+{% block body_class %}public-page public-invite{% if jogo_da_bruxa %} witch-invite{% else %} phrases-invite{% endif %}{% endblock %}
+
+{% block content %}
+<div class="invite-atmosphere" aria-hidden="true">
+    <span>{{ emoji }}</span><span>✨</span><span>🎃</span><span>🦇</span>
+</div>
+
+<section class="invite-card">
+    <div class="invite-emblem" aria-hidden="true">{{ emoji }}</div>
+    <span class="invite-kicker">{{ categoria_texto }} · HALLOWEEN KNN</span>
+    <h1>Seu amigo <strong>{{ nome_amigo }}</strong> te propôs um desafio</h1>
+    <p class="invite-copy">{{ chamada }} Resolva o desafio, registre sua descoberta e concorra aos mesmos prêmios da campanha.</p>
+
+    <div class="invite-steps" aria-label="Como funciona">
+        <span><b>1</b> Aceite o desafio</span>
+        <span><b>2</b> Jogue até o fim</span>
+        <span><b>3</b> Registre sua descoberta</span>
+    </div>
+
+    <a class="invite-cta" href="{{ url_for('public.mensagem', codigo=qr.codigo) }}">
+        ACEITAR O DESAFIO <span aria-hidden="true">➜</span>
+    </a>
+    <p class="invite-note">A campanha e os prêmios são os mesmos. Boa sorte! 👀</p>
+</section>
+
+<style>
+    body.public-invite {
+        --invite-accent: #f97316;
+        --invite-glow: rgba(249, 115, 22, .22);
+        min-height: 100vh;
+        color: #f8fafc;
+        background: radial-gradient(ellipse at 50% 10%, #351249 0%, #160b27 48%, #080611 100%) fixed;
+    }
+
+    body.public-invite.witch-invite {
+        --invite-accent: #8b5cf6;
+        --invite-glow: rgba(57, 255, 20, .18);
+        background: radial-gradient(ellipse at 50% 10%, #173a30 0%, #111020 48%, #080611 100%) fixed;
+    }
+
+    body.public-invite .main-container {
+        min-height: calc(100vh - 66px);
+        display: grid;
+        place-items: center;
+        padding: 28px 18px 48px;
+        overflow: hidden;
+    }
+
+    body.public-invite .topbar {
+        position: relative;
+        z-index: 2;
+        background: rgba(8, 6, 17, .36);
+        border-bottom: 1px solid rgba(255, 255, 255, .08);
+    }
+
+    .invite-atmosphere {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        opacity: .15;
+    }
+
+    .invite-atmosphere span { position: absolute; font-size: 28px; animation: inviteFloat 7s ease-in-out infinite alternate; }
+    .invite-atmosphere span:nth-child(1) { top: 18%; left: 10%; }
+    .invite-atmosphere span:nth-child(2) { top: 28%; right: 12%; animation-delay: -2s; }
+    .invite-atmosphere span:nth-child(3) { bottom: 20%; left: 14%; animation-delay: -4s; }
+    .invite-atmosphere span:nth-child(4) { bottom: 25%; right: 13%; animation-delay: -1s; }
+
+    @keyframes inviteFloat { to { transform: translateY(-14px) rotate(8deg); } }
+
+    .invite-card {
+        position: relative;
+        z-index: 1;
+        width: min(100%, 540px);
+        padding: clamp(28px, 7vw, 48px) clamp(22px, 6vw, 42px);
+        border: 1px solid color-mix(in srgb, var(--invite-accent) 36%, transparent);
+        border-radius: 24px;
+        background: rgba(20, 15, 34, .9);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, .48), 0 0 36px var(--invite-glow);
+        text-align: center;
+        backdrop-filter: blur(12px);
+        animation: inviteAppear .55s cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    @keyframes inviteAppear { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    .invite-emblem {
+        display: grid;
+        width: 78px;
+        height: 78px;
+        margin: 0 auto 18px;
+        place-items: center;
+        border: 2px solid color-mix(in srgb, var(--invite-accent) 65%, white 10%);
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--invite-accent) 18%, #160b27);
+        box-shadow: 0 0 28px var(--invite-glow);
+        font-size: 39px;
+    }
+
+    .invite-kicker { color: var(--invite-accent); font-size: 11px; font-weight: 900; letter-spacing: .15em; }
+    .invite-card h1 { margin: 12px 0 14px; color: #fff; font: 900 clamp(34px, 8vw, 48px)/1.02 "Barlow Condensed", Impact, sans-serif; }
+    .invite-card h1 strong { color: var(--invite-accent); text-shadow: 0 0 18px var(--invite-glow); }
+    .invite-copy { max-width: 410px; margin: 0 auto; color: #d1d5db; font-size: 15px; line-height: 1.6; }
+
+    .invite-steps { display: grid; gap: 9px; margin: 25px 0; text-align: left; }
+    .invite-steps span { display: flex; align-items: center; gap: 11px; color: #e5e7eb; font-size: 13px; }
+    .invite-steps b { display: grid; width: 26px; height: 26px; flex: none; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--invite-accent) 24%, #161122); color: var(--invite-accent); }
+
+    .invite-cta {
+        display: flex;
+        min-height: 58px;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 15px 20px;
+        border: 0;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--invite-accent), #c2410c);
+        box-shadow: 0 10px 28px var(--invite-glow);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: .055em;
+        text-decoration: none;
+        transition: transform .18s ease, filter .18s ease;
+    }
+
+    .witch-invite .invite-cta { background: linear-gradient(135deg, #65a30d, #15803d); }
+    .invite-cta:hover { transform: translateY(-2px); filter: brightness(1.08); }
+    .invite-cta:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+    .invite-note { margin: 15px 0 0; color: #9ca3af; font-size: 12px; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .invite-atmosphere span, .invite-card { animation: none; }
+        .invite-cta { transition: none; }
+    }
+</style>
+{% endblock %}

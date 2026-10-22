@@ -44,7 +44,7 @@ ADMIN_PASSWORD = _admin_password
 
 BASE_URL = os.getenv(
     "BASE_URL",
-    "http://192.168.1.44:5000"
+    "https://knnparaisopolis.com.br/"
 ).strip().rstrip("/")
 
 # QR Codes não são mais associados a estabelecimentos específicos.
