@@ -1,6 +1,5 @@
 from flask import Blueprint, flash, redirect, render_template, url_for
 
-from config import QR_LOCAL_GENERICO
 from database import get_connection
 
 from ..decorators import admin_required
@@ -12,22 +11,15 @@ bp = Blueprint("locations", __name__)
 @admin_required
 def locais():
     connection = get_connection()
-    lista = connection.execute(
-        """
-        SELECT locais.*, COUNT(qr_codes.id) AS total_qr
-        FROM locais
-        LEFT JOIN qr_codes ON qr_codes.local_id = locais.id
-        WHERE locais.nome = ?
-        GROUP BY locais.id
-        ORDER BY locais.id
-        """,
-        (QR_LOCAL_GENERICO,),
-    ).fetchall()
-    connection.close()
+    try:
+        total_qrs = connection.execute(
+            "SELECT COUNT(*) AS total FROM qr_codes"
+        ).fetchone()["total"]
+    finally:
+        connection.close()
     return render_template(
         "admin/locais.html",
-        locais=lista,
-        local_generico=QR_LOCAL_GENERICO,
+        total_qrs=total_qrs,
     )
 
 

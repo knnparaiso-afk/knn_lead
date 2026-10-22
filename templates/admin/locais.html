@@ -3,116 +3,15 @@
 {% block title %}QR Codes | Inglês Secreto{% endblock %}
 
 {% block content %}
-{% if campanha_qr %}
-<div class="admin-header qr-page-heading">
-    <div>
-        <h1>QR Codes · {{ campanha_qr.nome or ('Semana ' ~ campanha_qr.semana) }}</h1>
-        <p>Campanha de {% if campanha_qr.categoria == 'jogos' %}jogos{% else %}frases{% endif %}. Os QR Codes impressos foram preservados na campanha original e não dependem de um local específico.</p>
-    </div>
-    <a href="{{ url_for('campaigns.campanhas') }}" class="btn btn-secondary">VOLTAR PARA CAMPANHAS</a>
-</div>
-
-<section class="qr-context"><span>CAMPANHA</span><strong>{{ campanha_qr.nome or campanha_qr.frase }}</strong><p>Os códigos desta campanha continuam separados dos códigos das outras campanhas e não identificam o local físico da leitura.</p></section>
-
-<section class="point-section">
-    <div class="section-heading">
-        <div>
-            <h2>QR Codes desta campanha</h2>
-        </div><span class="point-counter">{{ qrs|length }} preservados</span>
-    </div>
-    <div class="qr-local-grid">
-        {% for local in locais %}
-        <article class="qr-local-card">
-            <span class="point-status">PONTO GERAL</span>
-            <h3>{{ local_generico }}</h3>
-            <small>Cada QR Code gerado será distinto. Você pode imprimir quantos precisar.</small>
-            <form method="POST" action="{{ url_for('qr.gerar_qr', campanha_id=campanha_qr.id, local_id=local.id) }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-primary">GERAR NOVO QR E ESCOLHER ARTE <span>→</span></button>
-            </form>
-        </article>
-        {% else %}
-        <div class="empty-points"><strong>O ponto geral não está disponível.</strong>
-            <p>Ele será criado automaticamente para manter o acesso aos QR Codes.</p>
-        </div>
-        {% endfor %}
-        {% for qr_local in qrs %}
-        <article class="qr-local-card is-linked">
-            <span class="point-status">QR PRESERVADO</span>
-            <h3>QR Code {{ loop.index }}</h3>
-            <small>{{ local_generico }}</small>
-            <div class="linked-code">
-                <span>CÓDIGO</span>
-                <strong>{{ qr_local.codigo }}</strong>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
-                <a href="{{ url_for('qr.imprimir_qr', codigo=qr_local.codigo) }}" target="_blank" class="btn btn-secondary"
-                    style="width: 100%; min-height: 36px; font-size: 11px; justify-content: center;">
-                    IMPRIMIR / ESCOLHER ARTE
-                </a>
-                <a href="{{ url_for('qr.download_qr', codigo=qr_local.codigo) }}" class="btn btn-primary"
-                    style="width: 100%; min-height: 36px; font-size: 11px; justify-content: center;">
-                    BAIXAR ARTE 1 A4 (PNG)
-                </a>
-            </div>
-        </article>
-        {% endfor %}
-    </div>
-</section>
-
-{% if qrs %}
-<section class="admin-section generated-section">
-    <div class="section-header">
-        <div>
-            <h2>QR Codes em circulação</h2>
-        </div>
-    </div>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Rota pública</th>
-                </tr>
-            </thead>
-            <tbody>{% for qr in qrs %}<tr>
-                    <td><strong>{{ qr.codigo }}</strong></td>
-                    <td><a class="table-link" href="{{ base_url }}/e/{{ qr.codigo }}" target="_blank"
-                            rel="noopener noreferrer" style="overflow-wrap: anywhere;">{{ base_url }}/e/{{ qr.codigo }}</a></td>
-                </tr>{% endfor %}</tbody>
-        </table>
-    </div>
-</section>
-{% endif %}
-{% else %}
 <div class="admin-header">
     <div>
-        <h1>QR Codes sem rastreamento de local</h1>
-        <p>Os QR Codes impressos foram mantidos e não ficam mais vinculados a estabelecimentos.</p>
+        <h1>QR Codes</h1>
     </div>
 </div>
-<section class="admin-section">
-    <div class="section-header">
-        <div>
-            <h2>Ponto geral</h2>
-        </div><span class="location-count">ponto geral ativo</span>
-    </div>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Identificação</th>
-                    <th>QR Codes preservados</th>
-                </tr>
-            </thead>
-            <tbody>{% for local in locais if local.nome == local_generico %}<tr>
-                    <td><strong>{{ local.nome }}</strong></td>
-                    <td><span class="location-qr-total">{{ local.total_qr }}</span></td>
-                </tr>{% else %}<tr>
-                    <td colspan="2" class="empty-table">O ponto geral será criado na inicialização do sistema.</td>
-                </tr>{% endfor %}</tbody>
-        </table>
-    </div>
+
+<section class="metric-grid">
+    <article class="metric-card">
+        <p class="qr-generated-total">QR Codes gerados: <strong>{{ total_qrs }}</strong></p>
+    </article>
 </section>
-{% endif %}
 {% endblock %}
