@@ -73,7 +73,7 @@ def metricas():
         LEFT JOIN campanhas ON campanhas.id = metricas_funil.campanha_id
         GROUP BY metricas_funil.evento, metricas_funil.categoria,
                  metricas_funil.origem, metricas_funil.qr_code_id,
-                 metricas_funil.campanha_id
+                 metricas_funil.campanha_id, qr_codes.codigo, campanhas.nome
         ORDER BY ultima_data DESC, campanha_nome, qr_codigo, evento
         """
     ).fetchall()

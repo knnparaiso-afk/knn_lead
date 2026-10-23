@@ -281,6 +281,26 @@ class CampaignFlowMixin:
         self.assertEqual(totals[("challenge_start", "qr", "jogos")], 1)
         self.assertEqual(totals[("challenge_complete", "qr", "jogos")], 1)
 
+    def test_admin_metrics_page_groups_and_renders_qr_and_campaign_names(self):
+        qr = self.qrs[1]
+        self.connection.execute(
+            """
+            INSERT INTO metricas_funil
+                (data, evento, qr_code_id, campanha_id, categoria, origem, total)
+            VALUES ('2026-10-23', 'qr_open', ?, ?, 'frases', 'qr', 3)
+            """,
+            (qr["id"], qr["campanha_id"]),
+        )
+        self.connection.commit()
+        client = self.app.test_client()
+        with client.session_transaction() as session:
+            session["admin_logged"] = True
+
+        response = client.get("/admin/metricas")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(qr["codigo"], response.get_data(as_text=True))
+        self.assertIn("frases", response.get_data(as_text=True))
+
     def test_concurrent_http_third_qr_creates_one_discovery_and_one_prize(self):
         first = self.app.test_client()
         for qr in self.qrs[:2]:
