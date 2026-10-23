@@ -314,6 +314,23 @@ class CampaignFlowMixin:
         for campaign_id in self.campaigns.values():
             self.assertIn(f"/admin/qr/{campaign_id}", content)
 
+    def test_campaign_and_qr_management_pages_use_simplified_labels(self):
+        client = self.app.test_client()
+        with client.session_transaction() as session:
+            session["admin_logged"] = True
+
+        campaigns_page = client.get("/admin/campanhas").get_data(as_text=True)
+        self.assertNotIn("Frases em Inglês (Sorteio)", campaigns_page)
+        self.assertNotIn("<th>\n                    Código", campaigns_page)
+
+        qr_page = client.get(f"/admin/qr/{self.campaigns['frases']}")
+        qr_content = qr_page.get_data(as_text=True)
+        self.assertEqual(qr_page.status_code, 200)
+        self.assertIn("<strong class=\"qr-generation-note\">Cada QR Code gerado será distinto. Você pode imprimir quantos precisar.</strong>", qr_content)
+        self.assertNotIn("Ponto geral (sem rastreamento)", qr_content)
+        self.assertNotIn("QR PRESERVADO", qr_content)
+        self.assertIn("BAIXAR ARTE (PNG)", qr_content)
+
     def test_concurrent_http_third_qr_creates_one_discovery_and_one_prize(self):
         first = self.app.test_client()
         for qr in self.qrs[:2]:

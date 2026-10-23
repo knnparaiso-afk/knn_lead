@@ -33,10 +33,6 @@ Campanhas | Inglês Secreto
             <tr>
 
                 <th>
-                    Código
-                </th>
-
-                <th>
                     Campanha / Categoria
                 </th>
 
@@ -63,19 +59,13 @@ Campanhas | Inglês Secreto
             <tr>
 
                 <td>
-                    <strong>
-                        {{ campanha.codigo }}
-                    </strong>
-                </td>
-
-                <td>
 
                     <strong>
                         {{ campanha.nome or campanha.frase }}
                     </strong>
 
                     <small>
-                        {% if campanha.categoria == 'jogos' %}Jogos Interativos{% else %}Frases em Inglês (Sorteio){% endif %}
+                        {% if campanha.categoria == 'jogos' %}Jogos Interativos{% else %}Frases em Inglês{% endif %}
                     </small>
 
                 </td>
@@ -137,7 +127,7 @@ Campanhas | Inglês Secreto
 
             <tr>
 
-                <td colspan="5" class="empty-table">
+                <td colspan="4" class="empty-table">
                     Nenhuma campanha cadastrada.
                 </td>
 
