@@ -519,6 +519,7 @@ Mensagem Secreta | KNN
     const optionButtons = document.querySelectorAll(".option-btn");
 
     btnIniciar.addEventListener("click", () => {
+        window.registrarMetrica?.("challenge_start");
         // Oculta frame 1 e exibe frame 2 com animação
         frame1.style.display = "none";
         const layoutMobile = window.matchMedia("(max-width: 700px)").matches;

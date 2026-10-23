@@ -122,7 +122,7 @@
 
         {% if convite_url %}
         <p class="nada-share-prompt">A missão continua com alguém que você desafiar.</p>
-        <a class="nada-share-card" href="https://wa.me/?text={{ ('Terminei o desafio de Halloween da KNN e agora é sua vez: ' ~ convite_url)|urlencode }}" target="_blank" rel="noopener noreferrer">
+        <a class="nada-share-card" data-metric-event="friend_share_click" href="https://wa.me/?text={{ ('Terminei o desafio de Halloween da KNN e agora é sua vez: ' ~ convite_url)|urlencode }}" target="_blank" rel="noopener noreferrer">
             <span class="share-icon" aria-hidden="true">🦇</span>
             <span>DESAFIAR UM AMIGO NO WHATSAPP</span>
             <span class="share-arrow" aria-hidden="true">➜</span>

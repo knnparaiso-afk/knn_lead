@@ -39,11 +39,17 @@
         <span><b>3</b> Registre sua descoberta</span>
     </div>
 
-    <a class="invite-cta" href="{{ url_for('public.mensagem', codigo=qr.codigo) }}">
+    <a class="invite-cta" href="{{ url_for('public.mensagem', codigo=qr.codigo, indicado=1) }}">
         ACEITAR O DESAFIO <span aria-hidden="true">➜</span>
     </a>
     <p class="invite-note">A campanha e os prêmios são os mesmos. Boa sorte! 👀</p>
 </section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        window.registrarMetrica?.("friend_invite_open");
+    });
+</script>
 
 <style>
     body.public-invite {

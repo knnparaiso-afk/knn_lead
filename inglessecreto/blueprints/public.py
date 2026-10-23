@@ -9,6 +9,7 @@ from desafios import obter_desafio_por_id
 
 from config import BASE_URL, ENGLISH_PASS_REQUIRED, UNIDADE
 from ..security import permitir_requisicao
+from ..utils import hoje_brasilia
 from ..services.challenges import guardar_historico, sortear_para_navegador
 from ..services.campaigns import (filtro_campanha_vigente,
                                   parametros_vigencia, situacao_campanha)
@@ -18,6 +19,42 @@ from ..services.participants import (criar_pass_se_necessario,
                                      quantidade_descobertas, descoberta_ja_registrada)
 
 bp = Blueprint("public", __name__)
+
+METRIC_EVENTS = {
+    "qr_open", "challenge_start", "challenge_complete", "form_start",
+    "form_complete", "whatsapp_click", "friend_share_click",
+    "friend_invite_open", "friend_invite_accept",
+}
+
+
+def _registrar_metrica(connection, evento, qr_code_id=0, campanha_id=0,
+                       categoria="", origem="qr"):
+    if evento not in METRIC_EVENTS:
+        return
+    hoje = hoje_brasilia().isoformat()
+    connection.execute(
+        """
+        INSERT INTO metricas_funil
+            (data, evento, qr_code_id, campanha_id, categoria, origem, total)
+        VALUES (?, ?, ?, ?, ?, ?, 1)
+        ON CONFLICT(data, evento, qr_code_id, campanha_id, categoria, origem)
+        DO UPDATE SET total = metricas_funil.total + 1
+        """,
+        (hoje, evento, qr_code_id or 0, campanha_id or 0, categoria or "", origem or "qr"),
+    )
+
+
+def _registrar_metrica_da_sessao(evento):
+    qr_code_id = session.get("metric_qr_id", 0)
+    campanha_id = session.get("metric_campaign_id", 0)
+    categoria = session.get("metric_category", "")
+    origem = session.get("metric_origin", "qr")
+    connection = get_connection()
+    try:
+        _registrar_metrica(connection, evento, qr_code_id, campanha_id, categoria, origem)
+        connection.commit()
+    finally:
+        connection.close()
 
 
 def _slug_amigavel(texto):
@@ -97,6 +134,20 @@ def mensagem(codigo):
     if situacao != "ativa":
         return render_template("campanha_inativa.html", qr=qr, situacao=situacao)
 
+    origem = "amigo" if request.args.get("indicado") == "1" else "qr"
+    session["metric_qr_id"] = qr["id"]
+    session["metric_campaign_id"] = qr["campanha_id"]
+    session["metric_category"] = qr["categoria"] or "frases"
+    session["metric_origin"] = origem
+    connection = get_connection()
+    _registrar_metrica(connection, "qr_open", qr["id"], qr["campanha_id"],
+                       qr["categoria"] or "frases", origem)
+    if origem == "amigo":
+        _registrar_metrica(connection, "friend_invite_accept", qr["id"], qr["campanha_id"],
+                           qr["categoria"] or "frases", origem)
+    connection.commit()
+    connection.close()
+
     categoria = qr["categoria"] or "frases"
     desafio, historico = sortear_para_navegador(codigo, categoria)
 
@@ -158,6 +209,9 @@ def participar(codigo):
             )
 
     if request.method != "POST":
+        _registrar_metrica(connection, "form_start", qr["id"], qr["campanha_id"],
+                           qr["categoria"] or "frases", session.get("metric_origin", "qr"))
+        connection.commit()
         connection.close()
         return render_template(
             "participar.html",
@@ -195,6 +249,10 @@ def participar(codigo):
 
     try:
         usuario_id, novo_registro = salvar_participacao(connection, qr, nome, whatsapp, email, idade)
+        _registrar_metrica(
+            connection, "form_complete", qr["id"], qr["campanha_id"],
+            qr["categoria"] or "frases", session.get("metric_origin", "qr"),
+        )
         connection.commit()
     except Exception:
         connection.rollback()
@@ -267,8 +325,15 @@ def responder_desafio(codigo):
         return jsonify({"ok": False, "mensagem": "Desafio não encontrado."}), 404
 
     letra = request.form.get("resposta", "").strip().upper()
+    categoria = qr["categoria"] or "frases"
+    if categoria == "jogos" and letra == "GAME_COMPLETE":
+        session[f"desafio_acertado_{codigo}"] = True
+        _registrar_metrica_da_sessao("challenge_complete")
+        return jsonify({"ok": True, "url": url_for("public.participar", codigo=codigo)})
+
     if letra == desafio["resposta_correta"]:
         session[f"desafio_acertado_{codigo}"] = True
+        _registrar_metrica_da_sessao("challenge_complete")
         return jsonify({"ok": True, "url": url_for("public.participar", codigo=codigo)})
 
     return jsonify({"ok": False, "mensagem": "Não foi dessa vez! Tente outra alternativa. 👻"})
@@ -312,7 +377,9 @@ def desafio_convite(nome, jogo):
     qr = connection.execute(
         f"""
         SELECT
+            qr_codes.id,
             qr_codes.codigo,
+            qr_codes.campanha_id,
             campanhas.nome AS campanha_nome,
             campanhas.semana,
             campanhas.frase,
@@ -337,6 +404,10 @@ def desafio_convite(nome, jogo):
     if not qr:
         return render_template("mensagem.html", erro="Desafio não encontrado."), 404
 
+    session["metric_qr_id"] = qr["id"]
+    session["metric_campaign_id"] = qr["campanha_id"]
+    session["metric_category"] = qr["categoria"] or "frases"
+    session["metric_origin"] = "amigo"
     slug_nome = _slug_amigavel(nome)
     nome_amigo = slug_nome.replace("-", " ").title()
     convite_url = f"{BASE_URL}{url_for('public.desafio_convite', nome=slug_nome, jogo=jogo)}"
@@ -349,7 +420,7 @@ def convite(codigo):
     connection = get_connection()
     qr = connection.execute(
         """
-        SELECT qr_codes.codigo, campanhas.nome AS campanha_nome, campanhas.semana,
+        SELECT qr_codes.id, qr_codes.campanha_id, qr_codes.codigo, campanhas.nome AS campanha_nome, campanhas.semana,
                campanhas.frase, campanhas.traducao, campanhas.categoria,
                campanhas.ativa, campanhas.data_inicio, campanhas.data_fim
         FROM qr_codes
@@ -365,6 +436,11 @@ def convite(codigo):
     if not qr:
         return render_template("mensagem.html", erro="Desafio não encontrado."), 404
 
+    session["metric_origin"] = "amigo"
+    session["metric_qr_id"] = qr["id"]
+    session["metric_campaign_id"] = qr["campanha_id"]
+    session["metric_category"] = qr["categoria"] or "frases"
+
     situacao = situacao_campanha(qr)
     if situacao != "ativa":
         return render_template("campanha_inativa.html", qr=qr, situacao=situacao)
@@ -378,3 +454,15 @@ def convite(codigo):
 def nada():
     """Redirecionamento mantido para compatibilidade."""
     return redirect(url_for("public.conquista"))
+
+
+@bp.route("/metricas/evento", methods=["POST"])
+def registrar_evento_metrica():
+    data = request.get_json(silent=True) or {}
+    evento = data.get("evento")
+    if evento not in {
+        "challenge_start", "whatsapp_click", "friend_share_click", "friend_invite_open",
+    }:
+        return jsonify({"ok": False}), 400
+    _registrar_metrica_da_sessao(evento)
+    return jsonify({"ok": True})

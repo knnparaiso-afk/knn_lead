@@ -742,6 +742,7 @@ body.halloween-theme {
 
     if (btnIniciar) {
         btnIniciar.addEventListener("click", () => {
+            window.registrarMetrica?.("challenge_start");
             frame1.style.display = "none";
             frame2.style.display = "block";
             window.scrollTo({ top: 0, behavior: 'smooth' });

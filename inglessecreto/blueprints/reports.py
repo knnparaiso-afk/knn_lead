@@ -52,6 +52,35 @@ def admin_dashboard():
     )
 
 
+@bp.route("/admin/metricas")
+@admin_required
+def metricas():
+    connection = get_connection()
+    resumo = connection.execute(
+        "SELECT evento, SUM(total) AS total FROM metricas_funil GROUP BY evento"
+    ).fetchall()
+    totais = {item["evento"]: item["total"] for item in resumo}
+    linhas = connection.execute(
+        """
+        SELECT metricas_funil.evento, metricas_funil.categoria,
+               metricas_funil.origem, SUM(metricas_funil.total) AS total,
+               MIN(metricas_funil.data) AS primeira_data,
+               MAX(metricas_funil.data) AS ultima_data,
+               COALESCE(qr_codes.codigo, 'Sem QR') AS qr_codigo,
+               COALESCE(campanhas.nome, 'Sem campanha') AS campanha_nome
+        FROM metricas_funil
+        LEFT JOIN qr_codes ON qr_codes.id = metricas_funil.qr_code_id
+        LEFT JOIN campanhas ON campanhas.id = metricas_funil.campanha_id
+        GROUP BY metricas_funil.evento, metricas_funil.categoria,
+                 metricas_funil.origem, metricas_funil.qr_code_id,
+                 metricas_funil.campanha_id
+        ORDER BY ultima_data DESC, campanha_nome, qr_codigo, evento
+        """
+    ).fetchall()
+    connection.close()
+    return render_template("admin/metricas.html", totais=totais, linhas=linhas)
+
+
 @bp.route("/admin/participantes")
 @admin_required
 def participantes():

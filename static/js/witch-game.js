@@ -1117,7 +1117,10 @@
 
         _bindUI() {
             const btnStart = document.getElementById('btn-start-game');
-            if (btnStart) btnStart.addEventListener('click', () => this.startGame());
+            if (btnStart) btnStart.addEventListener('click', () => {
+                window.registrarMetrica?.('challenge_start');
+                this.startGame();
+            });
 
             const btnNext = document.getElementById('btn-next-recipe');
             if (btnNext) btnNext.addEventListener('click', () => this.nextRecipe());

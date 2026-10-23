@@ -62,6 +62,10 @@
                 English Pass
             </a>
 
+            <a href="{{ url_for('reports.metricas') }}">
+                Métricas
+            </a>
+
             <form class="admin-logout-form" method="POST" action="{{ url_for('auth.admin_logout') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="admin-logout-btn">Sair</button>
@@ -97,6 +101,25 @@
         {% endblock %}
 
     </main>
+
+    <script>
+        window.registrarMetrica = function (evento) {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+            fetch("{{ url_for('public.registrar_evento_metrica') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": csrf },
+                body: JSON.stringify({ evento }),
+                credentials: "same-origin",
+                keepalive: true
+            }).catch(() => {});
+        };
+        document.addEventListener("click", event => {
+            const link = event.target.closest("a");
+            if (!link) return;
+            if (link.dataset.metricEvent) window.registrarMetrica(link.dataset.metricEvent);
+            if (link.href.includes("wa.me/")) window.registrarMetrica("whatsapp_click");
+        });
+    </script>
 
 
 </body>

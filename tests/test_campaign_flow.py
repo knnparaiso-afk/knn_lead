@@ -184,6 +184,103 @@ class CampaignFlowMixin:
         self.assertEqual(page.status_code, 404)
         self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM descobertas"), 0)
 
+    def test_funnel_metrics_capture_qr_challenge_form_whatsapp_and_friend_invite(self):
+        client = self.app.test_client()
+        qr = self.qrs[1]
+        page = client.get(f"/e/{qr['codigo']}")
+        token = self.csrf(page)
+
+        def metric(event, csrf_token=token):
+            return client.post(
+                "/metricas/evento",
+                json={"evento": event},
+                headers={"X-CSRFToken": csrf_token},
+            )
+
+        def total(event, origin, code):
+            return self.connection.execute(
+                """
+                SELECT COALESCE(SUM(metricas_funil.total), 0) AS total
+                FROM metricas_funil
+                INNER JOIN qr_codes ON qr_codes.id = metricas_funil.qr_code_id
+                WHERE metricas_funil.evento = ?
+                  AND metricas_funil.origem = ?
+                  AND qr_codes.codigo = ?
+                """,
+                (event, origin, code),
+            ).fetchone()["total"]
+
+        self.assertEqual(total("qr_open", "qr", qr["codigo"]), 1)
+        self.assertEqual(metric("challenge_start").status_code, 200)
+        self.unlock(client, qr)
+        form = client.get(f"/participar/{qr['codigo']}")
+        self.assertEqual(form.status_code, 200)
+        self.assertEqual(metric("whatsapp_click").status_code, 200)
+        self.assertEqual(metric("friend_share_click").status_code, 200)
+        registration = client.post(f"/participar/{qr['codigo']}", data={
+            "csrf_token": token,
+            "nome": "Participante teste",
+            "whatsapp": "(35) 98888-1111",
+            "email": "flow@example.com",
+            "idade": "30",
+            "participacao_confirmada": "1",
+        })
+        self.assertEqual(registration.status_code, 302)
+        self.assertEqual(total("qr_open", "qr", qr["codigo"]), 2)
+        self.assertEqual(total("challenge_start", "qr", qr["codigo"]), 1)
+        self.assertEqual(total("challenge_complete", "qr", qr["codigo"]), 1)
+        self.assertEqual(total("form_start", "qr", qr["codigo"]), 1)
+        self.assertEqual(total("form_complete", "qr", qr["codigo"]), 1)
+        self.assertEqual(total("whatsapp_click", "qr", qr["codigo"]), 1)
+        self.assertEqual(total("friend_share_click", "qr", qr["codigo"]), 1)
+
+        friend = self.app.test_client()
+        invite = friend.get("/desafio/alice/descubrafrase")
+        self.assertEqual(invite.status_code, 200, invite.get_data(as_text=True))
+        invite_token = self.csrf(invite)
+        invite_metric = friend.post(
+            "/metricas/evento",
+            json={"evento": "friend_invite_open"},
+            headers={"X-CSRFToken": invite_token},
+        )
+        self.assertEqual(invite_metric.status_code, 200, invite_metric.get_data(as_text=True))
+        friend_qr = self.qrs[-2]
+        accepted = friend.get(f"/e/{friend_qr['codigo']}?indicado=1")
+        self.assertEqual(accepted.status_code, 200)
+        self.assertEqual(total("friend_invite_open", "amigo", friend_qr["codigo"]), 1)
+        self.assertEqual(total("friend_invite_accept", "amigo", friend_qr["codigo"]), 1)
+
+    def test_witch_game_records_start_and_server_confirmed_completion(self):
+        client = self.app.test_client()
+        qr = self.qrs[0]
+        page = client.get(f"/e/{qr['codigo']}")
+        token = self.csrf(page)
+        started = client.post(
+            "/metricas/evento",
+            json={"evento": "challenge_start"},
+            headers={"X-CSRFToken": token},
+        )
+        self.assertEqual(started.status_code, 200)
+        completed = client.post(
+            f"/e/{qr['codigo']}/responder",
+            data={"resposta": "GAME_COMPLETE", "csrf_token": token},
+        )
+        self.assertEqual(completed.status_code, 200)
+        self.assertTrue(completed.json["ok"])
+        counts = self.connection.execute(
+            """
+            SELECT evento, origem, categoria, SUM(total) AS total
+            FROM metricas_funil
+            WHERE qr_code_id = ?
+            GROUP BY evento, origem, categoria
+            """,
+            (qr["id"],),
+        ).fetchall()
+        totals = {(row["evento"], row["origem"], row["categoria"]): row["total"] for row in counts}
+        self.assertEqual(totals[("qr_open", "qr", "jogos")], 1)
+        self.assertEqual(totals[("challenge_start", "qr", "jogos")], 1)
+        self.assertEqual(totals[("challenge_complete", "qr", "jogos")], 1)
+
     def test_concurrent_http_third_qr_creates_one_discovery_and_one_prize(self):
         first = self.app.test_client()
         for qr in self.qrs[:2]:

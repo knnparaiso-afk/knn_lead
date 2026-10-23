@@ -112,6 +112,20 @@ CREATE TABLE IF NOT EXISTS app_migrations (
     migration_key TEXT PRIMARY KEY,
     applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Métricas agregadas do funil. Não armazena dados pessoais nem identificadores do visitante.
+CREATE TABLE IF NOT EXISTS metricas_funil (
+    data TEXT NOT NULL,
+    evento TEXT NOT NULL,
+    qr_code_id INTEGER NOT NULL DEFAULT 0,
+    campanha_id INTEGER NOT NULL DEFAULT 0,
+    categoria TEXT NOT NULL DEFAULT '',
+    origem TEXT NOT NULL DEFAULT 'qr',
+    total INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (data, evento, qr_code_id, campanha_id, categoria, origem)
+);
+CREATE INDEX IF NOT EXISTS idx_metricas_funil_data_evento
+    ON metricas_funil(data, evento);
 """
 
 
