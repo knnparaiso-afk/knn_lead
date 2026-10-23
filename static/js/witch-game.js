@@ -1261,6 +1261,11 @@
         }
 
         finishRecipe() {
+            if (this.recipeIdx === this.recipes.length - 1) {
+                this.showVictory();
+                return;
+            }
+
             sound.playVictory();
             const recipe = this.recipes[this.recipeIdx];
             const titleEl = document.getElementById('recipe-done-title');
