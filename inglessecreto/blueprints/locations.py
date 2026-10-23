@@ -3,6 +3,7 @@ from flask import Blueprint, flash, redirect, render_template, url_for
 from database import get_connection
 
 from ..decorators import admin_required
+from ..services.campaigns import situacao_campanha
 
 bp = Blueprint("locations", __name__)
 
@@ -12,14 +13,22 @@ bp = Blueprint("locations", __name__)
 def locais():
     connection = get_connection()
     try:
-        total_qrs = connection.execute(
-            "SELECT COUNT(*) AS total FROM qr_codes"
-        ).fetchone()["total"]
+        campanhas = connection.execute(
+            """
+            SELECT campanhas.*,
+                   (SELECT COUNT(*) FROM qr_codes
+                    WHERE qr_codes.campanha_id = campanhas.id) AS total_qrs
+            FROM campanhas
+            ORDER BY campanhas.id DESC
+            """
+        ).fetchall()
     finally:
         connection.close()
+    situacoes = {campanha["id"]: situacao_campanha(campanha) for campanha in campanhas}
     return render_template(
-        "admin/locais.html",
-        total_qrs=total_qrs,
+        "admin/qr_campaigns.html",
+        campanhas=campanhas,
+        situacoes=situacoes,
     )
 
 

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}QR Codes | Inglês Secreto{% endblock %}
+{% block body_class %}admin-dashboard{% endblock %}
+
+{% block content %}
+<section class="admin-hero">
+    <div>
+        <h1>QR Codes da<br><em>campanha certa.</em></h1>
+        <p>Escolha uma campanha para gerar novos códigos ou consultar os QR Codes que já estão em circulação.</p>
+    </div>
+</section>
+
+{% if campanhas %}
+<section class="qr-campaign-grid" aria-label="Campanhas cadastradas">
+    {% for campanha in campanhas %}
+    {% set situacao = situacoes[campanha.id] %}
+    <article class="qr-campaign-card">
+        <div class="qr-campaign-card-top">
+            <span class="admin-kicker">
+                {% if campanha.categoria == 'jogos' %}JOGO INTERATIVO{% else %}FRASES EM INGLÊS{% endif %}
+            </span>
+            <span class="qr-campaign-status status {{ 'active' if situacao == 'ativa' else '' }}">{{ situacao }}</span>
+        </div>
+        <h2>{{ campanha.nome or campanha.frase or ('Campanha ' ~ campanha.semana) }}</h2>
+        {% if campanha.frase %}<p class="qr-campaign-description">{{ campanha.frase }}</p>{% endif %}
+        <div class="qr-campaign-card-bottom">
+            <span><strong>{{ campanha.total_qrs }}</strong> QR Codes gerados</span>
+            <a href="{{ url_for('qr.gerenciar_qr', campanha_id=campanha.id) }}" class="btn btn-primary">
+                {% if campanha.total_qrs %}GERENCIAR QR CODES{% else %}GERAR QR CODE{% endif %}
+                <span aria-hidden="true">→</span>
+            </a>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+{% else %}
+<section class="setup-card">
+    <span class="setup-number">01</span>
+    <div><h2>Crie uma campanha primeiro.</h2><p>Depois você poderá escolher a campanha e gerar seus QR Codes aqui.</p></div>
+    <a href="{{ url_for('campaigns.nova_campanha') }}" class="btn btn-primary">CRIAR CAMPANHA <span>→</span></a>
+</section>
+{% endif %}
+{% endblock %}

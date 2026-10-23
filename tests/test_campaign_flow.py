@@ -301,6 +301,19 @@ class CampaignFlowMixin:
         self.assertIn(qr["codigo"], response.get_data(as_text=True))
         self.assertIn("frases", response.get_data(as_text=True))
 
+    def test_qr_codes_navigation_lists_campaigns_and_links_to_their_generator(self):
+        client = self.app.test_client()
+        with client.session_transaction() as session:
+            session["admin_logged"] = True
+
+        response = client.get("/admin/locais")
+        content = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("JOGO INTERATIVO", content)
+        self.assertIn("FRASES EM INGLÊS", content)
+        for campaign_id in self.campaigns.values():
+            self.assertIn(f"/admin/qr/{campaign_id}", content)
+
     def test_concurrent_http_third_qr_creates_one_discovery_and_one_prize(self):
         first = self.app.test_client()
         for qr in self.qrs[:2]:
