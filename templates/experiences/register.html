@@ -1,0 +1,20 @@
+{% extends 'experiences/base.html' %}
+{% block content %}
+<section class="registration-layout">
+  <div><span class="eyebrow">O PRÓXIMO PASSO É SEU</span><h1>Sua aula.<br>Sua próxima<br><em>descoberta.</em></h1><p class="exp-lead">Deixe seus dados para combinar sua aula grátis com a KNN Paraisópolis.</p><p>Seu resultado acompanha o atendimento. Você não precisa refazer os desafios.</p></div>
+  <div class="registration-card">
+    {% if participante %}
+    <h2>Bem-vindo(a) de volta, {{ participante.nome.split()[0] }}.</h2><p>Podemos usar seu cadastro para continuar.</p>
+    <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="confirmar_reconhecido" value="1"><button class="exp-button" type="submit">Continuar com meu cadastro ↗</button></form>
+    <form method="post" action="{{ url_for('experiences.reset_participant',run_id=run.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="text-button" type="submit">Cadastrar outra pessoa</button></form>
+    {% else %}
+    <form method="post" class="lead-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% include 'partials/participant_fields.html' %}
+      <button class="exp-button" type="submit">Continuar para minha aula grátis ↗</button>
+      <p class="exp-small">O horário será combinado com a equipe pelo WhatsApp.</p>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static',filename='js/participant-form.js')|v }}" defer></script>{% endblock %}

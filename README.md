@@ -181,3 +181,10 @@ As novas tabelas `registros_consentimento` e `rate_limit_buckets` são criadas a
 - `inglessecreto/services/`: regras de negócio (participantes/consentimentos, campanhas, arte do QR).
 
 Nos templates, endpoints têm o prefixo do blueprint (ex.: `url_for('qr.gerar_qr', ...)`).
+
+
+## Plataforma de campanhas e aventura Babylon.js
+
+O estúdio em /admin/estudio separa publicação de promoção, destaque da landing e jogo. A Black Friday nasce como rascunho. O cadastro usa os campos existentes e a conclusão dos sete desafios desbloqueia a aula independentemente de acertos.
+
+Consulte docs/planejamento/DECISOES.md e docs/planejamento/IMPLEMENTACAO.md para decisões aprovadas, demonstração isolada, build, testes e operação. Os modelos gratuitos selecionados e suas origens estão em docs/planejamento/RECURSOS.json.

@@ -136,7 +136,7 @@ class CampaignFlowMixin:
             self.assertEqual((old["id"], old["codigo"], old["campanha_id"]),
                              (new["id"], new["codigo"], new["campanha_id"]))
         self.assertEqual(len({q["local_id"] for q in after}), 1)
-        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM app_migrations"), 1)
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM app_migrations WHERE migration_key = 'qr_location_tracking_disabled_v1'"), 1)
         self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM locais WHERE ativo = 1"), 1)
 
     def test_full_http_journey_25_codes_then_repeat_without_extra_points(self):

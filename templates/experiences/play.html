@@ -1,0 +1,29 @@
+{% extends 'experiences/base.html' %}
+{% block content %}
+{% if preview %}<div class="exp-notice">Prévia da revisão {{ experience_config.revisionId }}. Respostas ficam somente nesta página; cadastro, aula e métricas oficiais não são criados.</div>{% endif %}
+<div class="game-topline"><span class="eyebrow" id="scene-label">UM DIA EM INGLÊS</span><span id="progress-label">Preparando sua experiência</span></div>
+<div class="game-progress" role="progressbar" aria-label="Progresso dos desafios" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0" id="game-progress"><span></span></div>
+<section class="game-layout" aria-label="Aventura">
+  <div class="game-stage" id="game-stage">
+    <canvas id="game-canvas" aria-hidden="true" tabindex="-1"></canvas>
+    <div id="scene-loading" class="scene-loading"><span class="loading-ring"></span><strong>Uma nova história está chegando.</strong><span>Preparando o cenário…</span></div>
+    <div id="light-scene" class="light-scene" hidden><span class="light-icon" aria-hidden="true">☕</span><p>O mesmo inglês.<br><strong>No seu ritmo.</strong></p></div>
+    <span class="stage-location" id="stage-location">01 / CAFÉ</span>
+    <button type="button" class="mode-toggle" id="mode-toggle">Continuar no modo leve</button>
+  </div>
+  <article class="question-card">
+    <p class="speaker-label" id="speaker-label">SUA PRÓXIMA PARADA</p>
+    <h1 id="question-title" tabindex="-1">Vamos começar?</h1>
+    <p id="question-prompt">Você vai ajudar dois personagens. Não precisa acertar tudo para continuar.</p>
+    <div id="question-options" class="question-options" role="group" aria-label="Escolha sua resposta"></div>
+    <div id="answer-feedback" class="answer-feedback" role="status" hidden></div>
+    <div id="game-error" class="exp-notice" role="alert" hidden></div>
+    <button type="button" class="exp-button" id="next-question" hidden>Continuar <span aria-hidden="true">→</span></button>
+    <button type="button" class="exp-button exp-button-outline" id="retry-request" hidden>Tentar novamente</button>
+    <p class="question-note">Sem cronômetro. Uma escolha de cada vez.</p>
+  </article>
+</section>
+<div id="preview-complete" class="completion-card" hidden><span class="eyebrow">FIM DA PRÉVIA</span><h2>Sete situações. Um novo começo.</h2><p>Na campanha publicada, a aula será desbloqueada e o participante seguirá para o cadastro existente.</p><a class="exp-button" href="{{ url_for('studio.dashboard') }}">Voltar ao estúdio</a></div>
+<script id="experience-config" type="application/json">{{ experience_config|tojson }}</script>
+{% endblock %}
+{% block scripts %}<script type="module" src="{{ url_for('static',filename='experiences/releases/daily-adventure-v1/runtime.js')|v }}"></script>{% endblock %}

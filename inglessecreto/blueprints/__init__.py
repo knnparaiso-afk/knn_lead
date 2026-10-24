@@ -5,9 +5,11 @@ from .reports import bp as reports_bp
 from .campaigns import bp as campaigns_bp
 from .locations import bp as locations_bp
 from .qr import bp as qr_bp
+from .experiences import bp as experiences_bp
+from .studio import bp as studio_bp
 
 
 def register_blueprints(app):
     for bp in (public_bp, models_bp, auth_bp, reports_bp,
-               campaigns_bp, locations_bp, qr_bp):
+               campaigns_bp, locations_bp, qr_bp, experiences_bp, studio_bp):
         app.register_blueprint(bp)

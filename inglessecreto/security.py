@@ -79,7 +79,7 @@ def adicionar_cabecalhos_de_seguranca(response):
     h.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     h.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
     h.setdefault("Content-Security-Policy", CSP)
-    if request.path.startswith(("/admin", "/participar", "/nada", "/conquista", "/convite/", "/desafio/", "/e/")):
+    if request.path.startswith(("/admin", "/participar", "/nada", "/conquista", "/convite/", "/desafio/", "/e/", "/experiencia/", "/api/experiencias/", "/jogar/", "/promocoes/", "/r/")):
         h["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         h["Pragma"] = "no-cache"
         h.pop("Expires", None)

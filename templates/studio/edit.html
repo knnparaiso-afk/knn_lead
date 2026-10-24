@@ -1,0 +1,38 @@
+{% extends 'studio/base.html' %}
+{% block title %}{{ campaign.name }} | Estúdio{% endblock %}
+{% block studio_content %}
+<div class="admin-header"><div><h1>{{ campaign.name }}</h1><p>Rascunho v{{ revision.version }} · Módulo {{ revision.data.module }}</p></div><a class="btn btn-primary" href="{{ url_for('studio.preview',revision_id=revision.id) }}">PRÉVIA DO JOGO</a></div>
+<p class="studio-help">Salvar cria uma revisão imutável. Publicar ou reverter é uma ação separada abaixo. Os textos iniciais dos desafios devem ser revisados pela escola antes da divulgação.</p>
+<form method="post" class="studio-card studio-form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<h2>Promoção e destaque da landing</h2>
+{% for key,label in [('title','Título da experiência'),('description','Apresentação'),('landing_title','Título na landing'),('landing_text','Texto na landing'),('cta','Texto do botão'),('offer_title','Título da aula desbloqueada'),('offer_text','Orientação para a aula'),('terms','Condições da oferta')] %}
+<label>{{ label }}<textarea name="{{ key }}" maxlength="1200" required rows="2">{{ revision.data[key] }}</textarea></label>{% endfor %}
+<label>Prazo para solicitar a aula após concluir (dias)<input type="number" name="offer_days" min="1" max="90" value="{{ revision.data.offer_days }}" required></label>
+<h2>Sete desafios</h2>
+{% for q in revision.data.questions %}{% set i=loop.index0 %}
+<details class="studio-question"><summary>{{ loop.index }}. {{ q.title }} · {{ q.scene }}</summary>
+{% for key,label in [('title','Título'),('prompt','Situação / pergunta'),('explanation','Explicação após a resposta')] %}<label>{{ label }}<textarea name="q{{ i }}_{{ key }}" maxlength="1200" rows="2" required>{{ q[key] }}</textarea></label>{% endfor %}
+{% for option in q.options %}<label>Alternativa {{ loop.index }}<input name="q{{ i }}_option{{ loop.index0 }}" maxlength="400" value="{{ option }}" {% if q.interaction=='objects' %}readonly{% endif %} required></label>{% endfor %}
+{% if q.interaction=='objects' %}<p class="studio-help">Os rótulos Apple, Coffee e Sandwich correspondem aos três objetos selecionáveis do módulo.</p>{% endif %}
+<label>Resposta adequada<select name="q{{ i }}_correct">{% for j in range(3) %}<option value="{{ j }}" {% if q.correct==j %}selected{% endif %}>Alternativa {{ j+1 }}</option>{% endfor %}</select></label>
+</details>{% endfor %}
+<button class="btn btn-primary">SALVAR NOVA REVISÃO</button>
+</form>
+<section class="studio-card"><h2>Publicar, agendar ou reverter</h2><p class="studio-help">Cada destino é independente. Para reverter, escolha uma revisão anterior e publique novamente. Horários em Brasília. Sem início informado, a alteração é imediata. Agendamentos futuros preservam a publicação atual até o início.</p>
+<form method="post" action="{{ url_for('studio.publish',campaign_id=campaign.id) }}" class="studio-form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="studio-grid"><label>Destino<select name="target"><option value="promotion">Página da promoção</option><option value="landing">Destaque da landing</option><option value="game">Jogo</option></select></label>
+<label>Revisão<select name="revision_id">{% for rev in revisions %}<option value="{{ rev.id }}">v{{ rev.version }}</option>{% endfor %}</select></label>
+<label>Ação<select name="enabled"><option value="1">Ativar / publicar</option><option value="0">Pausar este destino</option></select></label>
+<label>Prioridade na landing<input name="priority" type="number" min="-999" max="999" value="0"></label>
+<label>Início (opcional)<input type="datetime-local" name="starts_at"></label><label>Término (opcional)<input type="datetime-local" name="ends_at"></label></div>
+<button class="btn btn-primary">REGISTRAR PUBLICAÇÃO</button>
+</form>
+<h3>Histórico</h3><div class="table-container"><table><thead><tr><th>Destino</th><th>Revisão</th><th>Ação</th><th>Início</th><th>Término</th><th>Prévia</th></tr></thead><tbody>{% for p in publications %}<tr><td>{{ p.target }}</td><td>v{{ p.version }}</td><td>{{ 'Ativar' if p.enabled else 'Pausar' }}</td><td>{{ p.starts_at|experience_date }}</td><td>{{ p.ends_at|experience_date if p.ends_at else 'Sem término' }}</td><td><a href="{{ url_for('studio.preview',revision_id=p.revision_id) }}">Abrir</a></td></tr>{% else %}<tr><td colspan="6">Sem publicações. A campanha permanece em rascunho.</td></tr>{% endfor %}</tbody></table></div>
+</section>
+<section class="studio-card"><h2>Links e QR Codes por canal ou lote</h2><p>Distribua o mesmo código livremente. Não é necessário cadastrar locais.</p>
+<form method="post" action="{{ url_for('studio.source',campaign_id=campaign.id) }}" class="studio-inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Canal<select name="channel">{% for channel in channels %}<option>{{ channel }}</option>{% endfor %}</select></label><label>Lote<input name="batch" maxlength="40" pattern="[a-zA-Z0-9_-]+" placeholder="cartazes-novembro" required></label><button class="btn btn-primary">GERAR LINK E QR</button></form>
+<div class="table-container"><table><thead><tr><th>Canal / lote</th><th>Link para distribuir</th><th>QR</th></tr></thead><tbody>{% for source in sources %}<tr><td>{{ source.channel }} / {{ source.batch }}</td><td><code>{{ base_url }}{{ url_for('experiences.source_link',token=source.token) }}</code></td><td><a href="{{ url_for('studio.qr',source_id=source.id) }}">Baixar PNG</a></td></tr>{% endfor %}</tbody></table></div>
+</section>
+{% endblock %}

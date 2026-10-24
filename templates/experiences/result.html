@@ -1,0 +1,25 @@
+{% extends 'experiences/base.html' %}
+{% block content %}
+<section class="result-layout">
+  <div class="result-art"><span class="result-star" aria-hidden="true">✳</span><span class="eyebrow">VOCÊ CHEGOU ATÉ AQUI</span><h1>Seu inglês<br>tem um próximo<br><em>capítulo.</em></h1><div class="result-stamp">7 / 7<br><small>SITUAÇÕES CONCLUÍDAS</small></div></div>
+  <div class="result-copy">
+    <span class="eyebrow">CONQUISTA DESBLOQUEADA</span>
+    <h2>{{ content.offer_title }}</h2>
+    <p class="exp-lead">Você experimentou sete situações e acertou {{ outcome.correct }} de {{ outcome.answered }} desafios na primeira resposta.</p>
+    <p>{{ outcome.message }}</p>
+    {% if offer_expired %}
+      <div class="exp-notice">O prazo desta oferta terminou. A KNN pode ajudar você a conhecer as oportunidades atuais.</div>
+      <a class="exp-button" href="https://wa.me/{{ u.whatsapp }}?text={{ 'Olá! Quero conhecer as oportunidades atuais da KNN.'|urlencode }}">Conversar com a KNN ↗</a>
+    {% elif opportunity %}
+      <div class="exp-notice">Cadastro recebido. Sua referência de atendimento é <strong>{{ opportunity.reference }}</strong>.</div>
+      <form method="post" action="{{ url_for('experiences.whatsapp',run_id=run.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="exp-button" type="submit">Agendar minha aula pelo WhatsApp ↗</button></form>
+      <p class="exp-small">A equipe confirma o dia e o horário na conversa. O clique não confirma um agendamento.</p>
+    {% else %}
+      <p>{{ content.offer_text }}</p>
+      <a class="exp-button" href="{{ url_for('experiences.register',run_id=run.id) }}">Continuar para minha aula grátis ↗</a>
+    {% endif %}
+    <p class="exp-terms">Solicite sua aula até {{ benefit.valid_until|experience_date }}. {{ content.terms }}</p>
+    <form class="friend-share" method="post" action="{{ url_for('experiences.invite',run_id=run.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="text-button">Convidar um amigo pelo WhatsApp ↗</button><span>Compartilhar é opcional.</span></form>
+  </div>
+</section>
+{% endblock %}

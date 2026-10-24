@@ -7,7 +7,7 @@
   <a href="#inicio" class="logo"><img src="{{ url_for('static', filename='img/logo-knn.png') | v }}" alt="KNN Idiomas" width="82" height="42" style="height: 42px; width: auto; max-height: 42px; max-width: 140px; object-fit: contain; display: block;"></a>
   <nav aria-label="Principal">
     <a href="#metodo">Método</a><a href="#cursos">Cursos</a>
-    {% if campanha %}<a href="#campanha">Campanha</a>{% endif %}<a href="#unidade">Unidade</a>
+    {% if highlights %}<a href="#campanha">Campanha</a>{% endif %}<a href="#unidade">Unidade</a>
   </nav>
   <a class="btn btn-sm" href="{{ wa }}{{ msg_aula }}">Aula grátis</a>
 </header>
@@ -19,27 +19,27 @@
     <p>Método criado para brasileiros, com foco na conversação e turmas reduzidas. Aqui em Paraisópolis.</p>
     <div class="actions">
       <a class="btn btn-light" href="{{ wa }}{{ msg_aula }}">Agendar aula grátis</a>
-      {% if campanha %}<a class="btn btn-ghost" href="{{ url_for('public.campanha') }}">Campanha de Halloween</a>{% endif %}
+      {% if highlights %}<a class="btn btn-ghost" href="{{ url_for('experiences.promotion',slug=highlights[0].campaign.slug) }}">{{ highlights[0].data.cta }}</a>{% endif %}
     </div>
   </div>
 </section>
 
-{% if campanha %}
-<section class="camp" id="campanha">
+{% for item in highlights %}
+<section class="camp" {% if loop.first %}id="campanha"{% endif %}>
   <div class="wrap camp-grid">
     <div>
-      <h2>Inglês Secreto: Halloween Edition</h2>
-      <p>Enigmas em inglês espalhados por Paraisópolis. Escaneie os QR Codes, decifre os desafios e concorra às recompensas da KNN.</p>
-      <a class="btn" href="{{ url_for('public.campanha') }}">Ver como participar</a>
+      <h2>{{ item.data.landing_title }}</h2>
+      <p>{{ item.data.landing_text }}</p>
+      <a class="btn" href="{{ url_for('experiences.promotion',slug=item.campaign.slug) }}">{{ item.data.cta }}</a>
     </div>
     <ol class="steps">
-      <li><strong>Encontre</strong> os QR Codes espalhados pela cidade.</li>
-      <li><strong>Decifre</strong> o enigma no seu celular.</li>
-      <li><strong>Concorra</strong> ao English Pass.</li>
+      <li><strong>Experimente</strong> o inglês em situações do dia a dia.</li>
+      <li><strong>Descubra</strong> um próximo passo para aprender.</li>
+      <li><strong>Converse</strong> com a equipe da KNN.</li>
     </ol>
   </div>
 </section>
-{% endif %}
+{% endfor %}
 
 <section class="sec" id="metodo">
   <div class="wrap">

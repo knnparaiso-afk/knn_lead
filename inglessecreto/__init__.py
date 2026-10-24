@@ -39,6 +39,11 @@ def create_app():
     csrf.init_app(app)
     init_db()
 
+    from .platform_schema import init_platform
+    from .platform_setup import register_platform
+    init_platform()
+    register_platform(app)
+
     assets.register(app)
     security.register(app)
     register_blueprints(app)

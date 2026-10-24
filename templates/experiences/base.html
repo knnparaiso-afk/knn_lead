@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="description" content="Uma experiência em inglês com a KNN Paraisópolis. Sete situações do dia a dia e uma aula grátis para continuar.">
+  <title>{% block title %}{{ content.title }} | KNN Paraisópolis{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/logo-knn.png') | v }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/experiences.css') | v }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="experience-site">
+  <a class="skip-link" href="#experience-main">Pular para o conteúdo</a>
+  <header class="exp-header">
+    <a class="exp-brand" href="{{ url_for('public.index') }}"><strong>KNN<span>●</span></strong><span>INGLÊS<br>SECRETO</span></a>
+    <span class="exp-header-note">{% if preview %}PRÉVIA · SEM REGISTROS{% else %}PARAISÓPOLIS · MG{% endif %}</span>
+  </header>
+  <main id="experience-main" class="exp-main">
+    {% if config.get('PREVIEW_ISOLATED') %}<div class="exp-notice">Demonstração local · dados isolados · nenhuma alteração em produção.</div>{% endif %}
+    {% for category,message in get_flashed_messages(with_categories=true) %}
+      <div class="exp-notice" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="exp-footer"><span>Um próximo passo, do seu jeito.</span><a href="{{ url_for('experiences.privacy') }}">Privacidade</a><a href="{{ url_for('experiences.credits') }}">Recursos e créditos</a></footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

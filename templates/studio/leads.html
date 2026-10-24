@@ -1,0 +1,6 @@
+{% extends 'studio/base.html' %}
+{% block studio_content %}<div class="admin-header"><h1>Atendimento das campanhas</h1></div>
+<form method="get" class="studio-inline-form"><label>Status<select name="status"><option value="">Todos</option>{% for s in statuses %}<option {% if s==status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></label><button class="btn btn-primary">FILTRAR</button></form>
+<div class="table-container"><table><thead><tr><th>Contato</th><th>Campanha</th><th>Status</th><th>Responsável / próxima ação</th><th>Atendimento</th></tr></thead><tbody>{% for lead in leads %}<tr><td><strong>{{ lead.nome }}</strong><small>{{ lead.whatsapp }} · {{ lead.idade }} anos</small></td><td>{{ lead.campaign_name }}</td><td>{{ lead.status }}</td><td>{{ lead.owner }}<small>{{ lead.next_action }}</small></td><td><a href="{{ url_for('studio.lead',opportunity_id=lead.id) }}">{{ lead.reference }} ↗</a></td></tr>{% else %}<tr><td colspan="5">Nenhum cadastro recebido neste filtro.</td></tr>{% endfor %}</tbody></table></div>
+<div class="studio-nav">{% if page>1 %}<a href="{{ url_for('studio.leads',page=page-1,status=status) }}">Anterior</a>{% endif %}{% if has_next %}<a href="{{ url_for('studio.leads',page=page+1,status=status) }}">Próxima página</a>{% endif %}</div>
+{% endblock %}

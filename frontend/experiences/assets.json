@@ -1,0 +1,17 @@
+{
+  "alex": "/static/experiences/assets/kenney-mini-characters-v1/character-male-a.glb?v=6143f97ad1",
+  "sam": "/static/experiences/assets/kenney-mini-characters-v1/character-female-b.glb?v=8a4bda3145",
+  "table": "/static/experiences/assets/kenney-furniture-kit-v1/tableRound.glb?v=d407bc5ca5",
+  "chair": "/static/experiences/assets/kenney-furniture-kit-v1/chair.glb?v=c63b032eb7",
+  "counter": "/static/experiences/assets/kenney-furniture-kit-v1/kitchenBar.glb?v=d85c86e393",
+  "coffeeMachine": "/static/experiences/assets/kenney-furniture-kit-v1/kitchenCoffeeMachine.glb?v=e3be90f34c",
+  "plant": "/static/experiences/assets/kenney-furniture-kit-v1/pottedPlant.glb?v=04e49e7830",
+  "bench": "/static/experiences/assets/kenney-furniture-kit-v1/benchCushion.glb?v=7b12de7721",
+  "bookcase": "/static/experiences/assets/kenney-furniture-kit-v1/bookcaseOpen.glb?v=568ed66c87",
+  "books": "/static/experiences/assets/kenney-furniture-kit-v1/books.glb?v=a6a4bd7cb9",
+  "reception": "/static/experiences/assets/kenney-furniture-kit-v1/desk.glb?v=fa3d059db9",
+  "lamp": "/static/experiences/assets/kenney-furniture-kit-v1/lampRoundFloor.glb?v=6c24e48ac5",
+  "apple": "/static/experiences/assets/kenney-food-kit-v1/apple.glb?v=94935b19db",
+  "coffee": "/static/experiences/assets/kenney-food-kit-v1/cup-coffee.glb?v=0c824f8764",
+  "sandwich": "/static/experiences/assets/kenney-food-kit-v1/sandwich.glb?v=aeb0d1a854"
+}

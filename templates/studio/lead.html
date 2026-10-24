@@ -1,0 +1,12 @@
+{% extends 'studio/base.html' %}
+{% block studio_content %}
+<div class="admin-header"><div><h1>{{ person.nome }}</h1><p>{{ lead.reference }} · {{ person.whatsapp }} · {{ person.email }} · {{ person.idade }} anos</p></div></div>
+<section class="studio-card"><h2>Contexto da experiência</h2><p>Origem: {{ run.channel }} / {{ run.batch or 'sem lote' }}. {{ outcome.correct }} respostas adequadas de {{ outcome.answered }}.</p><p>{{ outcome.message }}</p><ul>{% for answer in answers %}<li>{{ questions[answer.position].skill }}: {{ 'resposta adequada' if answer.correct else 'situação para explorar na aula' }}</li>{% endfor %}</ul></section>
+<form method="post" class="studio-card studio-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><h2>Registrar atendimento</h2>
+<div class="studio-grid"><label>Status<select name="status">{% for status in statuses %}<option {% if status==lead.status %}selected{% endif %}>{{ status }}</option>{% endfor %}</select></label><label>Responsável<input name="owner" maxlength="100" value="{{ lead.owner }}"></label></div>
+<label>Próxima ação<input name="next_action" maxlength="300" value="{{ lead.next_action }}"></label>
+<label>Novo agendamento confirmado (opcional)<input type="datetime-local" name="appointment_at"></label>
+<label>Agendamento ao registrar presença/falta<select name="appointment_id"><option value="">Selecione</option>{% for a in appointments %}<option value="{{ a.id }}">{{ a.starts_at|experience_date }} · {{ a.status }}</option>{% endfor %}</select></label>
+<label>Observação<textarea name="note" maxlength="1000" rows="3"></textarea></label><button class="btn btn-primary">SALVAR ATENDIMENTO</button></form>
+<section class="studio-card"><h2>Agendamentos</h2>{% for a in appointments %}<p>{{ a.starts_at|experience_date }} · {{ a.status }}</p>{% else %}<p>Nenhum horário confirmado.</p>{% endfor %}<h2>Histórico comercial</h2>{% for h in history %}<p><strong>{{ h.status }}</strong> · {{ h.created_at|experience_date }} · {{ h.actor }}<br>{{ h.note }}</p>{% else %}<p>Nenhuma atualização comercial.</p>{% endfor %}</section>
+{% endblock %}

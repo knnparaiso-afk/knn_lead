@@ -1,0 +1,203 @@
+[
+  {
+    "author": "Kenney",
+    "pack": "mini-characters",
+    "source": "https://kenney.nl/assets/mini-characters",
+    "download": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip",
+    "license": "CC0",
+    "archive_sha256": "9e1d48e6d7b8479ebbe84df71eb5bd8e1b3f0da546dea641890dccc8a02d0999",
+    "selected": [
+      {
+        "key": "alex",
+        "file": "character-male-a.glb",
+        "bytes": 246916,
+        "sha256": "77572792bfe2773b715b8cd8e18644b52b3e1f155fe10450254b50f9c364382a",
+        "animations": [
+          "static",
+          "idle",
+          "walk",
+          "sprint",
+          "jump",
+          "fall",
+          "crouch",
+          "sit",
+          "drive",
+          "die",
+          "pick-up",
+          "emote-yes",
+          "emote-no",
+          "holding-right",
+          "holding-left",
+          "holding-both",
+          "holding-right-shoot",
+          "holding-left-shoot",
+          "holding-both-shoot",
+          "attack-melee-right",
+          "attack-melee-left",
+          "attack-kick-right",
+          "attack-kick-left",
+          "interact-right",
+          "interact-left",
+          "wheelchair-sit",
+          "wheelchair-look-left",
+          "wheelchair-look-right",
+          "wheelchair-move-forward",
+          "wheelchair-move-back",
+          "wheelchair-move-left",
+          "wheelchair-move-right"
+        ]
+      },
+      {
+        "key": "sam",
+        "file": "character-female-b.glb",
+        "bytes": 252140,
+        "sha256": "2288438e7baf9acc91a870c82dc00d66710bb486592cfc3474ef8ed93a03863a",
+        "animations": [
+          "static",
+          "idle",
+          "walk",
+          "sprint",
+          "jump",
+          "fall",
+          "crouch",
+          "sit",
+          "drive",
+          "die",
+          "pick-up",
+          "emote-yes",
+          "emote-no",
+          "holding-right",
+          "holding-left",
+          "holding-both",
+          "holding-right-shoot",
+          "holding-left-shoot",
+          "holding-both-shoot",
+          "attack-melee-right",
+          "attack-melee-left",
+          "attack-kick-right",
+          "attack-kick-left",
+          "interact-right",
+          "interact-left",
+          "wheelchair-sit",
+          "wheelchair-look-left",
+          "wheelchair-look-right",
+          "wheelchair-move-forward",
+          "wheelchair-move-back",
+          "wheelchair-move-left",
+          "wheelchair-move-right"
+        ]
+      }
+    ]
+  },
+  {
+    "author": "Kenney",
+    "pack": "furniture-kit",
+    "source": "https://kenney.nl/assets/furniture-kit",
+    "download": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip",
+    "license": "CC0",
+    "archive_sha256": "e67652d0932cee41683f74711c03d3e192a2af9979ef8e6b237711f5482d46b0",
+    "selected": [
+      {
+        "key": "table",
+        "file": "tableRound.glb",
+        "bytes": 6444,
+        "sha256": "f8daea9124a542a00b7bdacfddac82dc468573d43e44d7b54dd6316e9695754b",
+        "animations": []
+      },
+      {
+        "key": "chair",
+        "file": "chair.glb",
+        "bytes": 10756,
+        "sha256": "c8a11eec93e89e31250ba91afc1b8d56c3bec7ae86640fd1239f595ff4180883",
+        "animations": []
+      },
+      {
+        "key": "counter",
+        "file": "kitchenBar.glb",
+        "bytes": 6004,
+        "sha256": "792c3d31e60c8a8d8c7a28cf7d1efe004c5a601adc1b163a8799dde32c1b559d",
+        "animations": []
+      },
+      {
+        "key": "coffeeMachine",
+        "file": "kitchenCoffeeMachine.glb",
+        "bytes": 13332,
+        "sha256": "063f582c6fa0f00a9f24e3393dac2295491c4becdaf5513c893ab1a2826b6ec3",
+        "animations": []
+      },
+      {
+        "key": "plant",
+        "file": "pottedPlant.glb",
+        "bytes": 7576,
+        "sha256": "5b760eda2766f75fda36b2c5df652a1662f82981ef64cd8fa7fe7bcd386b3a15",
+        "animations": []
+      },
+      {
+        "key": "bench",
+        "file": "benchCushion.glb",
+        "bytes": 12500,
+        "sha256": "5186ad938f8b9eff255361fd1fdc48a81f08c318161cde27c93753ab95a2d354",
+        "animations": []
+      },
+      {
+        "key": "bookcase",
+        "file": "bookcaseOpen.glb",
+        "bytes": 18020,
+        "sha256": "750702218d68c062b15dfef6ab06a4014d1cfa8bd05f02e57c53b7e13bec157c",
+        "animations": []
+      },
+      {
+        "key": "books",
+        "file": "books.glb",
+        "bytes": 6864,
+        "sha256": "b8dc56e5d29f6fc1f4727fccb1b9642627fee9942c48060a00034e98df02701c",
+        "animations": []
+      },
+      {
+        "key": "reception",
+        "file": "desk.glb",
+        "bytes": 15048,
+        "sha256": "0164fe828f028b321730fb8c74502e353583f751be74da1682d42fff7d3c5a42",
+        "animations": []
+      },
+      {
+        "key": "lamp",
+        "file": "lampRoundFloor.glb",
+        "bytes": 6600,
+        "sha256": "50fe1b5b588edf15bfa9cc880f71a02a4fda6036350b24733d0ef4de5cc5e908",
+        "animations": []
+      }
+    ]
+  },
+  {
+    "author": "Kenney",
+    "pack": "food-kit",
+    "source": "https://kenney.nl/assets/food-kit",
+    "download": "https://kenney.nl/media/pages/assets/food-kit/83086fa91c-1719418518/kenney_food-kit.zip",
+    "license": "CC0",
+    "archive_sha256": "cdad90853682499b94c9fda2f87678b24bfd8f3264e0ed323f6b6a27fd7c6f6f",
+    "selected": [
+      {
+        "key": "apple",
+        "file": "apple.glb",
+        "bytes": 14376,
+        "sha256": "2a80ab65d5bc2cb4f2bca1e8176cbb591849a288596d4b2e76e411338761a526",
+        "animations": []
+      },
+      {
+        "key": "coffee",
+        "file": "cup-coffee.glb",
+        "bytes": 7872,
+        "sha256": "d74652ad1821bc5dedf1b2e1deb4e0ca0c498aa73880e7df5b91e5e729af6f81",
+        "animations": []
+      },
+      {
+        "key": "sandwich",
+        "file": "sandwich.glb",
+        "bytes": 19724,
+        "sha256": "eba221f9fc24bdaad73467e58ce9c09ec4134baeec01f178e7bb3e87ce3b941e",
+        "animations": []
+      }
+    ]
+  }
+]

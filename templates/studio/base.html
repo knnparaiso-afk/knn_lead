@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block stylesheets %}{{ super() }}<link rel="stylesheet" href="{{ url_for('static',filename='css/studio.css')|v }}">{% endblock %}
+{% block content %}
+<nav class="studio-nav" aria-label="Estúdio"><a href="{{ url_for('studio.dashboard') }}">Promoções e jogos</a><a href="{{ url_for('studio.leads') }}">Atendimento</a><a href="{{ url_for('studio.metrics') }}">Funil de campanhas</a></nav>
+{% block studio_content %}{% endblock %}
+{% endblock %}

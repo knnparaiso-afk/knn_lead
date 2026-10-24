@@ -92,7 +92,14 @@ def _campanha_ativa():
 @bp.route("/")
 def index():
     """Landing completa da escola."""
-    return render_template("landing.html", campanha=_campanha_ativa(), u=UNIDADE)
+    from ..services import experiences as platform
+    with platform.connection(write=True) as db:
+        items = platform.highlights(db)
+        for item in items:
+            origin = platform.capture_source(db, item["campaign"]["id"], request.args)
+            platform.event(db, platform.visit_id() + ":" + str(item["campaign"]["id"]) + ":landing_view",
+                           item["campaign"]["id"], item["publication"]["revision_id"], "landing_view", origin)
+    return render_template("landing.html", highlights=items, u=UNIDADE)
 
 
 @bp.route("/ingles-secreto")

@@ -1,0 +1,37 @@
+{% extends 'experiences/base.html' %}
+{% block content %}
+<section class="exp-intro">
+  <div class="intro-copy">
+    <p class="eyebrow"><span class="orange-dot"></span> INGLÊS FORA DO PAPEL</p>
+    <h1>{{ content.title }}<span class="title-dot">.</span></h1>
+    <p class="exp-lead">{{ content.description }}</p>
+    {% if content.module=='daily-adventure@1' %}<div class="exp-facts"><span>↗ 7 desafios</span><span>◷ Cerca de 3 minutos</span><span>◎ No seu ritmo</span></div>{% endif %}
+    {% if playable %}
+    <form method="post" action="{{ url_for('experiences.start', slug=campaign.slug) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="exp-button" type="submit">{{ content.cta }} <span aria-hidden="true">↗</span></button>
+    </form>
+    <p class="exp-small">Não precisa acertar tudo. A aula é desbloqueada ao concluir.</p>
+    {% elif legacy_available %}
+    <a class="exp-button" href="{{ url_for('public.campanha') }}">Conhecer as experiências de Halloween ↗</a>
+    {% else %}
+    <div class="exp-notice">O jogo não está disponível para novos inícios. A equipe da KNN pode ajudar você a combinar uma aula.</div>
+    <a class="exp-button" href="https://wa.me/{{ u.whatsapp }}?text={{ 'Olá! Quero conhecer a promoção e combinar uma aula grátis na KNN.'|urlencode }}">Conversar com a KNN ↗</a>
+    {% endif %}
+  </div>
+  <div class="intro-art" role="img" aria-label="Ilustração de um café e um encontro, as duas paradas da experiência">
+    <span class="art-caption">SEU DIA GANHA<br>OUTRO IDIOMA.</span>
+    <div class="art-sun"></div><div class="art-window"></div>
+    <div class="art-cafe"><span>hello, there!</span><div class="art-awning"></div><div class="art-door"></div></div>
+    <div class="art-table"></div><div class="art-cup">☕</div>
+    <div class="art-sticker">7 pequenos desafios.<br><strong>Um grande começo.</strong></div>
+    <span class="art-location">01 / CAFÉ &nbsp; → &nbsp; 02 / ENCONTRO</span>
+  </div>
+</section>
+{% if content.module=='daily-adventure@1' %}<section class="exp-how">
+  <div><span class="step-index">01</span><h2>Entre na história</h2><p>Conheça dois personagens e ajude em situações do cotidiano.</p></div>
+  <div><span class="step-index">02</span><h2>Experimente o inglês</h2><p>Escolha respostas, descubra expressões e continue mesmo se errar.</p></div>
+  <div><span class="step-index">03</span><h2>Continue na KNN</h2><p>{{ content.offer_text }}</p></div>
+</section>{% endif %}
+<p class="exp-terms">{{ content.terms }}</p>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'studio/base.html' %}
+{% block title %}Estúdio de campanhas | KNN{% endblock %}
+{% block studio_content %}
+<div class="admin-header"><div><h1>Estúdio de campanhas</h1><p>Promoção, destaque e jogo com publicações independentes.</p></div></div>
+<div class="studio-grid">{% for campaign in campaigns %}
+<article class="studio-card"><span class="studio-tag">REVISÃO {{ campaign.revision.version }}</span><h2>{{ campaign.name }}</h2><p>/promocoes/{{ campaign.slug }}</p>
+<ul class="publication-status">{% for key,label in [('promotion','Promoção'),('landing','Landing'),('game','Jogo')] %}<li>{{ label }} <strong>{{ 'PUBLICADO' if campaign.publications[key] else 'SEM PUBLICAÇÃO ATIVA' }}</strong></li>{% endfor %}</ul>
+<a class="btn btn-primary" href="{{ url_for('studio.edit',campaign_id=campaign.id) }}">CONFIGURAR</a> <a class="table-link" href="{{ url_for('studio.preview',revision_id=campaign.revision.id) }}">Abrir prévia</a></article>
+{% endfor %}</div>
+<section class="studio-card"><h2>Nova campanha</h2><form method="post" action="{{ url_for('studio.create') }}" class="studio-inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Nome<input name="name" maxlength="120" required placeholder="Nome interno da campanha"></label><label>Endereço<input name="slug" maxlength="60" pattern="[a-z0-9]+(-[a-z0-9]+)*" required placeholder="exemplo-campanha"></label><button class="btn btn-primary">CRIAR RASCUNHO</button></form></section>
+{% endblock %}
