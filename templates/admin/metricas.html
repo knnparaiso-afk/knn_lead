@@ -8,6 +8,7 @@
     'qr_open': 'Aberturas do QR',
     'challenge_start': 'Desafios iniciados',
     'challenge_complete': 'Desafios concluídos',
+    'reward_view': 'Prêmios visualizados',
     'form_start': 'Cadastros iniciados',
     'form_complete': 'Cadastros concluídos',
     'whatsapp_click': 'Cliques no WhatsApp',
@@ -23,7 +24,7 @@
 </section>
 
 <section class="metric-grid">
-    {% for evento in ['qr_open', 'challenge_start', 'challenge_complete', 'form_start', 'form_complete', 'whatsapp_click', 'friend_share_click', 'friend_invite_open', 'friend_invite_accept'] %}
+    {% for evento in ['qr_open', 'challenge_start', 'challenge_complete', 'reward_view', 'form_start', 'form_complete', 'whatsapp_click', 'friend_share_click', 'friend_invite_open', 'friend_invite_accept'] %}
     <article class="metric-card"><span>{{ labels[evento] }}</span><strong>{{ totais.get(evento, 0) }}</strong><p>eventos registrados</p></article>
     {% endfor %}
 </section>

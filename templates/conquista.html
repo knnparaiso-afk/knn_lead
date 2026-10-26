@@ -40,14 +40,14 @@
                 {% if not novo_registro %}
                     MISSÃO JÁ REGISTRADA
                 {% else %}
-                    ENIGMA DESVENDADO
+                    CADASTRO CONFIRMADO
                 {% endif %}
             </div>
             <h1 class="nada-title">
                 {% if not novo_registro %}
                     Este QR Code <span class="highlight">já foi contabilizado</span>.
                 {% elif nome %}
-                    Parabéns, <span class="highlight">{{ nome }}</span>!
+                    Tudo certo, <span class="highlight">{{ nome }}</span>!
                 {% else %}
                     Missão <span class="highlight">Concluída!</span>
                 {% endif %}

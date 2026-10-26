@@ -21,7 +21,7 @@ from ..services.participants import (criar_pass_se_necessario,
 bp = Blueprint("public", __name__)
 
 METRIC_EVENTS = {
-    "qr_open", "challenge_start", "challenge_complete", "form_start",
+    "qr_open", "challenge_start", "challenge_complete", "reward_view", "form_start",
     "form_complete", "whatsapp_click", "friend_share_click",
     "friend_invite_open", "friend_invite_accept",
 }
@@ -156,8 +156,33 @@ def mensagem(codigo):
     return guardar_historico(response, historico)
 
 
+def _recompensa_prevista(participante, ja_encontrou):
+    atual = quantidade_descobertas(participante["id"]) if participante else 0
+    total = atual + int(not ja_encontrou)
+    if total >= ENGLISH_PASS_REQUIRED:
+        titulo = "English Pass"
+        descricao = ("50% de desconto e isenção na taxa de matrícula, com pagamento "
+                     "após um mês do início dos estudos.")
+        icone = "🏆"
+    elif total >= 2:
+        titulo = "Aula gratuita com certificado"
+        descricao = "Uma experiência de inglês na KNN, com certificado. Retire o acesso em nossa escola."
+        icone = "🎓"
+    else:
+        titulo = "Combo KNN"
+        descricao = "Seu combo para retirar em nossa escola."
+        icone = "🎁"
+    return {"titulo": titulo, "descricao": descricao, "icone": icone,
+            "total": total, "maximo_anterior": atual >= ENGLISH_PASS_REQUIRED}
+
+
+@bp.route("/recompensa/<codigo>")
+def recompensa(codigo):
+    return participar(codigo, mostrar_recompensa=True)
+
+
 @bp.route("/participar/<codigo>", methods=["GET", "POST"])
-def participar(codigo):
+def participar(codigo, mostrar_recompensa=False):
     if request.method == "POST" and not permitir_requisicao("participacao", 60, 600):
         return make_response(
             "Muitas tentativas de cadastro. Aguarde alguns minutos e tente novamente.", 429
@@ -188,7 +213,7 @@ def participar(codigo):
 
     if not session.get(f"desafio_acertado_{codigo}"):
         connection.close()
-        flash("Acerte o desafio antes de liberar seu cadastro.", "error")
+        flash("Acerte o desafio antes de ver seu prêmio.", "error")
         return redirect(url_for("public.mensagem", codigo=codigo))
 
     token_cookie = request.cookies.get("knn_lead_token")
@@ -208,6 +233,22 @@ def participar(codigo):
                 connection, participante_reconhecido["id"], qr["id"]
             )
 
+    vistas = session.get("recompensas_vistas", [])
+    if request.method == "GET" and not mostrar_recompensa and codigo not in vistas:
+        connection.close()
+        return redirect(url_for("public.recompensa", codigo=codigo))
+
+    premio = _recompensa_prevista(participante_reconhecido, ja_encontrou_este_qr)
+    if mostrar_recompensa:
+        session["recompensas_vistas"] = [c for c in vistas if c != codigo][-7:] + [codigo]
+        _registrar_metrica(connection, "reward_view", qr["id"], qr["campanha_id"],
+                           qr["categoria"] or "frases", session.get("metric_origin", "qr"))
+        connection.commit()
+        connection.close()
+        return render_template("recompensa.html", qr=qr, premio=premio,
+                               participante=participante_reconhecido,
+                               ja_encontrou=ja_encontrou_este_qr)
+
     if request.method != "POST":
         _registrar_metrica(connection, "form_start", qr["id"], qr["campanha_id"],
                            qr["categoria"] or "frases", session.get("metric_origin", "qr"))
@@ -218,6 +259,7 @@ def participar(codigo):
             qr=qr,
             participante=participante_reconhecido,
             ja_encontrou=ja_encontrou_este_qr,
+            premio=premio,
         )
 
     # Verifica se enviou o form completo OU se confirmou identificação rápida
@@ -239,13 +281,13 @@ def participar(codigo):
             connection.close()
             flash("Preencha os campos obrigatórios e confirme sua participação e "
                   "autorização de contato para continuar.", "error")
-            return render_template("participar.html", qr=qr, participante=participante_reconhecido, ja_encontrou=ja_encontrou_este_qr)
+            return render_template("participar.html", qr=qr, participante=participante_reconhecido, ja_encontrou=ja_encontrou_este_qr, premio=premio)
 
         idade, erro = validar_formulario(nome, whatsapp, email, idade)
         if erro:
             connection.close()
             flash(erro, "error")
-            return render_template("participar.html", qr=qr, participante=participante_reconhecido, ja_encontrou=ja_encontrou_este_qr)
+            return render_template("participar.html", qr=qr, participante=participante_reconhecido, ja_encontrou=ja_encontrou_este_qr, premio=premio)
 
     try:
         usuario_id, novo_registro = salvar_participacao(connection, qr, nome, whatsapp, email, idade)
@@ -287,7 +329,8 @@ def participar(codigo):
 @bp.route("/e/<codigo>/redefinir", methods=["POST"])
 def redefinir_participante(codigo):
     """Limpa a identificação do participante deste navegador para permitir novo cadastro."""
-    resp = make_response(redirect(url_for("public.participar", codigo=codigo)))
+    session["recompensas_vistas"] = [c for c in session.get("recompensas_vistas", []) if c != codigo]
+    resp = make_response(redirect(url_for("public.recompensa", codigo=codigo)))
     resp.delete_cookie("knn_lead_token")
     return resp
 
@@ -329,12 +372,12 @@ def responder_desafio(codigo):
     if categoria == "jogos" and letra == "GAME_COMPLETE":
         session[f"desafio_acertado_{codigo}"] = True
         _registrar_metrica_da_sessao("challenge_complete")
-        return jsonify({"ok": True, "url": url_for("public.participar", codigo=codigo)})
+        return jsonify({"ok": True, "url": url_for("public.recompensa", codigo=codigo)})
 
     if letra == desafio["resposta_correta"]:
         session[f"desafio_acertado_{codigo}"] = True
         _registrar_metrica_da_sessao("challenge_complete")
-        return jsonify({"ok": True, "url": url_for("public.participar", codigo=codigo)})
+        return jsonify({"ok": True, "url": url_for("public.recompensa", codigo=codigo)})
 
     return jsonify({"ok": False, "mensagem": "Não foi dessa vez! Tente outra alternativa. 👻"})
 

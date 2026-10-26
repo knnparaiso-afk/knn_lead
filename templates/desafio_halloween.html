@@ -787,7 +787,7 @@ body.halloween-theme {
                     feedback.className = "challenge-feedback is-success";
                     feedback.textContent = "🎃 Acertou em cheio! Desbloqueando seu prêmio...";
 
-                    const redirectUrl = data.url || response.url || "/participar/{{ codigo }}";
+                    const redirectUrl = data.url || "{{ url_for('public.recompensa', codigo=codigo) }}";
                     setTimeout(() => {
                         window.location.href = redirectUrl;
                     }, 800);

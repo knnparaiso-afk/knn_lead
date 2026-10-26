@@ -80,6 +80,7 @@ class ParticipantIdentityTests(unittest.TestCase):
         client.set_cookie("knn_lead_token", gerar_token_participante(duplicate_id))
         with client.session_transaction() as session:
             session[f"desafio_acertado_{qr['codigo']}"] = True
+        client.get(f"/recompensa/{qr['codigo']}")
         page = client.get(f"/participar/{qr['codigo']}")
         self.assertIn("Este QR Code já foi contabilizado.".encode(), page.data)
         response = client.post(f"/participar/{qr['codigo']}", data={"confirmar_reconhecido": "1"})

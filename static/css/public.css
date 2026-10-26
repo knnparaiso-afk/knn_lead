@@ -93,6 +93,27 @@ body.public-lead .consent input { accent-color: #f97316; }
 body.public-lead .lead-submit { border-radius: 8px; background: linear-gradient(135deg, #e51b2b, #a21caf); box-shadow: 0 9px 20px rgba(102, 20, 129, .34); }
 body.public-lead .lead-submit:hover { background: linear-gradient(135deg, #fa2639, #b82cbe); }
 
+/* Reward reveal before registration, shared by quiz and witch game. */
+.public-reward .mission-progress { margin: 28px 0; }
+.public-reward .lead-intro { margin-bottom: 24px; }
+.public-reward .lead-intro h1 { font-size: clamp(44px, 10vw, 64px); line-height: .96; }
+.public-lead .reward-eyebrow { margin: 0 0 10px; color: #e9d5ff; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+.reward-reveal { padding: 28px; border: 1px solid #b78adc; border-radius: 24px; background: radial-gradient(ellipse at top, #63348b, #271338 75%); box-shadow: 0 22px 60px #08031166, inset 0 1px 0 #ffffff22; text-align: center; }
+.reward-icon { display: grid; place-items: center; width: 88px; height: 88px; margin: 0 auto 20px; border: 1px solid #d3acff88; border-radius: 24px; background: #c084fc22; font-size: 48px; }
+.reward-reveal h2 { margin: 0 0 14px; color: #fff; font-size: clamp(28px, 7vw, 38px); line-height: 1.12; overflow-wrap: anywhere; }
+.reward-description { margin: 0 auto 20px; max-width: 390px; color: #f3e8ff; font-size: 16px; line-height: 1.55; }
+.reward-note { margin: 0 0 22px; color: #ddcce9; font-size: 13px; line-height: 1.5; }
+.public-lead .reward-claim { display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding: 16px; border: 1px solid #74dc9a; border-radius: 12px; background: linear-gradient(135deg, #16873f, #116430); color: #fff; font-size: 16px; font-weight: 800; line-height: 1.3; text-decoration: none; white-space: normal; }
+.public-lead .reward-claim:hover { background: #116430; }
+.reward-claim:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+.reward-next { margin: 12px 0 0; color: #dbc8ed; font-size: 12px; }
+.reward-history { max-width: 430px; margin: 20px auto 0; color: #d2bedf; font-size: 12px; line-height: 1.6; text-align: center; }
+.reward-reminder { display: flex; align-items: center; gap: 14px; margin: 0 0 22px; padding: 16px 20px; border: 1px solid #b78adc66; border-radius: 14px; background: #a855f71a; }
+.reward-reminder > span { font-size: 32px; }
+.reward-reminder small { display: block; margin-bottom: 4px; color: #dbc8ed; font-size: 10px; letter-spacing: .1em; }
+.reward-reminder strong { color: #fff; font-size: 18px; }
+@media (max-width: 380px) { .reward-reveal { padding: 24px 18px; } .public-lead .reward-claim { font-size: 15px; } }
+
 /* Confirmação */
 .success-shell { padding-top: 36px; text-align: center; }.success-shell .experience-header { margin-bottom: 60px; }.success-seal { display: grid; width: 66px; height: 66px; margin: 0 auto 25px; place-items: center; border-radius: 50%; background: var(--p-red); color: #fff; box-shadow: 0 10px 22px rgba(229,27,43,.2); font-size: 32px; font-weight: 700; }.success-copy { max-width: 390px; margin: 0 auto 29px; color: var(--p-muted); line-height: 1.6; }.journey-card { padding: 23px; border-radius: 6px; background: var(--p-ink); color: #fff; text-align: left; }.journey-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }.journey-top span { color: rgba(255,255,255,.6); font-size: 10px; font-weight: 700; letter-spacing: .1em; }.journey-top strong { color: #fff; font-size: 14px; }.journey-track { height: 7px; margin: 17px 0 13px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.18); }.journey-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--p-red); transition: width .8s ease; }.journey-card p { margin: 0; color: rgba(255,255,255,.68); font-size: 12px; line-height: 1.5; }.next-mission, .reward-callout { display: flex; gap: 13px; align-items: center; margin-top: 17px; padding: 18px; border: 1px solid var(--p-line); border-radius: 6px; text-align: left; }.next-mission { display: block; }.next-mission span { display: block; margin-bottom: 3px; color: var(--p-red); font-size: 10px; font-weight: 800; letter-spacing: .1em; }.next-mission strong { font-size: 14px; }.reward-callout > span { display: grid; width: 35px; height: 35px; place-items: center; border-radius: 50%; background: var(--p-red); color: #fff; }.reward-callout strong { font-size: 14px; }.reward-callout p { margin: 2px 0 0; color: var(--p-muted); font-size: 12px; }
 

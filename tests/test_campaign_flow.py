@@ -117,6 +117,8 @@ class CampaignFlowMixin:
         })
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json["ok"])
+        self.assertEqual(response.json["url"], f"/recompensa/{qr['codigo']}")
+        self.assertEqual(client.get(response.json["url"]).status_code, 200)
         return token
 
     def register(self, client, qr, phone="(35) 98888-1111", token=None):
@@ -138,6 +140,83 @@ class CampaignFlowMixin:
         self.assertEqual(len({q["local_id"] for q in after}), 1)
         self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM app_migrations"), 1)
         self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM locais WHERE ativo = 1"), 1)
+
+    def test_reward_precedes_form_without_creating_participation(self):
+        for qr in self.qrs[:2]:
+            client = self.app.test_client()
+            locked = client.get(f"/recompensa/{qr['codigo']}")
+            self.assertEqual(locked.status_code, 302)
+            self.assertTrue(locked.location.endswith(f"/e/{qr['codigo']}"))
+            self.unlock(client, qr)
+            with client.session_transaction() as session:
+                session.pop("recompensas_vistas", None)
+            form = client.get(f"/participar/{qr['codigo']}")
+            self.assertEqual(form.status_code, 302)
+            self.assertTrue(form.location.endswith(f"/recompensa/{qr['codigo']}"))
+            for _ in range(2):
+                reward = client.get(form.location)
+                self.assertEqual(reward.status_code, 200)
+                content = reward.get_data(as_text=True)
+                self.assertIn("Combo KNN", content)
+                self.assertIn("Quero receber meu prêmio", content)
+                self.assertIn("histórico", content)
+                self.assertNotIn('name="whatsapp"', content)
+                self.assertIn("no-store", reward.headers["Cache-Control"])
+                self.assertIn("noindex", reward.headers["X-Robots-Tag"])
+            self.assertEqual(client.get(f"/participar/{qr['codigo']}").status_code, 200)
+        for table in ("usuarios", "descobertas", "premios"):
+            self.assertEqual(self.scalar(f"SELECT COUNT(*) AS total FROM {table}"), 0)
+
+    def test_reward_preview_preserves_known_progress_and_duplicate_qr(self):
+        client = self.app.test_client()
+        self.register(client, self.qrs[0])
+        self.unlock(client, self.qrs[1])
+        second = client.get(f"/recompensa/{self.qrs[1]['codigo']}")
+        self.assertIn("Aula gratuita com certificado", second.get_data(as_text=True))
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM descobertas"), 1)
+        self.register(client, self.qrs[1])
+        duplicate = client.get(f"/recompensa/{self.qrs[1]['codigo']}")
+        self.assertIn("Aula gratuita com certificado", duplicate.get_data(as_text=True))
+        self.assertIn("Este QR Code já foi contabilizado", duplicate.get_data(as_text=True))
+        self.unlock(client, self.qrs[2])
+        third = client.get(f"/recompensa/{self.qrs[2]['codigo']}")
+        self.assertIn("English Pass", third.get_data(as_text=True))
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM premios"), 0)
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM descobertas"), 2)
+        self.register(client, self.qrs[2])
+        self.unlock(client, self.qrs[3])
+        fourth = client.get(f"/recompensa/{self.qrs[3]['codigo']}")
+        self.assertIn("não gera um prêmio adicional", fourth.get_data(as_text=True))
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM premios"), 1)
+
+    def test_anonymous_returning_phone_can_upgrade_preview_after_registration(self):
+        client = self.app.test_client()
+        self.register(client, self.qrs[0])
+        returning = self.app.test_client()
+        self.unlock(returning, self.qrs[1])
+        preview = returning.get(f"/recompensa/{self.qrs[1]['codigo']}")
+        self.assertIn("Combo KNN", preview.get_data(as_text=True))
+        confirmation = self.register(returning, self.qrs[1], "35988881111")
+        self.assertIn("AULA GRATUITA COM CERTIFICADO DESBLOQUEADA", confirmation.get_data(as_text=True))
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM usuarios"), 1)
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM descobertas"), 2)
+
+    def test_registration_errors_keep_reward_and_entered_data(self):
+        client = self.app.test_client()
+        qr = self.qrs[0]
+        token = self.unlock(client, qr)
+        self.assertEqual(client.post(f"/participar/{qr['codigo']}", data={}).status_code, 400)
+        invalid = client.post(f"/participar/{qr['codigo']}", data={
+            "csrf_token": token, "nome": "Meu nome", "whatsapp": "123",
+            "email": "teste@example.com", "idade": "30", "participacao_confirmada": "1",
+        })
+        self.assertIn("Combo KNN", invalid.get_data(as_text=True))
+        self.assertIn('value="Meu nome"', invalid.get_data(as_text=True))
+        self.assertIn("WhatsApp válido", invalid.get_data(as_text=True))
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM descobertas"), 0)
+        self.connection.execute("UPDATE campanhas SET ativa = 0 WHERE id = ?", (qr["campanha_id"],))
+        self.connection.commit()
+        self.assertEqual(client.get(f"/recompensa/{qr['codigo']}").status_code, 404)
 
     def test_full_http_journey_25_codes_then_repeat_without_extra_points(self):
         client = self.app.test_client()
@@ -229,6 +308,7 @@ class CampaignFlowMixin:
         self.assertEqual(total("qr_open", "qr", qr["codigo"]), 2)
         self.assertEqual(total("challenge_start", "qr", qr["codigo"]), 1)
         self.assertEqual(total("challenge_complete", "qr", qr["codigo"]), 1)
+        self.assertEqual(total("reward_view", "qr", qr["codigo"]), 1)
         self.assertEqual(total("form_start", "qr", qr["codigo"]), 1)
         self.assertEqual(total("form_complete", "qr", qr["codigo"]), 1)
         self.assertEqual(total("whatsapp_click", "qr", qr["codigo"]), 1)
@@ -267,6 +347,7 @@ class CampaignFlowMixin:
         )
         self.assertEqual(completed.status_code, 200)
         self.assertTrue(completed.json["ok"])
+        self.assertEqual(completed.json["url"], f"/recompensa/{qr['codigo']}")
         counts = self.connection.execute(
             """
             SELECT evento, origem, categoria, SUM(total) AS total

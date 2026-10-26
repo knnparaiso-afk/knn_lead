@@ -10,14 +10,15 @@
         <span class="mission-tag is-unlocked">DESBLOQUEADO</span>
     </header>
 
-    <div class="mission-progress" aria-label="Etapa 2 de 2">
-        <span class="active"></span><span class="active"></span>
+    <div class="mission-progress" aria-label="Etapa 3 de 3: cadastro">
+        <span class="active"></span><span class="active"></span><span class="active"></span>
     </div>
 
     <div class="lead-intro">
-        <h1>Sua conquista<br>começa <em>agora.</em></h1>
-        <p>Complete seu cadastro para contabilizar a missão e entrar na trilha de prêmios.</p>
+        <h1>Falta só<br><em>confirmar.</em></h1>
+        <p>{{ 'Confirme sua participação' if participante else 'Preencha seus dados' }} para registrar a conquista e receber as orientações de retirada.</p>
     </div>
+    <div class="reward-reminder"><span aria-hidden="true">{{ premio.icone }}</span><div><small>SEU PRÊMIO</small><strong>{{ premio.titulo }}</strong></div></div>
 
     {% if participante %}
     <!-- CARD TEMÁTICO DE RECONHECIMENTO (BEM-VINDO DE VOLTA) -->
@@ -54,7 +55,7 @@
                 {% if ja_encontrou %}
                     VER MEU PROGRESSO ATUAL ➔
                 {% else %}
-                    CONTABILIZAR NOVO QR CODE ➔
+                    CONFIRMAR E RECEBER MEU PRÊMIO ➔
                 {% endif %}
             </button>
         </form>
@@ -74,22 +75,22 @@
 
         <div class="field">
             <label for="nome">Nome completo</label>
-            <input id="nome" type="text" name="nome" maxlength="120" autocomplete="name" placeholder="Digite seu nome completo" required>
+            <input id="nome" type="text" name="nome" maxlength="120" autocomplete="name" placeholder="Digite seu nome completo" value="{{ request.form.get('nome', '') }}" required>
         </div>
 
         <div class="field">
             <label for="whatsapp">Número de celular</label>
-            <input id="whatsapp" type="tel" name="whatsapp" maxlength="32" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" required>
+            <input id="whatsapp" type="tel" name="whatsapp" maxlength="32" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" value="{{ request.form.get('whatsapp', '') }}" required>
         </div>
 
         <div class="lead-grid">
             <div class="field">
                 <label for="idade">Idade</label>
-                <input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" placeholder="Ex.: 18" required>
+                <input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" placeholder="Ex.: 18" value="{{ request.form.get('idade', '') }}" required>
             </div>
             <div class="field">
                 <label for="email">E-mail</label>
-                <input id="email" type="email" name="email" maxlength="254" autocomplete="email" placeholder="voce@email.com" required>
+                <input id="email" type="email" name="email" maxlength="254" autocomplete="email" placeholder="voce@email.com" value="{{ request.form.get('email', '') }}" required>
             </div>
         </div>
 
@@ -98,7 +99,7 @@
             <label for="participacao_confirmada">Concordo em participar da campanha e autorizo a unidade KNN responsável a entrar em contato comigo por WhatsApp ou e-mail, inclusive para enviar mensagens sobre a campanha, novidades, promoções e oportunidades relacionadas aos cursos da unidade. Se a pessoa participante tiver menos de 18 anos, declaro ser pai, mãe ou responsável legal e autorizo sua participação e esses contatos.</label>
         </div>
 
-        <button type="submit" id="btn-submit-lead" class="btn btn-primary lead-submit">CONTABILIZAR MISSÃO <span>→</span></button>
+        <button type="submit" id="btn-submit-lead" class="btn btn-primary lead-submit">CONFIRMAR E RECEBER MEU PRÊMIO <span>→</span></button>
     </form>
     {% endif %}
 </section>
@@ -106,7 +107,7 @@
 <div id="submitting-overlay" style="display:none; position:fixed; inset:0; background:rgba(19,9,36,0.92); z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; backdrop-filter:blur(8px);">
     <div style="font-size:56px; margin-bottom:16px; animation:bounceIcon 1.5s infinite;">🎃</div>
     <h2 style="font-family:'Barlow Condensed', sans-serif; font-size:32px; font-weight:900; color:#fff; margin:0 0 8px; letter-spacing:0.02em;">REGISTRANDO SUA CONQUISTA...</h2>
-    <p style="color:#d1d5db; font-size:15px; margin:0; max-width:320px;">Aguarde um instante enquanto preparamos seu resultado secreto!</p>
+    <p style="color:#d1d5db; font-size:15px; margin:0; max-width:320px;">Aguarde enquanto confirmamos seus dados e as orientações para receber seu prêmio.</p>
 </div>
 
 <style>
@@ -262,14 +263,14 @@
 
 <script>
     const telefone = document.getElementById('whatsapp');
-    telefone.addEventListener('input', () => {
+    telefone?.addEventListener('input', () => {
         const numeros = telefone.value.replace(/\D/g, '').slice(0, 11);
         telefone.value = numeros.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
     });
 
-    const form = document.querySelector('.lead-form');
+    const form = document.querySelector('.lead-form, .wb-action-form');
     const overlay = document.getElementById('submitting-overlay');
-    const btnSubmit = document.getElementById('btn-submit-lead');
+    const btnSubmit = form?.querySelector('button[type="submit"]');
 
     if (form) {
         form.addEventListener('submit', () => {

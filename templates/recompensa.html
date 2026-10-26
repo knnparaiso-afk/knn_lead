@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Seu prêmio | Inglês Secreto{% endblock %}
+{% block body_class %}public-page public-lead public-reward{% endblock %}
+{% block content %}
+<section class="lead-shell reward-shell">
+    <header class="experience-header">
+        <a class="wordmark" href="{{ url_for('public.index') }}"><strong>KNN</strong><span>INGLÊS SECRETO</span></a>
+        <span class="mission-tag is-unlocked">MISSÃO CONCLUÍDA</span>
+    </header>
+    <div class="mission-progress" aria-label="Etapa 2 de 3: seu prêmio">
+        <span class="active"></span><span class="active"></span><span></span>
+    </div>
+    <div class="lead-intro">
+        <p class="reward-eyebrow">{{ 'SUA CONQUISTA CONTINUA AQUI' if ja_encontrou or premio.maximo_anterior else 'VOCÊ CONSEGUIU!' }}</p>
+        <h1>{{ 'Seu prêmio' if ja_encontrou or premio.maximo_anterior else 'Desafio vencido.' }}<br><em>{{ 'está aqui.' if ja_encontrou or premio.maximo_anterior else 'Veja seu prêmio.' }}</em></h1>
+    </div>
+    <article class="reward-reveal" aria-labelledby="reward-title">
+        <span class="reward-icon" aria-hidden="true">{{ premio.icone }}</span>
+        <p class="reward-eyebrow">{{ 'PRÊMIO JÁ DESBLOQUEADO' if ja_encontrou or premio.maximo_anterior else 'SUA RECOMPENSA' }}</p>
+        <h2 id="reward-title">{{ premio.titulo }}</h2>
+        <p class="reward-description">{{ premio.descricao }}</p>
+        {% if ja_encontrou %}
+        <p class="reward-note">Este QR Code já foi contabilizado. Seu progresso foi mantido e esta leitura não gera outro prêmio.</p>
+        {% elif premio.maximo_anterior %}
+        <p class="reward-note">Você já desbloqueou o prêmio máximo. Esta nova descoberta não gera um prêmio adicional.</p>
+        {% else %}
+        <p class="reward-note">Confirme {{ 'sua participação' if participante else 'seus dados' }} no próximo passo para registrar a conquista e receber as orientações de retirada.</p>
+        {% endif %}
+        <a class="btn btn-primary reward-claim" href="{{ url_for('public.participar', codigo=qr.codigo) }}">{{ 'Ver meu progresso' if ja_encontrou or premio.maximo_anterior else 'Quero receber meu prêmio' }} <span aria-hidden="true">→</span></a>
+        <p class="reward-next">Próximo passo: {{ 'confirmar participação' if participante else 'cadastro' }}.</p>
+    </article>
+    {% if not participante %}
+    <p class="reward-history">Já participou antes? Ao confirmar seu celular, reconhecemos seu histórico. Ele pode liberar um prêmio maior.</p>
+    {% endif %}
+</section>
+{% endblock %}

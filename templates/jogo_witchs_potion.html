@@ -120,7 +120,7 @@
                 <p class="victory-status" id="victory-status" role="status" aria-live="polite"></p>
 
                 <button type="button" class="btn-witch-glow btn-gold" id="btn-claim-rewards">
-                    LIBERAR MEU PRÊMIO NA KNN ➔
+                    VER MEU PRÊMIO ➔
                 </button>
                 <button type="button" class="btn-witch-subtle" id="btn-play-again">
                     🔄 Jogar Novamente
@@ -163,6 +163,7 @@
         ingredientsBaseUrl: "{{ url_for('static', filename='models/ingredients/') }}",
         backgroundUrl: "{{ url_for('static', filename='images/witch-forest-background.webp') | v }}",
         participarUrl: "{{ url_for('public.participar', codigo=codigo) }}",
+        recompensaUrl: "{{ url_for('public.recompensa', codigo=codigo) }}",
         responderUrl: "{{ url_for('public.responder_desafio', codigo=codigo) }}",
         hasCustomCauldron: true,
         ingredientUrls: {

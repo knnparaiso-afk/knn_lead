@@ -10,7 +10,7 @@
     const cauldronUrl = cfg.cauldronUrl || '/static/models/cauldron.glb';
     const ingredientsBaseUrl = cfg.ingredientsBaseUrl || '/static/models/ingredients/';
     const backgroundUrl = cfg.backgroundUrl || '/static/images/witch-forest-background.webp';
-    const participarUrl = cfg.participarUrl || '/participar';
+    const participarUrl = cfg.recompensaUrl || cfg.participarUrl || '/participar';
     const responderUrl = cfg.responderUrl || '';
     const hasCustomCauldron = Boolean(cfg.hasCustomCauldron);
     const ingredientUrls = cfg.ingredientUrls && typeof cfg.ingredientUrls === 'object' ? cfg.ingredientUrls : {};
@@ -1344,13 +1344,13 @@
                     throw new Error(serverMessage || 'Confirmação não recebida.');
                 }
                 this.victoryConfirmed = true;
-                if (status) status.textContent = 'Vitória confirmada! Seu cadastro está liberado.';
-                if (button) button.textContent = 'LIBERAR MEU PRÊMIO NA KNN ➔';
+                if (status) status.textContent = 'Vitória confirmada! Veja seu prêmio.';
+                if (button) button.textContent = 'VER MEU PRÊMIO ➔';
             } catch (e) {
                 console.warn('Falha ao confirmar a vitória:', e);
                 if (status) status.textContent = serverMessage
                     ? `${serverMessage} Toque para tentar novamente.`
-                    : 'Não foi possível liberar o cadastro. Confira sua conexão e tente novamente.';
+                    : 'Não foi possível confirmar a vitória. Confira sua conexão e tente novamente.';
                 if (button) button.textContent = 'TENTAR NOVAMENTE';
             } finally {
                 this.confirmingVictory = false;
