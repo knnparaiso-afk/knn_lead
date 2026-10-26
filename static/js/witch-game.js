@@ -207,13 +207,13 @@
         }
 
         const recipeMeta = [
-            { name: "Poção Iniciante", tag: "Receita 1/3", steps: 2 },
-            { name: "Mistura ao Luar", tag: "Receita 2/3", steps: 2 },
-            { name: "Chama do Dragão", tag: "Receita 3/3", steps: 2 }
+            { name: "Poção Iniciante", tag: "Receita 1/2", steps: 2 },
+            { name: "Mistura ao Luar", tag: "Receita 2/2", steps: 2 }
         ];
 
-        const targetPool = catalog.slice(0, 6);
-        const distractorPool = catalog.slice(6);
+        const totalTasks = recipeMeta.reduce((total, recipe) => total + recipe.steps, 0);
+        const targetPool = catalog.slice(0, totalTasks);
+        const distractorPool = catalog.slice(totalTasks);
 
         let distractorIdx = 0;
         let targetIdx = 0;
