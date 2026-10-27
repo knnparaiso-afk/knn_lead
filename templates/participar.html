@@ -10,15 +10,16 @@
         <span class="mission-tag is-unlocked">DESBLOQUEADO</span>
     </header>
 
-    <div class="mission-progress" aria-label="Etapa 3 de 3: cadastro">
+    <div class="mission-progress" aria-label="Etapa 3 de 3: {{ 'confirmação' if participante else 'cadastro' }}">
         <span class="active"></span><span class="active"></span><span class="active"></span>
     </div>
 
     <div class="lead-intro">
         <h1>Falta só<br><em>confirmar.</em></h1>
-        <p>{{ 'Confirme sua participação' if participante else 'Preencha seus dados' }} para registrar a conquista e receber as orientações de retirada.</p>
+        <p>{{ 'Confirme sua participação' if participante else 'Preencha seus dados' }} para registrar a conquista e consultar as orientações do seu prêmio.</p>
     </div>
-    <div class="reward-reminder"><span aria-hidden="true">{{ premio.icone }}</span><div><small>SEU PRÊMIO</small><strong>{{ premio.titulo }}</strong></div></div>
+    <div class="reward-reminder" id="reward-reminder"><span aria-hidden="true">{{ premio.icone }}</span><div><small>{{ 'PRÊMIO JÁ DESBLOQUEADO' if ja_encontrou or premio.maximo_anterior else 'SEU PRÊMIO' }}</small><strong>{{ premio.titulo }}</strong></div></div>
+    <p class="reward-history" id="reward-status" role="status" aria-live="polite">{% if ja_encontrou %}Este QR Code já foi contabilizado. Seu progresso será mantido.{% elif premio.maximo_anterior %}Você já desbloqueou o prêmio máximo. Esta descoberta não gera um prêmio adicional.{% elif not participante and not premio.historico_conferido %}Prêmio da primeira descoberta. Ao informar seu celular, conferimos seu histórico e atualizamos o prêmio.{% else %}Seu prêmio corresponde à descoberta atual e ao seu histórico.{% endif %}</p>
 
     {% if participante %}
     <!-- CARD TEMÁTICO DE RECONHECIMENTO (BEM-VINDO DE VOLTA) -->
@@ -52,7 +53,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="confirmar_reconhecido" value="1">
             <button type="submit" class="btn btn-primary wb-submit-btn">
-                {% if ja_encontrou %}
+                {% if ja_encontrou or premio.maximo_anterior %}
                     VER MEU PROGRESSO ATUAL ➔
                 {% else %}
                     CONFIRMAR E RECEBER MEU PRÊMIO ➔
@@ -99,10 +100,77 @@
             <label for="participacao_confirmada">Concordo em participar da campanha e autorizo a unidade KNN responsável a entrar em contato comigo por WhatsApp ou e-mail, inclusive para enviar mensagens sobre a campanha, novidades, promoções e oportunidades relacionadas aos cursos da unidade. Se a pessoa participante tiver menos de 18 anos, declaro ser pai, mãe ou responsável legal e autorizo sua participação e esses contatos.</label>
         </div>
 
-        <button type="submit" id="btn-submit-lead" class="btn btn-primary lead-submit">CONFIRMAR E RECEBER MEU PRÊMIO <span>→</span></button>
+        <button type="submit" id="btn-submit-lead" class="btn btn-primary lead-submit">{{ 'CONFIRMAR E VER MEU PROGRESSO' if ja_encontrou or premio.maximo_anterior else 'CONFIRMAR E RECEBER MEU PRÊMIO' }} <span>→</span></button>
     </form>
     {% endif %}
 </section>
+
+{% if not participante %}
+<script>
+(() => {
+    const phone = document.getElementById('whatsapp');
+    const status = document.getElementById('reward-status');
+    const reminder = document.getElementById('reward-reminder');
+    const submit = document.getElementById('btn-submit-lead');
+    let pending;
+    let timer;
+    async function updateReward() {
+        const digits = phone.value.replace(/\D/g, '');
+        if (digits.length !== 10 && digits.length !== 11) {
+            reminder.querySelector('strong').textContent = 'Informe seu celular';
+            status.textContent = 'Informe seu celular com DDD para conferir o prêmio do seu histórico.';
+            return;
+        }
+        const controller = new AbortController();
+        pending = controller;
+        status.textContent = 'Conferindo seu prêmio...';
+        try {
+            const data = new FormData();
+            data.set('whatsapp', phone.value);
+            data.set('consultar_premio', '1');
+            data.set('csrf_token', document.querySelector('meta[name="csrf-token"]').content);
+            const response = await fetch({{ url_for('public.participar', codigo=qr.codigo)|tojson }}, {
+                method: 'POST', body: data, signal: controller.signal,
+            });
+            if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) throw new Error();
+            const reward = await response.json();
+            if (controller.signal.aborted) return;
+            const existing = reward.ja_encontrou || reward.maximo_anterior;
+            reminder.querySelector('span').textContent = reward.icone;
+            reminder.querySelector('strong').textContent = reward.titulo;
+            reminder.querySelector('small').textContent = existing ? 'PRÊMIO JÁ DESBLOQUEADO' : 'SEU PRÊMIO';
+            submit.firstChild.textContent = existing ? 'CONFIRMAR E VER MEU PROGRESSO ' : 'CONFIRMAR E RECEBER MEU PRÊMIO ';
+            status.textContent = reward.ja_encontrou
+                ? 'Este QR Code já foi contabilizado. Seu progresso será mantido.'
+                : reward.maximo_anterior
+                    ? 'Você já desbloqueou o prêmio máximo. Esta descoberta não gera um prêmio adicional.'
+                    : 'Seu prêmio corresponde à descoberta atual e ao histórico deste celular.';
+        } catch (error) {
+            if (!controller.signal.aborted) {
+                reminder.querySelector('strong').textContent = 'Prêmio confirmado no cadastro';
+                status.textContent = 'Não foi possível conferir o histórico agora. Ele será conferido ao confirmar o cadastro.';
+            }
+        }
+    }
+    function scheduleUpdate() {
+        clearTimeout(timer);
+        pending?.abort();
+        reminder.querySelector('small').textContent = 'SEU PRÊMIO';
+        reminder.querySelector('strong').textContent = 'Conferindo seu prêmio...';
+        submit.firstChild.textContent = 'CONFIRMAR CADASTRO ';
+        status.textContent = 'Conferindo o celular informado...';
+        timer = setTimeout(updateReward, 500);
+    }
+    phone.addEventListener('input', scheduleUpdate);
+    phone.addEventListener('change', scheduleUpdate);
+    phone.form.addEventListener('submit', () => {
+        clearTimeout(timer);
+        pending?.abort();
+    });
+    if (phone.value) scheduleUpdate();
+})();
+</script>
+{% endif %}
 
 <div id="submitting-overlay" style="display:none; position:fixed; inset:0; background:rgba(19,9,36,0.92); z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; backdrop-filter:blur(8px);">
     <div style="font-size:56px; margin-bottom:16px; animation:bounceIcon 1.5s infinite;">🎃</div>

@@ -201,6 +201,78 @@ class CampaignFlowMixin:
         self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM usuarios"), 1)
         self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM descobertas"), 2)
 
+    def test_phone_automatically_updates_reward_without_registering_or_authenticating(self):
+        owner = self.app.test_client()
+        self.register(owner, self.qrs[0])
+        returning = self.app.test_client()
+        qr = self.qrs[1]
+        token = self.unlock(returning, qr)
+
+        def preview(phone):
+            response = returning.post(f"/participar/{qr['codigo']}", data={
+                "csrf_token": token, "consultar_premio": "1", "whatsapp": phone,
+            })
+            self.assertEqual(response.status_code, 200)
+            self.assertIsNone(response.headers.get("Set-Cookie"))
+            self.assertNotIn("email", response.json)
+            self.assertNotIn("nome", response.json)
+            return response.json
+
+        self.assertEqual(preview("(35) 98888-1111")["titulo"], "Aula gratuita com certificado")
+        self.assertEqual(preview("35977772222")["titulo"], "Combo KNN")
+        self.assertEqual(preview("123")["titulo"], "Combo KNN")
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM descobertas"), 1)
+        form = returning.get(f"/participar/{qr['codigo']}").get_data(as_text=True)
+        self.assertIn('name="nome"', form)
+        self.assertNotIn('name="confirmar_reconhecido"', form)
+        invalid = returning.post(f"/participar/{qr['codigo']}", data={
+            "csrf_token": token, "whatsapp": "35988881111",
+        })
+        self.assertIn("Aula gratuita com certificado", invalid.get_data(as_text=True))
+
+    def test_automatic_reward_tracks_phone_progress_duplicate_and_maximum(self):
+        owner = self.app.test_client()
+        self.register(owner, self.qrs[0])
+        self.register(owner, self.qrs[1])
+        returning = self.app.test_client()
+        third = self.qrs[2]
+        token = self.unlock(returning, third)
+
+        def preview(qr, csrf):
+            return returning.post(f"/participar/{qr['codigo']}", data={
+                "csrf_token": csrf, "consultar_premio": "1", "whatsapp": "35988881111",
+            }).json
+
+        self.assertEqual(preview(third, token)["titulo"], "English Pass")
+        duplicate = preview(self.qrs[1], self.unlock(returning, self.qrs[1]))
+        self.assertTrue(duplicate["ja_encontrou"])
+        self.assertEqual(duplicate["total"], 2)
+        self.register(owner, third)
+        fourth = self.qrs[3]
+        maximum = preview(fourth, self.unlock(returning, fourth))
+        self.assertTrue(maximum["maximo_anterior"])
+        self.assertEqual(maximum["titulo"], "English Pass")
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM descobertas"), 3)
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM premios"), 1)
+
+    def test_known_participant_automatically_gets_reward_and_form_for_current_status(self):
+        client = self.app.test_client()
+        self.register(client, self.qrs[0])
+        qr = self.qrs[1]
+        self.unlock(client, qr)
+        reward = client.get(f"/recompensa/{qr['codigo']}").get_data(as_text=True)
+        form = client.get(f"/participar/{qr['codigo']}").get_data(as_text=True)
+        for content in (reward, form):
+            self.assertIn("Aula gratuita com certificado", content)
+            self.assertNotIn('name="whatsapp"', content)
+        self.assertIn('name="confirmar_reconhecido"', form)
+        for previous in (qr, self.qrs[2]):
+            self.register(client, previous)
+        self.unlock(client, self.qrs[3])
+        form = client.get(f"/participar/{self.qrs[3]['codigo']}").get_data(as_text=True)
+        self.assertIn("VER MEU PROGRESSO ATUAL", form)
+        self.assertIn("não gera um prêmio adicional", form)
+
     def test_registration_errors_keep_reward_and_entered_data(self):
         client = self.app.test_client()
         qr = self.qrs[0]

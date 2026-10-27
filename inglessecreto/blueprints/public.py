@@ -6,6 +6,7 @@ from flask import (Blueprint, flash, jsonify, make_response, redirect,
 
 from database import get_connection
 from desafios import obter_desafio_por_id
+from telefones import normalizar_whatsapp
 
 from config import BASE_URL, ENGLISH_PASS_REQUIRED, UNIDADE
 from ..security import permitir_requisicao
@@ -16,7 +17,8 @@ from ..services.campaigns import (filtro_campanha_vigente,
 from ..services.participants import (criar_pass_se_necessario,
                                      salvar_participacao, validar_formulario,
                                      gerar_token_participante, obter_id_por_token,
-                                     quantidade_descobertas, descoberta_ja_registrada)
+                                     quantidade_descobertas, descoberta_ja_registrada,
+                                     obter_progresso_por_whatsapp)
 
 bp = Blueprint("public", __name__)
 
@@ -227,18 +229,28 @@ def participar(codigo, mostrar_recompensa=False):
             (user_id_cookie,),
         ).fetchone()
 
-        if participante_reconhecido:
-            # A mesma pessoa só contabiliza cada QR Code uma vez, em qualquer local.
-            ja_encontrou_este_qr = descoberta_ja_registrada(
-                connection, participante_reconhecido["id"], qr["id"]
-            )
-
     vistas = session.get("recompensas_vistas", [])
     if request.method == "GET" and not mostrar_recompensa and codigo not in vistas:
         connection.close()
         return redirect(url_for("public.recompensa", codigo=codigo))
 
-    premio = _recompensa_prevista(participante_reconhecido, ja_encontrou_este_qr)
+    # A consulta por celular informa o prêmio, mas nunca libera confirmação
+    # rápida nem preenche dados pessoais de outro navegador.
+    participante_progresso = participante_reconhecido
+    if request.method == "POST" and request.form.get("confirmar_reconhecido") != "1":
+        celular = normalizar_whatsapp(request.form.get("whatsapp", ""))
+        participante_progresso = obter_progresso_por_whatsapp(connection, celular)
+        # Em erros de cadastro, use a identidade enviada, não a do cookie.
+        participante_reconhecido = None
+    ja_encontrou_este_qr = bool(participante_progresso) and descoberta_ja_registrada(
+        connection, participante_progresso["id"], qr["id"]
+    )
+    premio = _recompensa_prevista(participante_progresso, ja_encontrou_este_qr)
+    premio["historico_conferido"] = bool(participante_progresso)
+    premio["ja_encontrou"] = ja_encontrou_este_qr
+    if not mostrar_recompensa and request.form.get("consultar_premio") == "1":
+        connection.close()
+        return jsonify(premio)
     if mostrar_recompensa:
         session["recompensas_vistas"] = [c for c in vistas if c != codigo][-7:] + [codigo]
         _registrar_metrica(connection, "reward_view", qr["id"], qr["campanha_id"],

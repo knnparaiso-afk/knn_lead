@@ -101,6 +101,14 @@ def _ids_do_participante(connection, usuario_id):
     return _ids_por_whatsapp(connection, usuario["whatsapp"]) if usuario else [usuario_id]
 
 
+def obter_progresso_por_whatsapp(connection, whatsapp):
+    """Identifica somente o progresso; não autentica nem expõe dados cadastrais."""
+    if len(normalizar_whatsapp(whatsapp)) not in (10, 11):
+        return None
+    ids = _ids_por_whatsapp(connection, whatsapp)
+    return {"id": ids[0]} if ids else None
+
+
 def descoberta_ja_registrada(connection, usuario_id, qr_id):
     ids = _ids_do_participante(connection, usuario_id)
     placeholders = ",".join("?" for _ in ids)
