@@ -252,14 +252,18 @@ def participar(codigo, mostrar_recompensa=False):
         connection.close()
         return jsonify(premio)
     if mostrar_recompensa:
+        # A tela de prévia não usa o cookie como identidade. Mostra o prêmio
+        # da primeira descoberta; o cadastro consulta o histórico pelo celular.
+        premio = _recompensa_prevista(None, False)
+        premio["historico_conferido"] = False
+        premio["ja_encontrou"] = False
         session["recompensas_vistas"] = [c for c in vistas if c != codigo][-7:] + [codigo]
         _registrar_metrica(connection, "reward_view", qr["id"], qr["campanha_id"],
                            qr["categoria"] or "frases", session.get("metric_origin", "qr"))
         connection.commit()
         connection.close()
         return render_template("recompensa.html", qr=qr, premio=premio,
-                               participante=participante_reconhecido,
-                               ja_encontrou=ja_encontrou_este_qr)
+                               participante=None, ja_encontrou=False)
 
     if request.method != "POST":
         _registrar_metrica(connection, "form_start", qr["id"], qr["campanha_id"],
