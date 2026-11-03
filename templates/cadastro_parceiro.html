@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Cadastro | KNN{% endblock %}
+{% block body_class %}public-page public-lead{% endblock %}
+{% block content %}
+<section class="lead-shell">
+    <header class="experience-header"><a class="wordmark" href="{{ url_for('public.index') }}"><strong>KNN</strong><span>IDIOMAS</span></a><span class="mission-tag is-unlocked">CADASTRO</span></header>
+    <div class="lead-intro"><h1>Seu próximo passo<br>começa <em>aqui.</em></h1><p>Preencha seus dados para receber informações e oportunidades da KNN.</p></div>
+    {% if parceiro %}<p class="partner-source">Indicação: {{ parceiro }}</p>{% endif %}
+    <form method="POST" class="lead-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field"><label for="nome">Nome completo</label><input id="nome" type="text" name="nome" maxlength="120" autocomplete="name" required></div>
+        <div class="field"><label for="whatsapp">WhatsApp</label><input id="whatsapp" type="tel" name="whatsapp" maxlength="32" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" required></div>
+        <div class="lead-grid">
+            <div class="field"><label for="idade">Idade</label><input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" required></div>
+            <div class="field"><label for="email">E-mail</label><input id="email" type="email" name="email" maxlength="254" autocomplete="email" required></div>
+        </div>
+        <div class="consent participation-confirmation"><input type="checkbox" id="participacao_confirmada" name="participacao_confirmada" required><label for="participacao_confirmada">Autorizo a unidade KNN responsável a entrar em contato comigo por WhatsApp ou e-mail sobre cursos, novidades e promoções. Se a pessoa participante tiver menos de 18 anos, declaro ser pai, mãe ou responsável legal e autorizo sua participação e esses contatos.</label></div>
+        <button type="submit" class="btn btn-primary lead-submit">ENVIAR CADASTRO <span>→</span></button>
+    </form>
+</section>
+<script>
+const telefone = document.getElementById('whatsapp');
+telefone.addEventListener('input', () => { const n=telefone.value.replace(/\D/g,'').slice(0,11); telefone.value=n.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2'); });
+</script>
+{% endblock %}

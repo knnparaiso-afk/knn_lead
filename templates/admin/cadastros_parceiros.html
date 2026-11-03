@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Cadastros parceiros | Inglês Secreto{% endblock %}
+{% block content %}
+<div class="admin-header"><div><h1>Cadastros de parceiros</h1><p>Leads recebidos pelos QR Codes avulsos, agrupados por parceiro.</p></div><a class="btn btn-secondary" href="{{ url_for('partner_qr.lista_qrs') }}">VER QR CODES</a></div>
+<div class="table-container" style="overflow:auto"><table><thead><tr><th>Data</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Idade</th><th>Parceiro</th><th>QR</th></tr></thead><tbody>{% for row in registros %}<tr><td>{{ row.data_cadastro | data_hora_brasilia }}</td><td><strong>{{ row.nome }}</strong></td><td>{{ row.whatsapp }}</td><td>{{ row.email or '—' }}</td><td>{{ row.idade or '—' }}</td><td>{{ row.parceiro }}</td><td>{{ row.codigo }}</td></tr>{% else %}<tr><td colspan="7" class="empty-table">Ainda não há cadastros por QR avulso.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

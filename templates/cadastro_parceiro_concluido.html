@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Cadastro recebido | KNN{% endblock %}
+{% block body_class %}public-page public-lead{% endblock %}
+{% block content %}
+<section class="lead-shell"><header class="experience-header"><a class="wordmark" href="{{ url_for('public.index') }}"><strong>KNN</strong><span>IDIOMAS</span></a></header><div class="lead-intro"><h1>Cadastro<br><em>recebido!</em></h1><p>Obrigado{% if nome %}, {{ nome }}{% endif %}. Em breve a equipe KNN poderá entrar em contato com você.</p></div></section>
+{% endblock %}

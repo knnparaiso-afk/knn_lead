@@ -54,6 +54,26 @@ CREATE TABLE IF NOT EXISTS qr_codes (
     FOREIGN KEY (local_id) REFERENCES locais(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS qrs_avulsos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    codigo TEXT NOT NULL UNIQUE,
+    parceiro TEXT NOT NULL,
+    data_criacao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ativo INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS cadastros_qr_avulso (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_id INTEGER NOT NULL,
+    qr_avulso_id INTEGER NOT NULL,
+    data_cadastro TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (qr_avulso_id) REFERENCES qrs_avulsos(id) ON DELETE CASCADE,
+    UNIQUE(usuario_id, qr_avulso_id)
+);
+CREATE INDEX IF NOT EXISTS idx_cadastros_qr_avulso_data
+    ON cadastros_qr_avulso(data_cadastro);
+
 CREATE TABLE IF NOT EXISTS descobertas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario_id INTEGER NOT NULL,
