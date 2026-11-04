@@ -1,4 +1,5 @@
 from datetime import date
+from urllib.parse import urlsplit
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
@@ -6,10 +7,11 @@ from database import get_connection
 from desafios import CATEGORIAS, DESAFIOS
 
 from ..decorators import admin_required
-from ..services.campaigns import gerar_codigo, situacao_campanha
+from ..services.campaigns import BLACK_NOVEMBER, gerar_codigo, situacao_campanha
 from ..services.qr_art import remover_arquivos_qr
 
 bp = Blueprint("campaigns", __name__)
+MODALIDADES = {**CATEGORIAS, BLACK_NOVEMBER: "Black November · Cadastro direto"}
 
 
 def _dados_formulario():
@@ -20,10 +22,27 @@ def _dados_formulario():
         "data_inicio": f.get("data_inicio", "").strip() or None,
         "data_fim": f.get("data_fim", "").strip() or None,
         "ativa": 1 if f.get("ativa") else 0,
+        "chamada": f.get("chamada", "").strip(),
+        "descricao": f.get("descricao", "").strip(),
+        "comunidade_url": f.get("comunidade_url", "").strip(),
+        "comunidade_nacional_url": f.get("comunidade_nacional_url", "").strip(),
     }
 
 
 def _erro_periodo(dados):
+    if dados["categoria"] not in MODALIDADES:
+        return "Selecione uma modalidade válida."
+    if len(dados["chamada"]) > 120 or len(dados["descricao"]) > 500:
+        return "Revise os limites da chamada e da descrição."
+    for campo in ("comunidade_url", "comunidade_nacional_url"):
+        valor = dados[campo]
+        try:
+            url = urlsplit(valor)
+            valido = url.scheme == "https" and url.hostname and not url.username and not url.password
+        except ValueError:
+            valido = False
+        if valor and (len(valor) > 500 or not valido or any(c.isspace() for c in valor)):
+            return "Informe links válidos das comunidades, começando com https://."
     for campo in ("data_inicio", "data_fim"):
         valor = dados[campo]
         if valor:
@@ -43,7 +62,7 @@ def _render_form(campanha, categoria, form_data=None):
         "admin/campanha_form.html",
         campanha=campanha,
         form_data=form_data,
-        categorias=CATEGORIAS,
+        categorias=MODALIDADES,
         desafios_preview=DESAFIOS.get(categoria, DESAFIOS["frases"]),
         todos_desafios=DESAFIOS,
     )
@@ -55,7 +74,9 @@ def campanhas():
     connection = get_connection()
     lista = connection.execute(
         """
-        SELECT campanhas.*, COUNT(descobertas.id) AS total_descobertas
+        SELECT campanhas.*, COUNT(descobertas.id) AS total_descobertas,
+               (SELECT COUNT(*) FROM cadastros_qr_avulso c JOIN qrs_avulsos q ON q.id = c.qr_avulso_id
+                WHERE q.campanha_id = campanhas.id) AS total_cadastros
         FROM campanhas
         LEFT JOIN descobertas ON descobertas.campanha_id = campanhas.id
         GROUP BY campanhas.id
@@ -71,7 +92,8 @@ def campanhas():
 @admin_required
 def nova_campanha():
     if request.method != "POST":
-        return _render_form(None, "frases")
+        categoria = request.args.get("categoria", "frases")
+        return _render_form(None, categoria, {"categoria": categoria, "ativa": 1})
 
     d = _dados_formulario()
     if not d["nome"] or len(d["nome"]) > 150:
@@ -90,18 +112,26 @@ def nova_campanha():
     cursor = connection.execute(
         """
         INSERT INTO campanhas
-        (codigo, nome, semana, frase, traducao, categoria, data_inicio, data_fim, ativa)
-        VALUES (?, ?, ?, '', '', ?, ?, ?, ?)
+        (codigo, nome, semana, frase, traducao, categoria, data_inicio, data_fim, ativa,
+         chamada, descricao, comunidade_url, comunidade_nacional_url)
+        VALUES (?, ?, ?, '', '', ?, ?, ?, ?, ?, ?, ?, ?)
         RETURNING id
         """,
         (gerar_codigo(), d["nome"], max_semana + 1, d["categoria"],
-         d["data_inicio"], d["data_fim"], d["ativa"]),
+         d["data_inicio"], d["data_fim"], d["ativa"], d["chamada"], d["descricao"],
+         d["comunidade_url"], d["comunidade_nacional_url"]),
     )
     campanha_id = cursor.fetchone()["id"]
+    if d["categoria"] == BLACK_NOVEMBER:
+        connection.execute(
+            "INSERT INTO qrs_avulsos (codigo, parceiro, campanha_id) VALUES (?, ?, ?)",
+            (gerar_codigo(), d["nome"], campanha_id),
+        )
     connection.commit()
     connection.close()
 
-    flash("Campanha criada! Agora gere o QR Code geral da campanha.", "success")
+    flash("Campanha criada! Seu primeiro QR de cadastro já está pronto." if d["categoria"] == BLACK_NOVEMBER
+          else "Campanha criada! Agora gere o QR Code geral da campanha.", "success")
     return redirect(url_for("qr.gerenciar_qr", campanha_id=campanha_id))
 
 
@@ -125,6 +155,8 @@ def editar_campanha(campanha_id):
             flash("Preencha um nome válido para a campanha.", "error")
             return _render_form(campanha, d["categoria"], d)
         erro_periodo = _erro_periodo(d)
+        if (d["categoria"] == BLACK_NOVEMBER) != (campanha["categoria"] == BLACK_NOVEMBER):
+            erro_periodo = "Crie outra campanha para mudar a modalidade e preservar os QR Codes existentes."
         if erro_periodo:
             connection.close()
             flash(erro_periodo, "error")
@@ -133,10 +165,12 @@ def editar_campanha(campanha_id):
         connection.execute(
             """
             UPDATE campanhas
-            SET nome = ?, categoria = ?, data_inicio = ?, data_fim = ?, ativa = ?
+            SET nome = ?, categoria = ?, data_inicio = ?, data_fim = ?, ativa = ?,
+                chamada = ?, descricao = ?, comunidade_url = ?, comunidade_nacional_url = ?
             WHERE id = ?
             """,
-            (d["nome"], d["categoria"], d["data_inicio"], d["data_fim"], d["ativa"], campanha_id),
+            (d["nome"], d["categoria"], d["data_inicio"], d["data_fim"], d["ativa"],
+             d["chamada"], d["descricao"], d["comunidade_url"], d["comunidade_nacional_url"], campanha_id),
         )
         connection.commit()
         connection.close()
@@ -164,6 +198,7 @@ def excluir_campanha(campanha_id):
         flash("Campanha não encontrada.", "error")
         return redirect(url_for("campaigns.campanhas"))
 
+    connection.execute("UPDATE qrs_avulsos SET ativo = 0 WHERE campanha_id = ?", (campanha_id,))
     connection.execute("DELETE FROM campanhas WHERE id = ?", (campanha_id,))
     connection.commit()
     connection.close()

@@ -7,7 +7,8 @@ from config import BASE_URL
 from database import get_connection
 from ..decorators import admin_required
 from ..security import permitir_requisicao
-from ..services.campaigns import gerar_codigo
+from ..services.campaigns import BLACK_NOVEMBER, gerar_codigo
+from ..services.black_qr_art import gerar_arte_black
 from ..services.qr_metrics import EVENTOS_QR_AVULSO
 
 bp = Blueprint("partner_qr", __name__)
@@ -16,39 +17,83 @@ bp = Blueprint("partner_qr", __name__)
 @bp.route("/admin/qr-avulso", methods=["GET", "POST"])
 @admin_required
 def lista_qrs():
+    campanha_id = request.values.get("campanha_id", type=int)
+    connection = get_connection()
+    try:
+        campanha = connection.execute("SELECT * FROM campanhas WHERE id = ?", (campanha_id,)).fetchone() if campanha_id else None
+        if campanha_id and (not campanha or campanha["categoria"] != BLACK_NOVEMBER):
+            abort(404)
+        disponiveis = connection.execute(
+            "SELECT id, codigo, parceiro FROM qrs_avulsos WHERE campanha_id IS NULL AND ativo = 1 ORDER BY id DESC"
+        ).fetchall() if campanha else []
+    finally:
+        connection.close()
+
+    def voltar():
+        return redirect(url_for("partner_qr.lista_qrs", campanha_id=campanha_id))
+
     if request.method == "POST":
         if not permitir_requisicao("criar_qr_avulso", 30, 600):
             flash("Muitas solicitações. Aguarde e tente novamente.", "error")
-            return redirect(url_for("partner_qr.lista_qrs"))
-        parceiro = " ".join(request.form.get("parceiro", "").split()) or "Black November"
+            return voltar()
+        parceiro = campanha["nome"] if campanha else " ".join(request.form.get("parceiro", "").split()) or "Black November"
         if len(parceiro) > 150:
             flash("A identificação deve ter até 150 caracteres.", "error")
-            return redirect(url_for("partner_qr.lista_qrs"))
+            return voltar()
         codigo = gerar_codigo()
         connection = get_connection()
         try:
             connection.execute(
-                "INSERT INTO qrs_avulsos (codigo, parceiro) VALUES (?, ?)",
-                (codigo, parceiro),
+                "INSERT INTO qrs_avulsos (codigo, parceiro, campanha_id) VALUES (?, ?, ?)",
+                (codigo, parceiro, campanha_id),
             )
             connection.commit()
         finally:
             connection.close()
         flash("QR avulso criado. O link abre direto no cadastro.", "success")
-        return redirect(url_for("partner_qr.lista_qrs"))
+        return voltar()
 
     connection = get_connection()
     qrs = connection.execute(
-        """SELECT q.id, q.codigo, q.parceiro, q.data_criacao, q.ativo,
+        """SELECT q.id, q.codigo, q.parceiro, q.data_criacao, q.ativo, q.campanha_id,
+                  campanhas.nome AS campanha_nome,
                   COUNT(c.id) AS total_cadastros,
                   (SELECT COUNT(*) FROM eventos_qr_avulso e
                    WHERE e.qr_avulso_id = q.id AND e.evento = 'acesso') AS total_acessos
            FROM qrs_avulsos q
+           LEFT JOIN campanhas ON campanhas.id = q.campanha_id
            LEFT JOIN cadastros_qr_avulso c ON c.qr_avulso_id = q.id
-           GROUP BY q.id ORDER BY q.id DESC"""
+           WHERE (CAST(? AS INTEGER) IS NULL OR q.campanha_id = ?)
+           GROUP BY q.id, campanhas.nome ORDER BY q.id DESC""", (campanha_id, campanha_id),
     ).fetchall()
     connection.close()
-    return render_template("admin/qr_avulso.html", qrs=qrs, base_url=BASE_URL)
+    return render_template("admin/qr_avulso.html", qrs=qrs, base_url=BASE_URL,
+                           campanha=campanha, disponiveis=disponiveis)
+
+
+@bp.route("/admin/qr-avulso/vincular", methods=["POST"])
+@admin_required
+def vincular():
+    campanha_id = request.form.get("campanha_id", type=int)
+    qr_id = request.form.get("qr_id", type=int)
+    connection = get_connection()
+    try:
+        campanha = connection.execute(
+            "SELECT id FROM campanhas WHERE id = ? AND categoria = ?", (campanha_id, BLACK_NOVEMBER),
+        ).fetchone()
+        if not campanha:
+            abort(404)
+        atualizado = connection.execute(
+            "UPDATE qrs_avulsos SET campanha_id = ? WHERE id = ? AND campanha_id IS NULL AND ativo = 1 RETURNING id",
+            (campanha_id, qr_id),
+        ).fetchone()
+        if not atualizado:
+            abort(404)
+        connection.commit()
+    finally:
+        connection.close()
+    flash("Os códigos, cadastros e métricas do QR foram preservados.", "success")
+    return redirect(url_for("partner_qr.lista_qrs", campanha_id=campanha_id))
 
 
 @bp.route("/admin/qr-avulso/<int:qr_id>/imagem")
@@ -59,6 +104,10 @@ def imagem_qr(qr_id):
     connection.close()
     if not qr:
         abort(404)
+    if request.args.get("arte") == "black":
+        return send_file(gerar_arte_black(qr["codigo"]), mimetype="image/png",
+                         as_attachment=request.args.get("preview") != "1",
+                         download_name=f"black-november-{qr['codigo']}.png")
     image = qrcode.make(f"{BASE_URL}/cadastro-parceiro/{qr['codigo']}")
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
@@ -108,6 +157,7 @@ def metricas(qr_id):
 @bp.route("/admin/cadastros-parceiros")
 @admin_required
 def cadastros():
+    campanha_id = request.args.get("campanha_id", type=int)
     connection = get_connection()
     registros = connection.execute(
         """SELECT c.data_cadastro, u.nome, u.whatsapp, u.email, u.idade,
@@ -115,7 +165,8 @@ def cadastros():
            FROM cadastros_qr_avulso c
            JOIN usuarios u ON u.id = c.usuario_id
            JOIN qrs_avulsos q ON q.id = c.qr_avulso_id
-           ORDER BY c.data_cadastro DESC, c.id DESC"""
+           WHERE (CAST(? AS INTEGER) IS NULL OR q.campanha_id = ?)
+           ORDER BY c.data_cadastro DESC, c.id DESC""", (campanha_id, campanha_id),
     ).fetchall()
     connection.close()
-    return render_template("admin/cadastros_parceiros.html", registros=registros)
+    return render_template("admin/cadastros_parceiros.html", registros=registros, campanha_id=campanha_id)

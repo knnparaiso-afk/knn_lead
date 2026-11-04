@@ -1,25 +1,25 @@
 body.black-november {
-    --black-gold: #efce79;
+    --black-accent: #ff6629;
     min-height: 100vh;
-    background: radial-gradient(ellipse at 12% 20%, #302817 0, transparent 50%), #101012;
+    background: radial-gradient(ellipse at 12% 20%, #252051 0, transparent 50%), #030611;
     color: #faf8f2;
     font-family: Arial, sans-serif;
 }
 .black-shell { width: min(1120px, 100%); margin: auto; padding: 32px 40px 56px; }
 .black-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-bottom: 26px; border-bottom: 1px solid #ffffff24; }
 .black-header img { display: block; width: 104px; height: 54px; object-fit: contain; }
-.black-header > span { color: #d7cba9; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-align: right; }
+.black-header > span { color: #c3b6f1; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-align: right; }
 .black-layout { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 64px; padding-top: 40px; }
-.black-eyebrow { margin: 0 0 18px; color: var(--black-gold); font-size: 10px; font-weight: 800; letter-spacing: .14em; line-height: 1.5; }
+.black-eyebrow { margin: 0 0 18px; color: var(--black-accent); font-size: 10px; font-weight: 800; letter-spacing: .14em; line-height: 1.5; }
 .black-offer h1 { margin: 0 0 28px; color: #fff; font: 900 clamp(48px, 6.4vw, 78px)/.96 Impact, 'Arial Narrow', sans-serif; letter-spacing: -.035em; }
-.black-offer h1 span { color: var(--black-gold); }
+.black-offer h1 span { color: var(--black-accent); }
 .black-description { max-width: 430px; margin: 0; color: #d6d2c9; font-size: 19px; line-height: 1.6; }
 .black-description strong { color: #fff; }
 .black-benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 30px; }
-.black-benefits > div { padding: 18px 16px; border: 1px solid #efce794d; border-radius: 8px; background: #efce7908; }
-.black-benefits > div > span { color: #b9aa85; font-size: 11px; }
+.black-benefits > div { padding: 18px 16px; border: 1px solid #8d75d76b; border-radius: 8px; background: #7660d110; }
+.black-benefits > div > span { color: #aaa0c9; font-size: 11px; }
 .black-benefits p { margin: 14px 0 0; color: #e2ddd2; font-size: 12px; }
-.black-benefits strong { display: block; margin-top: 6px; color: var(--black-gold); font-size: clamp(17px, 2.2vw, 24px); font-weight: 900; }
+.black-benefits strong { display: block; margin-top: 6px; color: var(--black-accent); font-size: clamp(17px, 2.2vw, 24px); font-weight: 900; }
 .black-signature { margin: 28px 0 0; color: #b5afa1; font-size: 12px; }
 .black-form { min-width: 0; padding: 28px; border: 1px solid #ffffff26; border-radius: 12px; background: #1c1c20; box-shadow: 0 18px 60px #0003; }
 .black-form .black-eyebrow { margin-bottom: 8px; }
@@ -29,11 +29,11 @@ body.black-november {
 .black-form .field label { color: #f3f0e8; }
 .black-form .field input { height: 47px; border-color: #55545b; border-radius: 5px; background: #111114; color: #fff; font-family: Arial, sans-serif; }
 .black-form .field input::placeholder { color: #96939d; }
-.black-form .field input:focus { border-color: var(--black-gold); box-shadow: 0 0 0 3px #efce7926; }
+.black-form .field input:focus { border-color: var(--black-accent); box-shadow: 0 0 0 3px #8d75d726; }
 .black-form .consent { margin: 20px 0; color: #c4c1bc; font-size: 11px; }
-.black-form .consent input { flex: 0 0 16px; accent-color: var(--black-gold); }
-.black-submit { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; padding: 14px 18px; border: 0; border-radius: 5px; background: var(--black-gold); color: #17140d; font: 800 12px Arial, sans-serif; letter-spacing: .03em; cursor: pointer; }
-.black-submit:hover { background: #ffe2a0; }
+.black-form .consent input { flex: 0 0 16px; accent-color: var(--black-accent); }
+.black-submit { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; padding: 14px 18px; border: 0; border-radius: 5px; background: var(--black-accent); color: #160a08; font: 800 12px Arial, sans-serif; letter-spacing: .03em; cursor: pointer; }
+.black-submit:hover { background: #ff824e; }
 .black-submit:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 .black-submit span { font-size: 21px; }
 .black-privacy { margin: 14px 0 0; color: #b3b0aa; font-size: 10px; line-height: 1.6; text-align: center; }
@@ -49,3 +49,9 @@ body.black-november {
     .black-header > span { max-width: 170px; font-size: 9px; }
     .black-form { padding: 24px 20px; }
 }
+
+.black-official-art { display: block; width: min(100%, 400px); height: auto; margin: -36px auto -5px; }
+.black-offer h1.black-offer-heading { font: 700 22px/1.3 Arial, sans-serif; letter-spacing: -.025em; margin: 0 0 15px; }
+.black-benefits strong { color: #b6a4ff; }
+.black-description { font-size: 16px; }
+@media(max-width:800px) { .black-official-art { width: min(100%, 290px); margin-top: -22px; } .black-offer h1.black-offer-heading { font-size: 20px; } }

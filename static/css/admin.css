@@ -74,6 +74,16 @@
 .standalone-metrics-note { margin-bottom: 30px; }
 .standalone-metrics-note h2 { margin: 0 0 12px; font-size: 24px; }
 .standalone-metrics-note p { margin: 10px 0 0; color: var(--admin-muted); font-size: 13px; line-height: 1.6; }
+.campaign-quick-links { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-bottom: 25px; }
+.campaign-editor select, .campaign-editor textarea, .standalone-import select { width: 100%; padding: 13px; border: 1px solid #ccc; border-radius: 4px; background: #fff; color: #19191d; font: inherit; font-size: 14px; }
+.campaign-editor fieldset { margin: 26px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+.campaign-editor fieldset[hidden] { display: none; }
+.campaign-editor legend { font-weight: 700; font-size: 16px; }
+.campaign-help, .standalone-import p { color: var(--admin-muted); font-size: 12px; line-height: 1.6; }
+.standalone-import { margin-top: 20px; }
+.standalone-import label { display: block; margin-bottom: 12px; font-weight: 700; }
+.standalone-qr-preview.is-black-art { width: 112px; height: auto; }
+.admin-page.admin-black-campaign .admin-header h1 { font: 800 clamp(28px, 3.2vw, 44px)/1.1 "Segoe UI", Arial, sans-serif; letter-spacing: -.04em; overflow-wrap: anywhere; }
 @media (max-width: 800px) {
     .standalone-generator { align-items: stretch; flex-direction: column; }
     .standalone-generator .btn { width: 100%; }

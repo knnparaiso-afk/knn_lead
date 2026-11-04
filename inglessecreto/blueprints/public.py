@@ -13,7 +13,7 @@ from ..security import permitir_requisicao
 from ..utils import hoje_brasilia
 from ..services.challenges import guardar_historico, sortear_para_navegador
 from ..services.qr_metrics import registrar_evento_qr_avulso
-from ..services.campaigns import (filtro_campanha_vigente,
+from ..services.campaigns import (BLACK_NOVEMBER, filtro_campanha_vigente,
                                   parametros_vigencia, situacao_campanha)
 from ..services.participants import (criar_pass_se_necessario,
                                      salvar_participacao, validar_formulario,
@@ -83,11 +83,12 @@ def _pagina_convite(qr, nome_amigo, convite_url):
     )
 
 
-def _campanha_ativa():
+def _campanha_ativa(so_desafios=False):
     connection = get_connection()
     campanha = connection.execute(
         f"SELECT * FROM campanhas WHERE {filtro_campanha_vigente()} "
-        "ORDER BY id DESC LIMIT 1",
+        + ("AND categoria IN ('frases', 'jogos') " if so_desafios else "")
+        + "ORDER BY CASE WHEN categoria = 'black_november' THEN 0 ELSE 1 END, id DESC LIMIT 1",
         parametros_vigencia(),
     ).fetchone()
     connection.close()
@@ -104,7 +105,7 @@ def index():
 @bp.route("/campanha")
 def campanha():
     """Página da campanha (Halloween)."""
-    return render_template("campanha.html", campanha=_campanha_ativa(), u=UNIDADE)
+    return render_template("campanha.html", campanha=_campanha_ativa(so_desafios=True), u=UNIDADE)
 
 
 @bp.route("/e/<codigo>")
@@ -352,17 +353,24 @@ def cadastro_parceiro(codigo):
         return make_response("Muitas tentativas de cadastro. Aguarde alguns minutos e tente novamente.", 429)
     connection = get_connection()
     qr = connection.execute(
-        "SELECT id, codigo, parceiro FROM qrs_avulsos WHERE codigo = ? AND ativo = 1",
+        "SELECT id, codigo, parceiro, campanha_id FROM qrs_avulsos WHERE codigo = ? AND ativo = 1",
         (codigo,),
     ).fetchone()
     if not qr:
         connection.close()
         return render_template("mensagem.html", erro="Este cadastro não está disponível."), 404
+    campanha = None
+    if qr["campanha_id"]:
+        campanha = connection.execute("SELECT * FROM campanhas WHERE id = ?", (qr["campanha_id"],)).fetchone()
+        if not campanha or campanha["categoria"] != BLACK_NOVEMBER or situacao_campanha(campanha) != "ativa":
+            connection.close()
+            return render_template("black_indisponivel.html"), 404
 
     def formulario():
         return render_template(
             "cadastro_parceiro.html",
             consentimento=DIRECT_REGISTRATION_CONSENT_TEXT,
+            campanha=campanha,
         )
 
     def registrar_e_fechar(evento):
@@ -438,6 +446,22 @@ def cadastro_parceiro(codigo):
     finally:
         connection.close()
     return redirect(url_for("public.index"))
+
+
+@bp.route("/black-november/<codigo>", methods=["GET", "POST"])
+def cadastro_black(codigo):
+    connection = get_connection()
+    try:
+        qr = connection.execute(
+            "SELECT q.codigo FROM qrs_avulsos q JOIN campanhas c ON c.id = q.campanha_id "
+            "WHERE c.codigo = ? AND c.categoria = ? AND q.ativo = 1 ORDER BY q.id LIMIT 1",
+            (codigo, BLACK_NOVEMBER),
+        ).fetchone()
+    finally:
+        connection.close()
+    if not qr:
+        return render_template("black_indisponivel.html"), 404
+    return cadastro_parceiro(qr["codigo"])
 
 
 @bp.route("/cadastro-parceiro/concluido")

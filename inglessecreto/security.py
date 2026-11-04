@@ -19,6 +19,7 @@ FIELD_MAX_LENGTHS = {
     "resposta_correta": 1, "semana": 4,
     "data_inicio": 10, "data_fim": 10,
     "endereco": 250, "parceiro": 150, "descricao": 500,
+    "chamada": 120, "comunidade_url": 500, "comunidade_nacional_url": 500,
     "resposta": 500, "codigo": 64,
 }
 
@@ -79,11 +80,11 @@ def adicionar_cabecalhos_de_seguranca(response):
     h.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     h.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
     h.setdefault("Content-Security-Policy", CSP)
-    if request.path.startswith(("/admin", "/participar", "/cadastro-parceiro", "/recompensa/", "/nada", "/conquista", "/convite/", "/desafio/", "/e/")):
+    if request.path.startswith(("/admin", "/participar", "/cadastro-parceiro", "/black-november/", "/recompensa/", "/nada", "/conquista", "/convite/", "/desafio/", "/e/")):
         h["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         h["Pragma"] = "no-cache"
         h.pop("Expires", None)
-        if request.path.startswith(("/admin", "/participar", "/cadastro-parceiro", "/recompensa/", "/nada", "/conquista", "/convite/", "/desafio/")):            h["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+        if request.path.startswith(("/admin", "/participar", "/cadastro-parceiro", "/black-november/", "/recompensa/", "/nada", "/conquista", "/convite/", "/desafio/")):            h["X-Robots-Tag"] = "noindex, nofollow, noarchive"
     elif request.path.startswith(("/static/", "/models/")):
         if response.status_code in (200, 304):
             versoes = request.args.getlist("v")

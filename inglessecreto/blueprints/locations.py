@@ -17,7 +17,8 @@ def locais():
             """
             SELECT campanhas.*,
                    (SELECT COUNT(*) FROM qr_codes
-                    WHERE qr_codes.campanha_id = campanhas.id) AS total_qrs
+                    WHERE qr_codes.campanha_id = campanhas.id) +
+                   (SELECT COUNT(*) FROM qrs_avulsos WHERE qrs_avulsos.campanha_id = campanhas.id) AS total_qrs
             FROM campanhas
             ORDER BY campanhas.id DESC
             """

@@ -26,33 +26,39 @@ ou não responder em 30 segundos, o jogador pode tentar novamente. Ao vencer, o
 botão do prêmio espera a confirmação do servidor e oferece nova tentativa se a
 conexão falhar.
 
-## QR avulso — cadastro Black November
+## Black November — campanhas, cadastro direto e métricas
 
-No painel, abra **QR avulso** e clique em **GERAR QR CODE AVULSO**. Não é
-necessário informar parceiro, local ou campanha. A tela mostra a prévia do código,
-o link público e o botão **BAIXAR PNG**. Configure `BASE_URL` com o endereço
-público correto antes de imprimir os códigos.
+Em **Campanhas → + CAMPANHA BLACK NOVEMBER**, cadastre a modalidade
+**Black November · Cadastro direto**, nome, chamada, descrição, período e status.
+Os links das comunidades local e nacional são editáveis nessa mesma tela. Quando
+preenchidos, aparecem na seção de comunidades da landing; até lá, os botões
+permitem pedir informações ao WhatsApp da unidade, sem links vazios.
 
-Ao ler o QR, a pessoa abre diretamente o formulário com identidade Black November
-e a oferta de material gratuito e isenção da taxa de matrícula. O envio válido
-salva o cadastro e redireciona para a landing page `/`, sem tela intermediária.
+A campanha Black vigente tem prioridade na faixa da landing, mesmo se houver
+outra campanha ativa. Fora da vigência ou com status inativo, a faixa e o cadastro
+dessa campanha ficam indisponíveis. O tema da escola continua Black November.
+As modalidades antigas conservam os desafios e seus códigos impressos.
 
-Consulte os registros em **Cadastros avulsos** ou **VER CADASTROS SALVOS**.
-São exibidos nome, WhatsApp, e-mail, idade, data e código de origem. Os contatos
-usam a base central de usuários e as origens ficam em `cadastros_qr_avulso`;
-reenvios do mesmo contato pelo mesmo QR não duplicam essa origem. Esse fluxo
-não cria descobertas, prêmios ou vínculo com campanhas e funciona sem campanha
-ativa. Os códigos avulsos antigos continuam válidos.
+Ao criar uma Black, um QR de cadastro já é criado para o acesso pela landing.
+Em **GERAR QR CODE**, na própria campanha, você pode criar outros, baixar a
+**ARTE BLACK** com a imagem fornecida ou o QR simples. Configure `BASE_URL` com
+o endereço público correto antes de imprimir. O QR abre o formulário com material
+gratuito e isenção da matrícula; o envio válido redireciona diretamente para `/`.
 
-Cada QR tem o botão **VER MÉTRICAS E LOG**, com acessos ao formulário, novos
-cadastros, reenvios, erros de validação, conversão e os últimos 100 eventos em
-horário de Brasília. O histórico completo fica em `eventos_qr_avulso`, criado
-automaticamente ao iniciar, separado das métricas das campanhas e sem dados
-pessoais. Novos cadastros são contados uma única vez por contato e QR, junto com
-a gravação do cadastro na mesma transação. Retornos ao formulário contam como
-novos acessos; HEAD, prévias/downloads do PNG, códigos inválidos ou desativados
-não contam. As métricas começam após esta atualização; os cadastros anteriores
-continuam disponíveis, sem inventar acessos ou eventos retroativos.
+O link **QR Codes de cadastro e histórico anterior**, em Campanhas, mantém o acesso
+aos QR avulsos anteriores. Eles continuam independentes até você usar **VINCULAR
+QR EXISTENTE** dentro de uma campanha Black. A vinculação preserva o código,
+o link, os cadastros e as métricas, passando a respeitar o status e as datas da
+campanha. Excluir a campanha desativa e desvincula esses QR Codes, preservando o
+histórico, sem reabrir links antigos por acidente.
+
+**VER CADASTROS SALVOS** filtra os registros pela campanha selecionada. Cada QR
+mantém **VER MÉTRICAS E LOG**: acessos, novos cadastros, reenvios, erros de
+validação, conversão e os últimos 100 eventos em horário de Brasília. O histórico
+completo fica em `eventos_qr_avulso`, separado das métricas dos desafios e sem dados
+pessoais. A migração acrescenta campos e vínculos, sem reescrever os eventos.
+Retornos ao formulário contam como acessos; HEAD e downloads do PNG não contam.
+Novos cadastros são únicos por contato e QR, gravados na mesma transação da métrica.
 
 ## Banco de dados
 

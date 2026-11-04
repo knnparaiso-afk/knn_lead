@@ -23,6 +23,7 @@ Campanhas | Inglês Secreto
 
 </div>
 
+<div class="campaign-quick-links"><a class="btn btn-secondary" href="{{ url_for('campaigns.nova_campanha', categoria='black_november') }}">+ CAMPANHA BLACK NOVEMBER</a><a class="table-link" href="{{ url_for('partner_qr.lista_qrs') }}">QR Codes de cadastro e histórico anterior →</a></div>
 
 <div class="table-container">
 
@@ -37,7 +38,7 @@ Campanhas | Inglês Secreto
                 </th>
 
                 <th>
-                    Descobertas
+                    Cadastros / Descobertas
                 </th>
 
                 <th>
@@ -65,13 +66,13 @@ Campanhas | Inglês Secreto
                     </strong>
 
                     <small>
-                        {% if campanha.categoria == 'jogos' %}Jogos Interativos{% else %}Frases em Inglês{% endif %}
+                        {% if campanha.categoria == 'black_november' %}Black November · Cadastro direto{% elif campanha.categoria == 'jogos' %}Jogos Interativos{% else %}Frases em Inglês{% endif %}
                     </small>
 
                 </td>
 
                 <td>
-                    {{ campanha.total_descobertas }}
+                    {{ campanha.total_cadastros if campanha.categoria == 'black_november' else campanha.total_descobertas }}
                 </td>
 
                 <td>

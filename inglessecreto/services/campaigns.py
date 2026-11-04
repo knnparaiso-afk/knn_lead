@@ -4,6 +4,8 @@ import string
 from database import get_connection
 from ..utils import hoje_brasilia
 
+BLACK_NOVEMBER = "black_november"
+
 
 def filtro_campanha_vigente(alias="campanhas"):
     """Filtro SQL portátil para as datas ISO (YYYY-MM-DD) das campanhas."""
@@ -43,7 +45,10 @@ def gerar_codigo(tamanho=12):
             existe_qr = connection.execute(
                 "SELECT id FROM qr_codes WHERE codigo = ?", (codigo,)
             ).fetchone()
+            existe_avulso = connection.execute(
+                "SELECT id FROM qrs_avulsos WHERE codigo = ?", (codigo,)
+            ).fetchone()
         finally:
             connection.close()
-        if not existe_campanha and not existe_qr:
+        if not existe_campanha and not existe_qr and not existe_avulso:
             return codigo

@@ -22,13 +22,15 @@ def admin_dashboard():
     participantes = _contar(connection, "SELECT COUNT(*) AS total FROM usuarios")
     descobertas = _contar(connection, "SELECT COUNT(*) AS total FROM descobertas")
     passes = _contar(connection, "SELECT COUNT(*) AS total FROM premios")
-    qrs_emitidos = _contar(connection, "SELECT COUNT(*) AS total FROM qr_codes")
+    qrs_emitidos = _contar(connection, "SELECT COUNT(*) AS total FROM qr_codes") + _contar(connection, "SELECT COUNT(*) AS total FROM qrs_avulsos")
     campanhas_ativas = connection.execute(
         f"""
         SELECT
             campanhas.*,
             COUNT(DISTINCT descobertas.id) AS total_descobertas,
-            COUNT(DISTINCT qr_codes.id) AS total_qrs
+            COUNT(DISTINCT qr_codes.id) + (SELECT COUNT(*) FROM qrs_avulsos q WHERE q.campanha_id = campanhas.id) AS total_qrs,
+            (SELECT COUNT(*) FROM cadastros_qr_avulso c JOIN qrs_avulsos q ON q.id = c.qr_avulso_id
+             WHERE q.campanha_id = campanhas.id) AS total_cadastros
         FROM campanhas
         LEFT JOIN descobertas ON descobertas.campanha_id = campanhas.id
         LEFT JOIN qr_codes ON qr_codes.campanha_id = campanhas.id

@@ -32,6 +32,10 @@ CREATE TABLE IF NOT EXISTS campanhas (
     data_inicio TEXT,
     data_fim TEXT,
     categoria TEXT DEFAULT 'frases',
+    chamada TEXT NOT NULL DEFAULT '',
+    descricao TEXT NOT NULL DEFAULT '',
+    comunidade_url TEXT NOT NULL DEFAULT '',
+    comunidade_nacional_url TEXT NOT NULL DEFAULT '',
     ativa INTEGER NOT NULL DEFAULT 0,
     data_criacao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -59,7 +63,8 @@ CREATE TABLE IF NOT EXISTS qrs_avulsos (
     codigo TEXT NOT NULL UNIQUE,
     parceiro TEXT NOT NULL,
     data_criacao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    ativo INTEGER NOT NULL DEFAULT 1
+    ativo INTEGER NOT NULL DEFAULT 1,
+    campanha_id INTEGER REFERENCES campanhas(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS cadastros_qr_avulso (
@@ -459,6 +464,27 @@ def _migrate_qr_location_tracking(connection):
     connection.commit()
 
 
+def _migrate_black_campaigns(connection):
+    """Acrescenta a campanha de cadastro direto preservando códigos e histórico."""
+    campos = ("chamada", "descricao", "comunidade_url", "comunidade_nacional_url")
+    if DATABASE_URL:
+        for campo in campos:
+            connection.execute(f"ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS {campo} TEXT NOT NULL DEFAULT ''")
+        connection.execute(
+            "ALTER TABLE qrs_avulsos ADD COLUMN IF NOT EXISTS campanha_id "
+            "INTEGER REFERENCES campanhas(id) ON DELETE SET NULL"
+        )
+    else:
+        existentes = {row["name"] for row in connection.execute("PRAGMA table_info(campanhas)").fetchall()}
+        for campo in campos:
+            if campo not in existentes:
+                connection.execute(f"ALTER TABLE campanhas ADD COLUMN {campo} TEXT NOT NULL DEFAULT ''")
+        if "campanha_id" not in {row["name"] for row in connection.execute("PRAGMA table_info(qrs_avulsos)").fetchall()}:
+            connection.execute("ALTER TABLE qrs_avulsos ADD COLUMN campanha_id INTEGER REFERENCES campanhas(id) ON DELETE SET NULL")
+    connection.execute("CREATE INDEX IF NOT EXISTS idx_qrs_avulsos_campanha ON qrs_avulsos(campanha_id)")
+    connection.commit()
+
+
 def init_db():
     connection = get_connection()
     try:
@@ -476,6 +502,7 @@ def init_db():
             _migrate_sqlite_schema(connection)
             connection.commit()
 
+        _migrate_black_campaigns(connection)
         _migrate_qr_location_tracking(connection)
 
         # Corrige registros antigos de campanhas que ainda não tinham opções separadas.
