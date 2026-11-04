@@ -39,6 +39,13 @@ outra campanha ativa. Fora da vigência ou com status inativo, a faixa e o cadas
 dessa campanha ficam indisponíveis. O tema da escola continua Black November.
 As modalidades antigas conservam os desafios e seus códigos impressos.
 
+A landing usa entradas suaves na rolagem, cards com transparência e brilho nos
+CTAs, respeitando a preferência de movimento reduzido. A contagem regressiva usa
+a data final real, até meia-noite após o último dia em Brasília. A barra representa
+o período transcorrido quando início e término estão preenchidos; não representa
+estoque. Sem data final, a contagem não aparece. As animações não ocultam conteúdo
+quando JavaScript ou Intersection Observer estão indisponíveis.
+
 Ao criar uma Black, um QR de cadastro já é criado para o acesso pela landing.
 Em **GERAR QR CODE**, na própria campanha, você pode criar outros, baixar a
 **ARTE BLACK** com a imagem fornecida ou o QR simples. Configure `BASE_URL` com

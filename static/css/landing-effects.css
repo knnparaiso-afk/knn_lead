@@ -1,0 +1,224 @@
+/* Refinamento visual da Black: mantém a estrutura e a identidade da campanha. */
+body.conversion-page {
+    --bg: #101015;
+    --panel: #1b1a22;
+    --muted: #b9b7c9;
+    --motion-ease: cubic-bezier(.25, 1, .5, 1);
+    background: radial-gradient(ellipse at 100% 15%, #54417b24, transparent 45%), var(--bg);
+}
+.conversion-page .top {
+    background: #121218ed;
+    border-bottom-color: #ffffff26;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+}
+.conversion-page .hero {
+    background: radial-gradient(ellipse at 88% 30%, #7660b445, transparent 58%),
+                radial-gradient(ellipse at 0 12%, #a2493533, transparent 65%), #121219;
+}
+.conversion-page .hero-art img {
+    mix-blend-mode: normal;
+    border: 1px solid #b9a1fa38;
+    border-radius: 18px;
+    box-shadow: 0 24px 80px #0004, 0 0 60px #7950c41a;
+}
+.conversion-page .hero-description,
+.conversion-page .campaign-copy > p:not(.eyebrow) { color: #cecad9; }
+.conversion-page .hero-note { color: #bbb4ca; }
+.conversion-page .movement-strip {
+    background: linear-gradient(100deg, #2c2235, #1e1c2b 55%, #32231f);
+    border-color: #c2abe22e;
+}
+.conversion-page .campaign-section {
+    background: radial-gradient(ellipse at 15% 20%, #7652a729, transparent 60%), #14131a;
+}
+.conversion-page .campaign-band {
+    row-gap: 28px;
+    background: radial-gradient(ellipse at 100% 0, #ba67342b, transparent 65%),
+                linear-gradient(125deg, #2d263e, #1d1b25 72%);
+    border-color: #bc9de94d;
+    box-shadow: inset 0 1px 0 #ffffff0d, 0 22px 60px #0003;
+}
+.conversion-page .offer-stack { gap: 16px; }
+.conversion-page .offer-stack > div {
+    padding: 19px 16px;
+    border: 1px solid #d2bdf52e;
+    border-radius: 12px;
+    background: linear-gradient(150deg, #ffffff0e, #ffffff03);
+    box-shadow: inset 1px 1px 0 #ffffff08;
+}
+.conversion-page .offer-stack > div:nth-child(2) { background: linear-gradient(150deg, #ff8a3314, #ffffff03); }
+.conversion-page .offer-stack strong { font-size: 22px; }
+.conversion-page .offer-stack > p { color: #bdb5cd; }
+.conversion-page .offer-stack span { color: #d4cce2; }
+.offer-badge {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 5px 8px;
+    border: 1px solid #ff925a40;
+    border-radius: 5px;
+    background: #ff79301c;
+    color: #ffd0b4;
+    font-size: 9px;
+    letter-spacing: .05em;
+}
+.conversion-page .community-card {
+    background: linear-gradient(135deg, #ffffff0d, #ffffff04);
+    border-color: #ddd0ff30;
+    box-shadow: inset 0 1px 0 #ffffff0d, 0 14px 34px #0002;
+    transition: transform .35s var(--motion-ease), border-color .35s ease;
+}
+.conversion-page .community-card.is-local {
+    background: radial-gradient(ellipse at 0 0, #9262d130, transparent 75%), #24212ee0;
+    border-color: #c6a3ff66;
+}
+.conversion-page .community-card p { color: #c6bfd3; }
+.conversion-page .method-section { background: #1a191f; }
+.conversion-page .method-photo { filter: saturate(.95); }
+.conversion-page .courses-section { background: #121218; }
+.conversion-page .course-grid article {
+    border: 1px solid #d3bcf52e;
+    border-top: 2px solid #ff8a5a99;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #2b2735, #1a191f);
+    box-shadow: 0 14px 32px #0002;
+    transition: transform .35s var(--motion-ease), border-color .35s ease;
+}
+.conversion-page .course-grid article:first-child { background: linear-gradient(145deg, #3a2b48, #211e2b); }
+.conversion-page .faq-section { background: #17161d; }
+.conversion-page .final {
+    background: radial-gradient(ellipse at 10% 100%, #b4483652, transparent 65%),
+                radial-gradient(ellipse at 85% 80%, #7151ae66, transparent 70%), #19151f;
+}
+.conversion-page footer { background: #111116; }
+@supports (backdrop-filter: blur(8px)) {
+    .conversion-page .community-card,
+    .conversion-page .offer-stack > div { backdrop-filter: blur(8px); }
+}
+
+/* As animações são decorativas: o conteúdo fica visível sem JavaScript. */
+.conversion-page .btn,
+.conversion-page .black-submit {
+    transition: transform .3s var(--motion-ease), background .2s ease,
+                border-color .2s ease, box-shadow .3s ease;
+}
+.conversion-page .btn-sm { min-height: 44px; }
+.conversion-page .btn-emphasis,
+.conversion-page .black-submit {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    box-shadow: 0 5px 22px #ff632529;
+}
+.conversion-page .btn-emphasis::after,
+.conversion-page .black-submit::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -70%;
+    width: 45%;
+    background: linear-gradient(90deg, transparent, #fff6, transparent);
+    opacity: 0;
+    pointer-events: none;
+    animation: black-shimmer 7s ease-in-out infinite;
+}
+@keyframes black-shimmer {
+    0%, 65% { transform: translateX(0) skewX(-20deg); opacity: 0; }
+    69% { opacity: 1; }
+    84%, 100% { transform: translateX(420%) skewX(-20deg); opacity: 0; }
+}
+@media (hover: hover) and (pointer: fine) {
+    .conversion-page .btn:hover,
+    .conversion-page .black-submit:hover { transform: scale(1.05); box-shadow: 0 8px 28px #ff63252e; }
+    .conversion-page .community-card:not(.is-pending):hover,
+    .conversion-page .course-grid article:not(.is-pending):hover { transform: translateY(-4px); border-color: #c7a4ff80; }
+}
+.conversion-page .btn:active,
+.conversion-page .black-submit:active { transform: scale(.98); }
+
+/* O observador acrescenta is-pending apenas quando pode executar a revelação. */
+.conversion-page [data-reveal] {
+    transition: opacity .7s var(--motion-ease), transform .7s var(--motion-ease), border-color .3s ease;
+}
+.conversion-page [data-reveal].is-pending { opacity: 0; transform: translateY(24px); }
+.conversion-page [data-reveal-order="1"] { transition-delay: 90ms; }
+.conversion-page [data-reveal-order="2"] { transition-delay: 180ms; }
+.conversion-page [data-reveal].is-visible { opacity: 1; transform: none; }
+.conversion-page [data-reveal]:focus-within {
+    opacity: 1;
+    transform: none;
+    transition-duration: 0s;
+    transition-delay: 0s;
+}
+
+/* Urgência baseada no período cadastrado; nunca em estoque ou descontos fictícios. */
+.campaign-timing {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 22px;
+    padding-top: 26px;
+    border-top: 1px solid #ddc9fc24;
+}
+.timing-label { color: #ffba90; font-size: 9px; font-weight: 800; letter-spacing: .1em; }
+.timing-copy p { margin: 7px 0 0; color: #d2cbdc; font-size: 12px; }
+.timing-copy time { color: #fff; font-weight: 700; }
+.timing-status { color: #ffb793; font-size: 12px; }
+.countdown { display: flex; gap: 8px; }
+.countdown[hidden] { display: none; }
+.countdown > div {
+    display: grid;
+    gap: 3px;
+    min-width: 50px;
+    padding: 9px 8px;
+    border: 1px solid #d4bff52b;
+    border-radius: 8px;
+    background: #100e1a59;
+    text-align: center;
+}
+.countdown strong { color: #fff; font-size: 25px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.countdown span { color: #beb5cd; font-size: 10px; }
+.campaign-progress { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; gap: 9px; }
+.campaign-progress label, .campaign-progress > span { color: #c4bacf; font-size: 10px; }
+.campaign-progress progress {
+    grid-column: 1 / -1;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 99px;
+    background: #ffffff12;
+    color: #ff8b4a;
+}
+.campaign-progress progress::-webkit-progress-bar { background: #ffffff12; border-radius: 99px; }
+.campaign-progress progress::-webkit-progress-value {
+    border-radius: 99px;
+    background: linear-gradient(90deg, #a18aef, #ffa164, #bba3ff) 0 0 / 200% 100%;
+    animation: period-flow 5s linear infinite;
+}
+.campaign-progress progress::-moz-progress-bar { background: linear-gradient(90deg, #a18aef, #ffa164); }
+@keyframes period-flow { to { background-position: 200% 0; } }
+@media (min-width: 860px) {
+    .campaign-timing { grid-template-columns: 1fr auto; align-items: center; }
+}
+
+.conversion-page.black-november .black-form {
+    background: linear-gradient(145deg, #302b3aeb, #201e27f5);
+    border-color: #ccb2ec42;
+    box-shadow: inset 0 1px 0 #ffffff0d, 0 24px 60px #0003;
+}
+.conversion-page.black-november .black-benefits > div { background: #c5a0ef12; border-color: #b59dd857; }
+
+@media (prefers-reduced-motion: reduce) {
+    .conversion-page *, .conversion-page *::before, .conversion-page *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+    .conversion-page [data-reveal].is-pending { opacity: 1; transform: none; }
+}
+@media print {
+    .conversion-page [data-reveal] { opacity: 1 !important; transform: none !important; }
+    .conversion-page *::after { animation: none !important; }
+}

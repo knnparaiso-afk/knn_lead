@@ -1,10 +1,28 @@
 import secrets
 import string
+from datetime import date, datetime, time, timedelta
 
 from database import get_connection
-from ..utils import hoje_brasilia
+from ..utils import TZ_BRASIL, hoje_brasilia
 
 BLACK_NOVEMBER = "black_november"
+
+
+def periodo_campanha(campanha, agora=None):
+    """Prazo real, até o fim do último dia no horário de Brasília."""
+    if not campanha or not campanha["data_fim"]:
+        return None
+    try:
+        fim = datetime.combine(date.fromisoformat(campanha["data_fim"]) + timedelta(days=1), time.min, TZ_BRASIL)
+        inicio = (datetime.combine(date.fromisoformat(campanha["data_inicio"]), time.min, TZ_BRASIL)
+                  if campanha["data_inicio"] else None)
+    except (ValueError, OverflowError):
+        return None
+    percentual = None
+    if inicio and inicio < fim:
+        atual = agora or datetime.now(TZ_BRASIL)
+        percentual = int(max(0, min(100, (atual - inicio).total_seconds() / (fim - inicio).total_seconds() * 100)))
+    return {"inicio": inicio.isoformat() if inicio else "", "fim": fim.isoformat(), "percentual": percentual}
 
 
 def filtro_campanha_vigente(alias="campanhas"):

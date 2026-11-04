@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Black November | Cadastro KNN{% endblock %}
-{% block body_class %}public-page black-november{% endblock %}
+{% block body_class %}public-page black-november conversion-page{% endblock %}
 {% block stylesheets %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/black-november.css') | v }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing-effects.css') | v }}">
 {% endblock %}
 {% block content %}
 <section class="black-shell">
@@ -41,4 +42,5 @@
 const telefone = document.getElementById('whatsapp');
 telefone.addEventListener('input', () => { const n=telefone.value.replace(/\D/g,'').slice(0,11); telefone.value=n.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2'); });
 </script>
+<script src="{{ url_for('static', filename='js/landing-effects.js') | v }}" defer></script>
 {% endblock %}

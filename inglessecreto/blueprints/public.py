@@ -14,7 +14,7 @@ from ..utils import hoje_brasilia
 from ..services.challenges import guardar_historico, sortear_para_navegador
 from ..services.qr_metrics import registrar_evento_qr_avulso
 from ..services.campaigns import (BLACK_NOVEMBER, filtro_campanha_vigente,
-                                  parametros_vigencia, situacao_campanha)
+                                  parametros_vigencia, situacao_campanha, periodo_campanha)
 from ..services.participants import (criar_pass_se_necessario,
                                      salvar_participacao, validar_formulario,
                                      gerar_token_participante, obter_id_por_token,
@@ -98,7 +98,9 @@ def _campanha_ativa(so_desafios=False):
 @bp.route("/")
 def index():
     """Landing completa da escola."""
-    return render_template("landing.html", campanha=_campanha_ativa(), u=UNIDADE)
+    campanha = _campanha_ativa()
+    return render_template("landing.html", campanha=campanha, u=UNIDADE,
+                           periodo=periodo_campanha(campanha) if campanha and campanha["categoria"] == BLACK_NOVEMBER else None)
 
 
 @bp.route("/ingles-secreto")

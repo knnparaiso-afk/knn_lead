@@ -4,6 +4,7 @@ import io
 import re
 import unittest
 import uuid
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 
@@ -14,6 +15,8 @@ import database
 from config import BASE_URL
 from inglessecreto import create_app
 from inglessecreto.services.participants import DIRECT_REGISTRATION_CONSENT_TEXT
+from inglessecreto.services.campaigns import periodo_campanha
+from inglessecreto.utils import TZ_BRASIL
 
 
 class StandaloneQRTests(unittest.TestCase):
@@ -277,6 +280,29 @@ class StandaloneQRTests(unittest.TestCase):
         self.assertIn(qr["codigo"], self.admin.get(manager.location).get_data(as_text=True))
         for path in ("/admin/dashboard", "/admin/campanhas", "/admin/locais"):
             self.assertEqual(self.admin.get(path).status_code, 200)
+
+    def test_landing_only_shows_countdown_for_configured_active_deadline(self):
+        campaign, _ = self.black_campaign()
+        body = self.visitor.get("/").get_data(as_text=True)
+        self.assertNotIn("data-campaign-timing", body)
+        self.assertIn("data-reveal", body)
+        self.assertNotIn("is-pending", body)
+        connection = database.get_connection()
+        connection.execute("UPDATE campanhas SET data_fim = '2099-11-30' WHERE id = ?", (campaign["id"],))
+        connection.commit()
+        connection.close()
+        body = self.visitor.get("/").get_data(as_text=True)
+        self.assertIn('data-end="2099-12-01T00:00:00-03:00"', body)
+        self.assertIn("30/11/2099", body)
+        self.assertNotIn("data-campaign-progress", body)
+
+    def test_campaign_progress_uses_inclusive_local_dates_and_clamps_at_boundaries(self):
+        campaign = {"data_inicio": "2026-11-01", "data_fim": "2026-11-30"}
+        middle = periodo_campanha(campaign, datetime(2026, 11, 16, tzinfo=TZ_BRASIL))
+        self.assertEqual(middle["fim"], "2026-12-01T00:00:00-03:00")
+        self.assertEqual(middle["percentual"], 50)
+        self.assertEqual(periodo_campanha(campaign, datetime(2026, 10, 1, tzinfo=TZ_BRASIL))["percentual"], 0)
+        self.assertEqual(periodo_campanha(campaign, datetime(2026, 12, 1, tzinfo=TZ_BRASIL))["percentual"], 100)
 
     def test_campaign_dates_and_status_gate_both_old_qr_url_and_landing_url(self):
         campaign, qr = self.black_campaign()
