@@ -44,6 +44,16 @@ reenvios do mesmo contato pelo mesmo QR não duplicam essa origem. Esse fluxo
 não cria descobertas, prêmios ou vínculo com campanhas e funciona sem campanha
 ativa. Os códigos avulsos antigos continuam válidos.
 
+Cada QR tem o botão **VER MÉTRICAS E LOG**, com acessos ao formulário, novos
+cadastros, reenvios, erros de validação, conversão e os últimos 100 eventos em
+horário de Brasília. O histórico completo fica em `eventos_qr_avulso`, criado
+automaticamente ao iniciar, separado das métricas das campanhas e sem dados
+pessoais. Novos cadastros são contados uma única vez por contato e QR, junto com
+a gravação do cadastro na mesma transação. Retornos ao formulário contam como
+novos acessos; HEAD, prévias/downloads do PNG, códigos inválidos ou desativados
+não contam. As métricas começam após esta atualização; os cadastros anteriores
+continuam disponíveis, sem inventar acessos ou eventos retroativos.
+
 ## Banco de dados
 
 - **Local:** se `DATABASE_URL` não estiver definida, usa `instance/knn.db` em SQLite, como antes.

@@ -71,6 +71,9 @@
 .standalone-generator form { flex-shrink: 0; }
 .standalone-table { margin-top: 28px; overflow: auto; }
 .standalone-qr-preview { display: block; width: 112px; height: 112px; max-width: none; }
+.standalone-metrics-note { margin-bottom: 30px; }
+.standalone-metrics-note h2 { margin: 0 0 12px; font-size: 24px; }
+.standalone-metrics-note p { margin: 10px 0 0; color: var(--admin-muted); font-size: 13px; line-height: 1.6; }
 @media (max-width: 800px) {
     .standalone-generator { align-items: stretch; flex-direction: column; }
     .standalone-generator .btn { width: 100%; }

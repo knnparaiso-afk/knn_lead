@@ -14,17 +14,18 @@
 </section>
 <div class="table-container standalone-table">
     <table>
-        <thead><tr><th>QR code</th><th>Identificação / link de cadastro</th><th>Cadastros</th><th>Criado em</th><th>Arquivo</th></tr></thead>
+        <thead><tr><th>QR code</th><th>Identificação / link de cadastro</th><th>Cadastros</th><th>Métricas exclusivas</th><th>Criado em</th><th>Arquivo</th></tr></thead>
         <tbody>
         {% for qr in qrs %}
         <tr>
             <td><img class="standalone-qr-preview" src="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id, preview=1) }}" alt="QR code {{ qr.codigo }} para cadastro" width="112" height="112" loading="lazy"></td>
             <td><strong>{{ qr.parceiro }}</strong><small><a class="table-link" href="{{ base_url }}/cadastro-parceiro/{{ qr.codigo }}">{{ base_url }}/cadastro-parceiro/{{ qr.codigo }}</a></small></td>
             <td>{{ qr.total_cadastros }}</td>
+            <td><strong>{{ qr.total_acessos }} acesso(s)</strong><small><a class="table-link" href="{{ url_for('partner_qr.metricas', qr_id=qr.id) }}">VER MÉTRICAS E LOG</a></small></td>
             <td>{{ qr.data_criacao | data_hora_brasilia }}</td>
             <td><a class="btn btn-secondary" href="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id) }}">BAIXAR PNG</a></td>
         </tr>
-        {% else %}<tr><td colspan="5" class="empty-table">Nenhum QR avulso criado. Clique no botão acima para gerar o primeiro.</td></tr>{% endfor %}
+        {% else %}<tr><td colspan="6" class="empty-table">Nenhum QR avulso criado. Clique no botão acima para gerar o primeiro.</td></tr>{% endfor %}
         </tbody>
     </table>
 </div>

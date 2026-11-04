@@ -12,6 +12,7 @@ from config import BASE_URL, ENGLISH_PASS_REQUIRED, UNIDADE
 from ..security import permitir_requisicao
 from ..utils import hoje_brasilia
 from ..services.challenges import guardar_historico, sortear_para_navegador
+from ..services.qr_metrics import registrar_evento_qr_avulso
 from ..services.campaigns import (filtro_campanha_vigente,
                                   parametros_vigencia, situacao_campanha)
 from ..services.participants import (criar_pass_se_necessario,
@@ -364,8 +365,21 @@ def cadastro_parceiro(codigo):
             consentimento=DIRECT_REGISTRATION_CONSENT_TEXT,
         )
 
-    if request.method == "GET":
-        connection.close()
+    def registrar_e_fechar(evento):
+        try:
+            registrar_evento_qr_avulso(connection, qr["id"], evento)
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    if request.method in ("GET", "HEAD"):
+        if request.method == "GET":
+            registrar_e_fechar("acesso")
+        else:
+            connection.close()
         return formulario()
 
     nome = request.form.get("nome", "").strip()
@@ -373,12 +387,12 @@ def cadastro_parceiro(codigo):
     email = request.form.get("email", "").strip()
     idade_str = request.form.get("idade", "").strip()
     if not (nome and whatsapp and email and idade_str and request.form.get("participacao_confirmada")):
-        connection.close()
+        registrar_e_fechar("erro_validacao")
         flash("Preencha os campos obrigatórios e confirme a autorização de contato.", "error")
         return formulario(), 400
     idade, erro = validar_formulario(nome, whatsapp, email, idade_str)
     if erro:
-        connection.close()
+        registrar_e_fechar("erro_validacao")
         flash(erro, "error")
         return formulario(), 400
     whatsapp = normalizar_whatsapp(whatsapp)
@@ -399,10 +413,14 @@ def cadastro_parceiro(codigo):
                 "INSERT INTO usuarios (nome, whatsapp, email, idade) VALUES (?, ?, ?, ?) RETURNING id",
                 (nome, whatsapp, email, idade),
             ).fetchone()["id"]
-        connection.execute(
+        novo_cadastro = connection.execute(
             "INSERT INTO cadastros_qr_avulso (usuario_id, qr_avulso_id) VALUES (?, ?) "
-            "ON CONFLICT (usuario_id, qr_avulso_id) DO NOTHING",
+            "ON CONFLICT (usuario_id, qr_avulso_id) DO NOTHING RETURNING id",
             (usuario_id, qr["id"]),
+        ).fetchone()
+        registrar_evento_qr_avulso(
+            connection, qr["id"],
+            "cadastro_concluido" if novo_cadastro else "cadastro_reenviado",
         )
         registrar_consentimento(
             connection, usuario_id, "cadastro_parceiro",

@@ -41,6 +41,12 @@ class StandaloneQRTests(unittest.TestCase):
     def total(self, table):
         return self.rows(f"SELECT COUNT(*) AS total FROM {table}")[0]["total"]
 
+    def events(self, qr_id):
+        return {row["evento"]: row["total"] for row in self.rows(
+            "SELECT evento, COUNT(*) AS total FROM eventos_qr_avulso "
+            "WHERE qr_avulso_id = ? GROUP BY evento", (qr_id,),
+        )}
+
     def csrf(self, response):
         match = re.search(r'<meta name="csrf-token" content="([^"]+)"', response.get_data(as_text=True))
         self.assertIsNotNone(match)
@@ -133,7 +139,8 @@ class StandaloneQRTests(unittest.TestCase):
 
     def test_auth_csrf_unknown_and_disabled_codes(self):
         qr = self.generate()
-        for path in ("/admin/qr-avulso", "/admin/cadastros-parceiros", f"/admin/qr-avulso/{qr['id']}/imagem"):
+        for path in ("/admin/qr-avulso", "/admin/cadastros-parceiros",
+                     f"/admin/qr-avulso/{qr['id']}/imagem", f"/admin/qr-avulso/{qr['id']}/metricas"):
             response = self.visitor.get(path)
             self.assertEqual(response.status_code, 302)
             self.assertIn("/admin/login", response.location)
@@ -146,6 +153,87 @@ class StandaloneQRTests(unittest.TestCase):
         connection.close()
         self.assertEqual(self.visitor.get(f"/cadastro-parceiro/{qr['codigo']}").status_code, 404)
         self.assertEqual(self.total("cadastros_qr_avulso"), 0)
+        self.assertEqual(self.total("eventos_qr_avulso"), 0)
+        self.assertEqual(self.admin.get("/admin/qr-avulso/999999/metricas").status_code, 404)
+
+    def test_metrics_are_exclusive_per_qr_with_conversion_and_no_campaign_events(self):
+        first, second = self.generate(), self.generate()
+        for _ in range(2):
+            self.visitor.get(f"/cadastro-parceiro/{first['codigo']}")
+        self.register(first["codigo"])
+        self.register(first["codigo"])
+        self.register(first["codigo"], whatsapp="123")
+        self.register(second["codigo"])
+        self.assertEqual(self.events(first["id"]), {
+            "acesso": 5, "cadastro_concluido": 1, "cadastro_reenviado": 1, "erro_validacao": 1,
+        })
+        self.assertEqual(self.events(second["id"]), {"acesso": 1, "cadastro_concluido": 1})
+        response = self.admin.get(f"/admin/qr-avulso/{first['id']}/metricas")
+        body = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        for text in (first["codigo"], "20,0%", "Novo cadastro concluído", "Cadastro reenviado",
+                     "Formulário com dados inválidos", "horário de Brasília"):
+            self.assertIn(text, body)
+        for text in (second["codigo"], "Pessoa Black November", "pessoa@example.com", "35988881111"):
+            self.assertNotIn(text, body)
+        self.assertIn("no-store", response.headers["Cache-Control"])
+        listing = self.admin.get("/admin/qr-avulso").get_data(as_text=True)
+        self.assertIn(f"/admin/qr-avulso/{first['id']}/metricas", listing)
+        self.assertIn("5 acesso(s)", listing)
+        self.assertEqual(self.total("metricas_funil"), 0)
+
+    def test_head_previews_and_admin_pages_do_not_count_as_accesses(self):
+        qr = self.generate()
+        self.assertEqual(self.visitor.head(f"/cadastro-parceiro/{qr['codigo']}").status_code, 200)
+        for path in (f"/admin/qr-avulso/{qr['id']}/imagem", f"/admin/qr-avulso/{qr['id']}/imagem?preview=1",
+                     f"/admin/qr-avulso/{qr['id']}/metricas", "/admin/qr-avulso"):
+            self.assertEqual(self.admin.get(path).status_code, 200)
+        self.assertEqual(self.total("eventos_qr_avulso"), 0)
+        body = self.admin.get(f"/admin/qr-avulso/{qr['id']}/metricas").get_data(as_text=True)
+        self.assertIn("Nenhum evento registrado", body)
+        self.assertNotIn("0,0%", body)
+
+    def test_registration_and_success_metric_roll_back_together(self):
+        qr = self.generate()
+        with patch("inglessecreto.services.participants.registrar_consentimento", side_effect=RuntimeError("test rollback")):
+            with self.assertRaisesRegex(RuntimeError, "test rollback"):
+                self.register(qr["codigo"])
+        self.assertEqual(self.total("usuarios"), 0)
+        self.assertEqual(self.total("cadastros_qr_avulso"), 0)
+        self.assertEqual(self.events(qr["id"]), {"acesso": 1})
+
+    def test_existing_registrations_survive_metrics_table_creation(self):
+        qr = self.generate()
+        self.register(qr["codigo"])
+        connection = database.get_connection()
+        connection.execute("DROP TABLE eventos_qr_avulso")
+        connection.commit()
+        connection.close()
+        database.init_db()
+        database.init_db()
+        self.assertEqual(self.total("usuarios"), 1)
+        self.assertEqual(self.total("cadastros_qr_avulso"), 1)
+        self.assertEqual(self.total("eventos_qr_avulso"), 0)
+        body = self.admin.get(f"/admin/qr-avulso/{qr['id']}/metricas").get_data(as_text=True)
+        self.assertIn("1 cadastro(s) salvo(s) neste QR", body)
+        self.assertIn("Nenhum evento registrado", body)
+        self.register(qr["codigo"])
+        self.assertEqual(self.events(qr["id"]), {"acesso": 1, "cadastro_reenviado": 1})
+
+    def test_log_shows_latest_100_events_but_totals_include_all(self):
+        qr = self.generate()
+        connection = database.get_connection()
+        connection.executemany(
+            "INSERT INTO eventos_qr_avulso (qr_avulso_id, evento) VALUES (?, ?)",
+            [(qr["id"], "acesso")] * 105 + [(qr["id"], "erro_validacao")],
+        )
+        connection.commit()
+        connection.close()
+        body = self.admin.get(f"/admin/qr-avulso/{qr['id']}/metricas").get_data(as_text=True)
+        self.assertEqual(body.count("<td>Acesso ao formulário</td>"), 99)
+        self.assertEqual(body.count("<td>Formulário com dados inválidos</td>"), 1)
+        self.assertIn("<strong>105</strong>", body)
+        self.assertEqual(self.total("eventos_qr_avulso"), 106)
 
 
 if __name__ == "__main__":

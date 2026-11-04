@@ -74,6 +74,19 @@ CREATE TABLE IF NOT EXISTS cadastros_qr_avulso (
 CREATE INDEX IF NOT EXISTS idx_cadastros_qr_avulso_data
     ON cadastros_qr_avulso(data_cadastro);
 
+-- Log exclusivo dos QR Codes avulsos, sem dados pessoais ou vínculo com campanhas.
+CREATE TABLE IF NOT EXISTS eventos_qr_avulso (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    qr_avulso_id INTEGER NOT NULL,
+    evento TEXT NOT NULL,
+    data_evento TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (qr_avulso_id) REFERENCES qrs_avulsos(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_eventos_qr_avulso_qr_evento
+    ON eventos_qr_avulso(qr_avulso_id, evento);
+CREATE INDEX IF NOT EXISTS idx_eventos_qr_avulso_qr_id
+    ON eventos_qr_avulso(qr_avulso_id, id);
+
 CREATE TABLE IF NOT EXISTS descobertas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario_id INTEGER NOT NULL,

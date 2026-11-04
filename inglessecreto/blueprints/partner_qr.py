@@ -8,6 +8,7 @@ from database import get_connection
 from ..decorators import admin_required
 from ..security import permitir_requisicao
 from ..services.campaigns import gerar_codigo
+from ..services.qr_metrics import EVENTOS_QR_AVULSO
 
 bp = Blueprint("partner_qr", __name__)
 
@@ -39,7 +40,9 @@ def lista_qrs():
     connection = get_connection()
     qrs = connection.execute(
         """SELECT q.id, q.codigo, q.parceiro, q.data_criacao, q.ativo,
-                  COUNT(c.id) AS total_cadastros
+                  COUNT(c.id) AS total_cadastros,
+                  (SELECT COUNT(*) FROM eventos_qr_avulso e
+                   WHERE e.qr_avulso_id = q.id AND e.evento = 'acesso') AS total_acessos
            FROM qrs_avulsos q
            LEFT JOIN cadastros_qr_avulso c ON c.qr_avulso_id = q.id
            GROUP BY q.id ORDER BY q.id DESC"""
@@ -63,6 +66,43 @@ def imagem_qr(qr_id):
     return send_file(buffer, mimetype="image/png",
                      as_attachment=request.args.get("preview") != "1",
                      download_name=f"qr-avulso-{qr['codigo']}.png")
+
+
+@bp.route("/admin/qr-avulso/<int:qr_id>/metricas")
+@admin_required
+def metricas(qr_id):
+    connection = get_connection()
+    try:
+        qr = connection.execute("SELECT * FROM qrs_avulsos WHERE id = ?", (qr_id,)).fetchone()
+        if not qr:
+            abort(404)
+        totais = {evento: 0 for evento in EVENTOS_QR_AVULSO}
+        for row in connection.execute(
+            "SELECT evento, COUNT(*) AS total FROM eventos_qr_avulso "
+            "WHERE qr_avulso_id = ? GROUP BY evento", (qr_id,),
+        ).fetchall():
+            totais[row["evento"]] = row["total"]
+        eventos = connection.execute(
+            "SELECT evento, data_evento FROM eventos_qr_avulso "
+            "WHERE qr_avulso_id = ? ORDER BY id DESC LIMIT 100", (qr_id,),
+        ).fetchall()
+        primeiro_evento = connection.execute(
+            "SELECT MIN(data_evento) AS data FROM eventos_qr_avulso WHERE qr_avulso_id = ?",
+            (qr_id,),
+        ).fetchone()["data"]
+        total_cadastros = connection.execute(
+            "SELECT COUNT(*) AS total FROM cadastros_qr_avulso WHERE qr_avulso_id = ?",
+            (qr_id,),
+        ).fetchone()["total"]
+    finally:
+        connection.close()
+    conversao = (100 * totais["cadastro_concluido"] / totais["acesso"]
+                 if totais["acesso"] else None)
+    return render_template(
+        "admin/metricas_qr_avulso.html", qr=qr, totais=totais, eventos=eventos,
+        nomes_eventos=EVENTOS_QR_AVULSO, primeiro_evento=primeiro_evento,
+        total_cadastros=total_cadastros, conversao=conversao,
+    )
 
 
 @bp.route("/admin/cadastros-parceiros")
