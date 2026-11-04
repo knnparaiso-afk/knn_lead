@@ -38,6 +38,14 @@ GUARDIAN_CONSENT_TEXT = (
     "incluindo mensagens relacionadas, novidades, promoções e oportunidades da unidade."
 )
 
+DIRECT_REGISTRATION_CONSENT_TEXT = (
+    "Autorizo a unidade KNN responsável a entrar em contato comigo por WhatsApp ou e-mail "
+    "sobre os benefícios da Black November e os cursos da unidade. "
+    "Se a pessoa cadastrada tiver menos de 18 anos, declaro ser pai, mãe ou responsável "
+    "legal e autorizo seu cadastro e esses contatos."
+)
+DIRECT_REGISTRATION_CONSENT_VERSION = "2026-11-04-v1"
+
 
 def validar_formulario(nome, whatsapp, email, idade):
     """Retorna (idade_int, None) se válido, ou (None, mensagem_de_erro)."""

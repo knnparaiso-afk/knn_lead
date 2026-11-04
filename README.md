@@ -26,6 +26,24 @@ ou não responder em 30 segundos, o jogador pode tentar novamente. Ao vencer, o
 botão do prêmio espera a confirmação do servidor e oferece nova tentativa se a
 conexão falhar.
 
+## QR avulso — cadastro Black November
+
+No painel, abra **QR avulso** e clique em **GERAR QR CODE AVULSO**. Não é
+necessário informar parceiro, local ou campanha. A tela mostra a prévia do código,
+o link público e o botão **BAIXAR PNG**. Configure `BASE_URL` com o endereço
+público correto antes de imprimir os códigos.
+
+Ao ler o QR, a pessoa abre diretamente o formulário com identidade Black November
+e a oferta de material gratuito e isenção da taxa de matrícula. O envio válido
+salva o cadastro e redireciona para a landing page `/`, sem tela intermediária.
+
+Consulte os registros em **Cadastros avulsos** ou **VER CADASTROS SALVOS**.
+São exibidos nome, WhatsApp, e-mail, idade, data e código de origem. Os contatos
+usam a base central de usuários e as origens ficam em `cadastros_qr_avulso`;
+reenvios do mesmo contato pelo mesmo QR não duplicam essa origem. Esse fluxo
+não cria descobertas, prêmios ou vínculo com campanhas e funciona sem campanha
+ativa. Os códigos avulsos antigos continuam válidos.
+
 ## Banco de dados
 
 - **Local:** se `DATABASE_URL` não estiver definida, usa `instance/knn.db` em SQLite, como antes.

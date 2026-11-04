@@ -19,9 +19,9 @@ def lista_qrs():
         if not permitir_requisicao("criar_qr_avulso", 30, 600):
             flash("Muitas solicitações. Aguarde e tente novamente.", "error")
             return redirect(url_for("partner_qr.lista_qrs"))
-        parceiro = " ".join(request.form.get("parceiro", "").split())
-        if not parceiro or len(parceiro) > 150:
-            flash("Informe o nome do parceiro (até 150 caracteres).", "error")
+        parceiro = " ".join(request.form.get("parceiro", "").split()) or "Black November"
+        if len(parceiro) > 150:
+            flash("A identificação deve ter até 150 caracteres.", "error")
             return redirect(url_for("partner_qr.lista_qrs"))
         codigo = gerar_codigo()
         connection = get_connection()
@@ -60,8 +60,9 @@ def imagem_qr(qr_id):
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
-    return send_file(buffer, mimetype="image/png", as_attachment=True,
-                     download_name=f"qr-parceiro-{qr['codigo']}.png")
+    return send_file(buffer, mimetype="image/png",
+                     as_attachment=request.args.get("preview") != "1",
+                     download_name=f"qr-avulso-{qr['codigo']}.png")
 
 
 @bp.route("/admin/cadastros-parceiros")

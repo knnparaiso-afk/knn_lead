@@ -11,6 +11,8 @@
     </div>
 </section>
 
+<section class="setup-card"><span class="setup-number">QR</span><div><h2>Cadastro Black November</h2><p>Gere um QR avulso e consulte os cadastros recebidos.</p><a class="table-link" href="{{ url_for('partner_qr.cadastros') }}">Ver cadastros salvos →</a></div><a href="{{ url_for('partner_qr.lista_qrs') }}" class="btn btn-primary">QR AVULSO <span>→</span></a></section>
+
 <section class="metric-grid">
     <article class="metric-card"><span>LEADS CAPTADOS</span><strong>{{ participantes }}</strong><p>cadastros na base</p></article>
     <article class="metric-card"><span>DESCOBERTAS</span><strong>{{ descobertas }}</strong><p>missões contabilizadas</p></article>

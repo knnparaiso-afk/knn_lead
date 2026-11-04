@@ -65,6 +65,17 @@
 .pass-action-form { margin-top: 9px; }
 .qr-generation-note { display: block; margin: 8px 0 14px; font-size: 14px; line-height: 1.5; }
 
+.standalone-generator { display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+.standalone-generator h2 { margin: 8px 0; font-size: 24px; }
+.standalone-generator p { max-width: 620px; margin: 0; color: var(--admin-muted); font-size: 13px; line-height: 1.6; }
+.standalone-generator form { flex-shrink: 0; }
+.standalone-table { margin-top: 28px; overflow: auto; }
+.standalone-qr-preview { display: block; width: 112px; height: 112px; max-width: none; }
+@media (max-width: 800px) {
+    .standalone-generator { align-items: stretch; flex-direction: column; }
+    .standalone-generator .btn { width: 100%; }
+}
+
 .qr-campaign-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .qr-campaign-card { display: flex; min-height: 240px; flex-direction: column; padding: 24px; border: 1px solid var(--admin-line); border-radius: 5px; background: #fff; }
 .qr-campaign-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }

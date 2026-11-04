@@ -18,7 +18,9 @@ from ..services.participants import (criar_pass_se_necessario,
                                      salvar_participacao, validar_formulario,
                                      gerar_token_participante, obter_id_por_token,
                                      quantidade_descobertas, descoberta_ja_registrada,
-                                     obter_progresso_por_whatsapp)
+                                     obter_progresso_por_whatsapp,
+                                     DIRECT_REGISTRATION_CONSENT_TEXT,
+                                     DIRECT_REGISTRATION_CONSENT_VERSION)
 
 bp = Blueprint("public", __name__)
 
@@ -355,9 +357,16 @@ def cadastro_parceiro(codigo):
     if not qr:
         connection.close()
         return render_template("mensagem.html", erro="Este cadastro não está disponível."), 404
+
+    def formulario():
+        return render_template(
+            "cadastro_parceiro.html",
+            consentimento=DIRECT_REGISTRATION_CONSENT_TEXT,
+        )
+
     if request.method == "GET":
         connection.close()
-        return render_template("cadastro_parceiro.html", parceiro=qr["parceiro"])
+        return formulario()
 
     nome = request.form.get("nome", "").strip()
     whatsapp = request.form.get("whatsapp", "").strip()
@@ -366,13 +375,13 @@ def cadastro_parceiro(codigo):
     if not (nome and whatsapp and email and idade_str and request.form.get("participacao_confirmada")):
         connection.close()
         flash("Preencha os campos obrigatórios e confirme a autorização de contato.", "error")
-        return render_template("cadastro_parceiro.html", parceiro=qr["parceiro"]), 400
+        return formulario(), 400
     idade, erro = validar_formulario(nome, whatsapp, email, idade_str)
     if erro:
         connection.close()
         flash(erro, "error")
-        return render_template("cadastro_parceiro.html", parceiro=qr["parceiro"]), 400
-    whatsapp = re.sub(r"\D", "", whatsapp)
+        return formulario(), 400
+    whatsapp = normalizar_whatsapp(whatsapp)
     try:
         # Usa o mesmo cadastro central por WhatsApp, preservando o consentimento;
         # a tabela separada registra cada origem de parceiro sem campanha.
@@ -395,28 +404,28 @@ def cadastro_parceiro(codigo):
             "ON CONFLICT (usuario_id, qr_avulso_id) DO NOTHING",
             (usuario_id, qr["id"]),
         )
-        from ..services.participants import PARTICIPATION_CONSENT_TEXT, GUARDIAN_CONSENT_TEXT
-        registrar_consentimento(connection, usuario_id, "cadastro_parceiro", PARTICIPATION_CONSENT_TEXT)
+        registrar_consentimento(
+            connection, usuario_id, "cadastro_parceiro",
+            DIRECT_REGISTRATION_CONSENT_TEXT, DIRECT_REGISTRATION_CONSENT_VERSION,
+        )
         if idade < 18:
-            registrar_consentimento(connection, usuario_id, "responsavel_legal", GUARDIAN_CONSENT_TEXT)
+            registrar_consentimento(
+                connection, usuario_id, "responsavel_legal",
+                DIRECT_REGISTRATION_CONSENT_TEXT, DIRECT_REGISTRATION_CONSENT_VERSION,
+            )
         connection.commit()
     except Exception:
         connection.rollback()
         raise
     finally:
         connection.close()
-    session["contato_autorizado"] = True
-    session["nome_usuario"] = nome.split()[0]
-    session["cadastro_parceiro_concluido"] = True
-    return redirect(url_for("public.cadastro_parceiro_concluido"))
+    return redirect(url_for("public.index"))
 
 
 @bp.route("/cadastro-parceiro/concluido")
 def cadastro_parceiro_concluido():
-    if not session.pop("cadastro_parceiro_concluido", False):
-        return redirect(url_for("public.index"))
-    nome = session.pop("nome_usuario", "")
-    return render_template("cadastro_parceiro_concluido.html", nome=nome)
+    session.pop("cadastro_parceiro_concluido", None)
+    return redirect(url_for("public.index"))
 
 
 @bp.route("/e/<codigo>/redefinir", methods=["POST"])
@@ -478,8 +487,7 @@ def responder_desafio(codigo):
 @bp.route("/conquista")
 def conquista():
     if session.pop("cadastro_parceiro_concluido", False):
-        nome_parceiro = session.pop("nome_usuario", "")
-        return render_template("cadastro_parceiro_concluido.html", nome=nome_parceiro)
+        return redirect(url_for("public.index"))
     contato_autorizado = bool(session.pop("contato_autorizado", False))
     descobertas = session.pop("descobertas_usuario", 1)
     nome = session.pop("nome_usuario", "")

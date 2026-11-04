@@ -1,7 +1,31 @@
 {% extends "base.html" %}
 {% block title %}QR avulso | Inglês Secreto{% endblock %}
 {% block content %}
-<div class="admin-header"><div><h1>QR avulso</h1><p>Gere códigos diretos para cadastro e identifique os leads de cada parceiro.</p></div></div>
-<section class="form-card"><form method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label for="parceiro">Nome do parceiro</label><input id="parceiro" name="parceiro" maxlength="150" required placeholder="Ex.: Loja Central"><div class="form-actions"><button class="btn btn-primary" type="submit">GERAR QR CODE</button></div></form></section>
-<div class="table-container" style="margin-top:28px;overflow:auto"><table><thead><tr><th>Parceiro</th><th>Link de cadastro</th><th>Cadastros</th><th>Criado em</th><th>Arquivo</th></tr></thead><tbody>{% for qr in qrs %}<tr><td><strong>{{ qr.parceiro }}</strong></td><td><a class="table-link" href="{{ base_url }}/cadastro-parceiro/{{ qr.codigo }}">{{ base_url }}/cadastro-parceiro/{{ qr.codigo }}</a></td><td>{{ qr.total_cadastros }}</td><td>{{ qr.data_criacao | data_hora_brasilia }}</td><td><a class="btn btn-secondary" href="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id) }}">BAIXAR PNG</a></td></tr>{% else %}<tr><td colspan="5" class="empty-table">Nenhum QR avulso criado.</td></tr>{% endfor %}</tbody></table></div>
+<div class="admin-header">
+    <div><h1>QR avulso</h1><p>Cadastro Black November independente de campanhas.</p></div>
+    <a class="btn btn-secondary" href="{{ url_for('partner_qr.cadastros') }}">VER CADASTROS SALVOS</a>
+</div>
+<section class="qr-generator standalone-generator">
+    <div><span class="small-label">BLACK NOVEMBER</span><h2>Um QR. Direto para o cadastro.</h2><p>Material gratuito e isenção da taxa de matrícula. Após o cadastro, a pessoa segue para a landing page.</p></div>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-primary" type="submit">GERAR QR CODE AVULSO</button>
+    </form>
+</section>
+<div class="table-container standalone-table">
+    <table>
+        <thead><tr><th>QR code</th><th>Identificação / link de cadastro</th><th>Cadastros</th><th>Criado em</th><th>Arquivo</th></tr></thead>
+        <tbody>
+        {% for qr in qrs %}
+        <tr>
+            <td><img class="standalone-qr-preview" src="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id, preview=1) }}" alt="QR code {{ qr.codigo }} para cadastro" width="112" height="112" loading="lazy"></td>
+            <td><strong>{{ qr.parceiro }}</strong><small><a class="table-link" href="{{ base_url }}/cadastro-parceiro/{{ qr.codigo }}">{{ base_url }}/cadastro-parceiro/{{ qr.codigo }}</a></small></td>
+            <td>{{ qr.total_cadastros }}</td>
+            <td>{{ qr.data_criacao | data_hora_brasilia }}</td>
+            <td><a class="btn btn-secondary" href="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id) }}">BAIXAR PNG</a></td>
+        </tr>
+        {% else %}<tr><td colspan="5" class="empty-table">Nenhum QR avulso criado. Clique no botão acima para gerar o primeiro.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
