@@ -47,6 +47,11 @@ BASE_URL = os.getenv(
     "https://knnparaisopolis.com.br/"
 ).strip().rstrip("/")
 
+# Link permanente da comunidade na página /bio, independente das campanhas.
+BIO_COMUNIDADE_URL = os.getenv(
+    "BIO_COMUNIDADE_URL", "https://chat.whatsapp.com/GPdUG1T8tzmCQreDvRi7uM"
+).strip()
+
 # QR Codes não são mais associados a estabelecimentos específicos.
 QR_LOCAL_GENERICO = "Ponto geral (sem rastreamento)"
 

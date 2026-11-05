@@ -1,5 +1,6 @@
 import re
 import unicodedata
+from urllib.parse import urlencode, urlsplit
 
 from flask import (Blueprint, flash, jsonify, make_response, redirect,
                    render_template, request, session, url_for)
@@ -8,7 +9,7 @@ from database import get_connection
 from desafios import obter_desafio_por_id
 from telefones import normalizar_whatsapp
 
-from config import BASE_URL, ENGLISH_PASS_REQUIRED, UNIDADE
+from config import BASE_URL, BIO_COMUNIDADE_URL, ENGLISH_PASS_REQUIRED, UNIDADE
 from ..security import permitir_requisicao
 from ..utils import hoje_brasilia
 from ..services.challenges import guardar_historico, sortear_para_navegador
@@ -100,6 +101,35 @@ def index():
     campanha = _campanha_ativa()
     return render_template("landing.html", campanha=campanha, u=UNIDADE,
                            periodo=periodo_campanha(campanha) if cadastro_direto(campanha) else None)
+
+
+@bp.route("/bio")
+def bio():
+    """Página permanente de links da unidade, sem depender de campanhas."""
+    whatsapp_url = "https://wa.me/" + UNIDADE["whatsapp"]
+    aula_url = whatsapp_url + "?" + urlencode({
+        "text": "Olá! Vim pelo link da bio da KNN Paraisópolis e quero agendar minha aula grátis."
+    })
+    comunidade_url = BIO_COMUNIDADE_URL
+    destino = urlsplit(comunidade_url)
+    comunidade_direta = destino.scheme == "https" and bool(destino.netloc)
+    if not comunidade_direta:
+        comunidade_url = whatsapp_url + "?" + urlencode({
+            "text": "Olá! Quero o link da comunidade KNN Paraisópolis."
+        })
+    return render_template(
+        "bio.html", u=UNIDADE, aula_url=aula_url,
+        comunidade_url=comunidade_url, comunidade_direta=comunidade_direta,
+        canonical_url=BASE_URL + url_for("public.bio"),
+        imagem_url=BASE_URL + url_for("static", filename="img/black-november-knn.jpeg"),
+    )
+
+
+@bp.route("/bio/")
+@bp.route("/links")
+@bp.route("/links/")
+def bio_alias():
+    return redirect(url_for("public.bio"), code=308)
 
 
 @bp.route("/ingles-secreto")

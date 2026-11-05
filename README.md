@@ -2,6 +2,21 @@
 
 Aplicação Flask para campanhas, QR Codes, participantes, descobertas e recompensas.
 
+## Página de links da unidade
+
+`/bio` reúne o agendamento de aula grátis pelo WhatsApp, o convite da comunidade
+de Paraisópolis e o site oficial. `/links`, `/links/` e `/bio/` redirecionam para
+`/bio`; a página inicial e as campanhas mantêm seus endereços. O visual usa o logo
+existente e as cores preto, roxo e laranja, com três botões simples. A arte oficial
+Black November é usada na prévia de compartilhamento.
+
+O convite fornecido pela unidade é o padrão de `BIO_COMUNIDADE_URL`; essa variável
+pode substituí-lo no Render sem alterar o código. Se estiver vazia ou não for uma
+URL HTTPS, o botão informa que o acesso deve ser pedido à equipe e abre o WhatsApp.
+O agendamento abre uma conversa com mensagem pronta; a equipe confirma dia e horário.
+A página não depende de campanha vigente. Configure `BASE_URL` com o domínio público
+para o endereço canônico e a imagem de compartilhamento.
+
 Uma campanha marcada como ativa só aparece ao público entre as datas de início e
 término informadas (inclusive). Fora desse período, respostas e cadastros pelo QR
 são bloqueados. As datas são verificadas nas consultas; visitas ao site não alteram
