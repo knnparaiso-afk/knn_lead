@@ -10,6 +10,12 @@ de Paraisópolis e o site oficial. `/links`, `/links/` e `/bio/` redirecionam pa
 existente e as cores preto, roxo e laranja, com três botões simples. A arte oficial
 Black November é usada na prévia de compartilhamento.
 
+O botão no canto superior abre o compartilhamento com prévia da unidade, cópia do
+link, redes sociais e e-mail, seguindo a organização do Linktree. Compartilha sempre
+o endereço público definido por `BASE_URL` + `/bio`. O Messenger abre o compositor;
+cole o link copiado para enviá-lo. A opção **Mais** aparece quando o navegador oferece
+compartilhamento nativo. É possível fechar com Escape, pelo X ou clicando fora.
+
 O convite fornecido pela unidade é o padrão de `BIO_COMUNIDADE_URL`; essa variável
 pode substituí-lo no Render sem alterar o código. Se estiver vazia ou não for uma
 URL HTTPS, o botão informa que o acesso deve ser pedido à equipe e abre o WhatsApp.
