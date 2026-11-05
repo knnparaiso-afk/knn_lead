@@ -50,11 +50,19 @@ conexão falhar.
 A landing mantém o tema definido no código e acrescenta parallax discreto em
 camadas, revelações laterais, barra de leitura e menu fixo com indicação da seção
 ativa. No celular, o menu desliza horizontalmente para manter o item atual visível;
-o parallax usa amplitude reduzida e as entradas têm fade explícito, inclusive na
-primeira dobra. Em desktops largos e altos, o alinhamento entre seções
+o parallax usa amplitude reduzida. O fade acompanha a posição real dos blocos na
+rolagem, inclusive ao voltar a uma seção, sem depender de IntersectionObserver ou
+de uma animação que executa apenas uma vez. Com movimento reduzido, permanece
+somente a transparência, sem deslocamento nem parallax. A primeira dobra tem uma
+entrada leve. Em desktops largos e altos, o alinhamento entre seções
 usa scroll snapping por proximidade, sem prender o conteúdo das campanhas longas.
 As animações respeitam movimento reduzido. A barra de leitura acompanha a página;
 a barra da campanha continua representando apenas o período cadastrado.
+
+Para investigar diferenças de um aparelho, abra `/?debug-motion=1` e use
+**Copiar diagnóstico**. O painel informa versão dos arquivos, motor de efeitos,
+preferência de movimento e erros do navegador. Ele só aparece nesse link e não
+envia informações ao servidor; o texto é copiado pelo próprio usuário.
 
 ## Campanhas de cadastro direto, origens e Black November
 

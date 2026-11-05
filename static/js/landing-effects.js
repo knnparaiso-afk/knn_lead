@@ -5,19 +5,37 @@
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let reducedMotion = motion.matches;
     let refreshScrollEffects = () => {};
+    let printing = false;
+    const header = document.querySelector('[data-scroll-header]');
+    const scrollLinkedReveals = Boolean(header && window.requestAnimationFrame);
     const targets = Array.from(document.querySelectorAll('[data-reveal]'));
+    const revealItems = scrollLinkedReveals ? targets.map(element => {
+        element.classList.add('is-scroll-linked');
+        return { element, offset: 0 };
+    }) : [];
     let observer;
     const reveal = element => {
+        if (scrollLinkedReveals) {
+            element.style.opacity = '1';
+            element.style.removeProperty('transform');
+            const item = revealItems.find(item => item.element === element);
+            if (item) item.offset = 0;
+            refreshScrollEffects();
+        }
         element.classList.remove('is-pending');
         element.classList.add('is-visible');
         if (observer) observer.unobserve(element);
     };
     const revealAll = () => {
         if (observer) observer.disconnect();
-        targets.forEach(reveal);
+        targets.forEach(element => {
+            element.style.removeProperty('opacity');
+            element.style.removeProperty('transform');
+            reveal(element);
+        });
     };
 
-    if (!motion.matches && 'IntersectionObserver' in window) {
+    if (!scrollLinkedReveals && !motion.matches && 'IntersectionObserver' in window) {
         try {
             observer = new window.IntersectionObserver(entries => {
                 for (const entry of entries) if (entry.isIntersecting) reveal(entry.target);
@@ -45,16 +63,19 @@
         const anchor = event.target.closest('a[href^="#"]');
         const section = anchor && document.getElementById(anchor.hash.slice(1));
         if (section) {
+            // Na landing, o destino anima ao chegar à tela, não durante o salto.
+            if (scrollLinkedReveals) { refreshScrollEffects(); return; }
             if (section.matches('[data-reveal]')) reveal(section);
             section.querySelectorAll('[data-reveal]').forEach(reveal);
         }
     });
     if (motion.addEventListener) motion.addEventListener('change', event => {
         reducedMotion = event.matches;
-        if (reducedMotion) revealAll();
+        if (reducedMotion && !scrollLinkedReveals) revealAll();
         refreshScrollEffects();
     });
-    window.addEventListener('beforeprint', revealAll);
+    window.addEventListener('beforeprint', () => { printing = true; revealAll(); });
+    window.addEventListener('afterprint', () => { printing = false; refreshScrollEffects(); });
 
     const timers = Array.from(document.querySelectorAll('[data-campaign-timing]'));
     let interval;
@@ -108,7 +129,6 @@
     }
 
     // Um único frame por atualização, sem animação contínua quando a página para.
-    const header = document.querySelector('[data-scroll-header]');
     if (!header || !window.requestAnimationFrame) return;
     const root = document.documentElement;
     const progress = document.querySelector('[data-scroll-progress]');
@@ -124,11 +144,12 @@
     let activeLink;
     let headerHeight = 0;
     root.classList.add('has-scroll-effects');
+    root.dataset.revealEngine = 'scroll-v2';
     if (progress) progress.hidden = false;
 
     const updateScrollEffects = () => {
         frame = undefined;
-        if (document.hidden) return;
+        if (document.hidden || printing) return;
         const viewport = window.innerHeight;
         const scroll = Math.max(0, window.scrollY);
         const height = header.getBoundingClientRect().height;
@@ -139,6 +160,28 @@
         const distance = Math.max(0, root.scrollHeight - viewport);
         if (progressFill) progressFill.style.transform = `scaleX(${distance ? Math.min(1, scroll / distance) : 0})`;
         header.classList.toggle('is-scrolled', scroll > 24);
+
+        // Transparência ligada à posição real, sem depender de keyframes,
+        // duração do Android, IntersectionObserver ou uma entrada única.
+        // Leia as posições antes de gravar estilos para não alternar layout/write.
+        const reveals = revealItems.map(item => {
+            const bounds = item.element.getBoundingClientRect();
+            const top = bounds.top - item.offset;
+            const span = Math.max(64, Math.min(180, bounds.height * .28));
+            const entering = (viewport - 48 - top) / span;
+            const leaving = (top + bounds.height - height - 16) / span;
+            const progress = item.element.contains(document.activeElement) ? 1 :
+                Math.max(0, Math.min(1, entering, leaving));
+            return { item, progress, offset: reducedMotion ? 0 : (1 - progress) * 24 };
+        });
+        for (const { item, progress, offset } of reveals) {
+            item.element.style.opacity = progress.toFixed(3);
+            if (offset) item.element.style.transform = `translate3d(0, ${offset.toFixed(2)}px, 0)`;
+            else item.element.style.removeProperty('transform');
+            item.offset = offset;
+            item.element.classList.toggle('is-pending', progress === 0);
+            item.element.classList.toggle('is-visible', progress > 0);
+        }
 
         const readingLine = height + Math.max(24, (viewport - height) * .22);
         let current;
@@ -182,6 +225,10 @@
     refreshScrollEffects = scheduleScrollEffects;
     window.addEventListener('scroll', scheduleScrollEffects, { passive: true });
     window.addEventListener('resize', scheduleScrollEffects, { passive: true });
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', scheduleScrollEffects, { passive: true });
+        window.visualViewport.addEventListener('scroll', scheduleScrollEffects, { passive: true });
+    }
     window.addEventListener('load', scheduleScrollEffects);
     window.addEventListener('pageshow', scheduleScrollEffects);
     document.addEventListener('visibilitychange', scheduleScrollEffects);

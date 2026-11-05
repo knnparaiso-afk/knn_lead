@@ -15,6 +15,7 @@
 </head>
 <body class="conversion-page {% block body_class %}{% endblock %}">
 {% block body %}{% endblock %}
+{% if request.args.get('debug-motion') == '1' %}<script src="{{ url_for('static', filename='js/landing-diagnostics.js') | v }}" defer></script>{% endif %}
 <script src="{{ url_for('static', filename='js/landing-effects.js') | v }}" defer></script>
 </body>
 </html>

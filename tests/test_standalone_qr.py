@@ -82,6 +82,12 @@ class StandaloneQRTests(unittest.TestCase):
         qr = self.rows("SELECT * FROM qrs_avulsos WHERE campanha_id = ?", (campaign["id"],))[0]
         return campaign, qr
 
+    def test_motion_diagnostics_are_opt_in_and_versioned(self):
+        normal = self.visitor.get('/').get_data(as_text=True)
+        diagnostic = self.visitor.get('/?debug-motion=1').get_data(as_text=True)
+        self.assertNotIn('landing-diagnostics.js', normal)
+        self.assertRegex(diagnostic, r'landing-diagnostics\.js\?v=[0-9a-f]{10}')
+
     def test_generation_without_campaign_or_partner_and_png_destination(self):
         qr = self.generate()
         self.assertEqual(qr["parceiro"], "Cadastro direto")

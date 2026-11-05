@@ -163,12 +163,23 @@ body.conversion-page {
     from { opacity: 0; transform: translate3d(var(--reveal-x), var(--reveal-y), 0) scale(var(--reveal-scale)); }
     to { opacity: 1; transform: none; }
 }
+.conversion-page [data-reveal].is-scroll-linked { animation: none !important; }
+/* Só a abertura usa uma entrada por tempo; os demais blocos seguem a rolagem. */
+.landing-home .hero-copy.is-scroll-linked {
+    animation: landing-intro-opacity .85s ease-out backwards !important;
+}
+@keyframes landing-intro-opacity { from { opacity: 0; } to { opacity: 1; } }
 .conversion-page [data-reveal]:focus-within {
     opacity: 1;
     transform: none;
     transition-duration: 0s;
     transition-delay: 0s;
     animation: none;
+}
+.conversion-page [data-reveal].is-scroll-linked:focus-within {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
 }
 
 /* Urgência baseada no período cadastrado; nunca em estoque ou descontos fictícios. */
@@ -425,4 +436,26 @@ html.has-scroll-effects { scroll-padding-top: calc(var(--header-height, 82px) + 
     .reading-progress, .hero-scroll, .hero-depth, .final-depth, .skip-content { display: none; }
     .landing-home .top { position: static; }
     .landing-home [data-parallax] { transform: none !important; }
+    .conversion-page [data-reveal].is-scroll-linked { opacity: 1 !important; transform: none !important; animation: none !important; }
 }
+
+/* Exibido somente ao abrir o link de diagnóstico, nunca na navegação normal. */
+.motion-debug {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 100;
+    max-width: 540px;
+    padding: 12px;
+    border: 1px solid #a994ef;
+    border-radius: 10px;
+    background: #16131ff5;
+    color: #fff;
+    box-shadow: 0 8px 40px #0008;
+    font: 12px/1.5 "Segoe UI", Arial, sans-serif;
+}
+.motion-debug summary { padding: 0; font: inherit; font-weight: 700; cursor: pointer; }
+.motion-debug textarea { display: block; width: 100%; height: 136px; margin: 10px 0; resize: vertical; color: #eee; background: #0b0910; border: 1px solid #776887; font: 11px/1.5 monospace; }
+.motion-debug button { padding: 8px 14px; border: 0; border-radius: 5px; background: #e2d7ff; color: #20132f; font-weight: 700; cursor: pointer; }
+@media print { .motion-debug { display: none; } }

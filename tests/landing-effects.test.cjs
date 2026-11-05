@@ -10,7 +10,11 @@ function target(id = '') {
     const classes = new Set();
     const attributes = new Map();
     const style = { setProperty(name, value) { this[name] = value; }, removeProperty(name) { delete this[name]; } };
-    return { id, classes, attributes, style, dataset: {},
+    return { id, classes, attributes, style, dataset: {}, top: 200, height: 200, scrollPosition: () => 0,
+        getBoundingClientRect() {
+            const offset = Number(this.style.transform?.match(/translate3d\(0, ([\d.-]+)px/)?.[1] || 0);
+            return { top: this.top - this.scrollPosition() + offset, height: this.height };
+        },
         setAttribute: (name, value) => attributes.set(name, value), removeAttribute: name => attributes.delete(name),
         classList: { add: name => classes.add(name), remove: name => classes.delete(name),
             toggle: (name, enabled) => enabled ? classes.add(name) : classes.delete(name) },
@@ -63,6 +67,7 @@ function run({ targets = [], timers = [], reduced = false, supportsObserver = tr
         addEventListener: (event, callback) => listen(events, event, callback),
         getElementById: id => [...targets, ...sections].find(element => element.id === id),
     };
+    targets.forEach(element => { element.scrollPosition = () => window.scrollY; });
     vm.runInNewContext(script, { window, document, Date: { now: () => state.now, parse: Date.parse } });
     const flush = () => state.frames.splice(0).forEach(callback => callback());
     return { state, events, document, windowEvents, window, root, header, progress, fill, links, nav, layer, flush };
@@ -187,17 +192,79 @@ test('parallax has a smaller mobile amplitude and stops only for reduced motion'
     assert.equal(view.layer.style.transform, 'translate3d(0, 48.00px, 0)');
 });
 
-test('mobile first load arms reveals even on very tall cards and keeps parallax active', () => {
+test('mobile fades track actual scrolling in both directions without IntersectionObserver or timers', () => {
     const card = target('tall-campaign');
-    const view = run({ targets: [card], width: 390, scrolling: true });
+    card.top = 1000;
+    card.height = 6000;
+    const view = run({ targets: [card], width: 390, scrolling: true, supportsObserver: false });
     view.flush();
     assert.equal(view.layer.style.transform, 'translate3d(0, -18.00px, 0)');
     assert.ok(card.classes.has('is-pending'));
-    // Não depende da proporção visível de um bloco maior que a tela.
-    view.state.intersect([{ target: card, isIntersecting: true, intersectionRatio: .005 }]);
+    assert.equal(card.style.opacity, '0.000');
+    view.window.scrollY = 350;
+    view.windowEvents.scroll();
+    view.flush();
     assert.ok(card.classes.has('is-visible'));
-    assert.ok(!card.classes.has('is-pending'));
-    assert.equal(view.state.observerOptions.threshold, 0);
+    assert.equal(card.style.opacity, '0.567');
+    view.window.scrollY = 800;
+    view.windowEvents.scroll();
+    view.flush();
+    assert.equal(card.style.opacity, '1.000');
+    view.window.scrollY = 0;
+    view.windowEvents.scroll();
+    view.flush();
+    assert.equal(card.style.opacity, '0.000');
+    view.window.scrollY = 350;
+    view.windowEvents.scroll();
+    view.flush();
+    assert.equal(card.style.opacity, '0.567');
+    assert.equal(view.root.dataset.revealEngine, 'scroll-v2');
+    assert.equal(view.state.intervals.length, 0);
+});
+
+test('reduced motion removes spatial effects while retaining gentle scroll opacity', () => {
+    const card = target();
+    card.top = 700;
+    card.height = 300;
+    const view = run({ targets: [card], width: 390, scrolling: true, reduced: true });
+    view.flush();
+    assert.equal(card.style.opacity, '0.619');
+    assert.equal(card.style.transform, undefined);
+    assert.equal(view.layer.style.transform, undefined);
+});
+
+test('navigation does not finish an offscreen reveal before the destination arrives', () => {
+    const card = target('comunidades');
+    card.top = 2000;
+    const view = run({ targets: [card], width: 390, scrolling: true });
+    view.flush();
+    view.events.click({ target: { closest: () => ({ hash: '#comunidades' }) } });
+    view.flush();
+    assert.equal(card.style.opacity, '0.000');
+    assert.ok(!card.classes.has('is-visible'));
+    view.window.scrollY = 1500;
+    view.windowEvents.scroll();
+    view.flush();
+    assert.equal(card.style.opacity, '1.000');
+});
+
+test('focused content and printing remain visible even outside the scroll reveal zone', () => {
+    const card = target();
+    card.top = 2000;
+    const view = run({ targets: [card], scrolling: true });
+    view.flush();
+    card.contains = () => true;
+    view.events.focusin({ target: { closest: () => card } });
+    view.flush();
+    assert.equal(card.style.opacity, '1.000');
+    assert.equal(card.style.transform, undefined);
+    card.contains = () => false;
+    view.windowEvents.beforeprint();
+    view.flush();
+    assert.equal(card.style.opacity, '1');
+    view.windowEvents.afterprint();
+    view.flush();
+    assert.equal(card.style.opacity, '0.000');
 });
 
 test('layout changes recalculate reading progress and hidden tabs do not queue scroll frames', () => {
