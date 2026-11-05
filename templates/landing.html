@@ -16,14 +16,14 @@
 <section class="hero" id="inicio">
   <div class="hero-depth" aria-hidden="true" data-parallax="0.12"><span class="depth-orbit"></span><span class="depth-grid"></span></div>
   <div class="wrap hero-grid">
-    <div class="hero-copy">
+    <div class="hero-copy" data-reveal>
       <p class="eyebrow"><span class="live-dot"></span> BLACK NOVEMBER KNN</p>
       <h1>Seu futuro<br>começa com uma<br><span class="gradient-text">nova possibilidade.</span></h1>
       <p class="hero-description">Aprender um idioma é plantar oportunidades. Dê o próximo passo com a KNN Paraisópolis.</p>
       <div class="actions"><a class="btn btn-emphasis" href="{{ cadastro }}">{{ 'GARANTIR MEUS BENEFÍCIOS' if direto else 'CONHECER AS OPORTUNIDADES' }} <span aria-hidden="true">↗</span></a></div>
       <p class="hero-note">{% if direto %}Material gratuito + isenção da taxa de matrícula.{% else %}Conversação desde a primeira aula. Um método feito para você.{% endif %}</p>
     </div>
-    <div class="hero-art" data-parallax="0.045"><img src="{{ url_for('static', filename='img/black-november-knn.jpeg') | v }}" alt="KNN Idiomas — Black November, identidade roxa e laranja" width="1254" height="1254" fetchpriority="high"><span class="art-caption">UM NOVO IDIOMA. UM NOVO COMEÇO.</span></div>
+    <div class="hero-art" data-parallax="0.045"><img data-reveal="scale" data-reveal-order="1" src="{{ url_for('static', filename='img/black-november-knn.jpeg') | v }}" alt="KNN Idiomas — Black November, identidade roxa e laranja" width="1254" height="1254" fetchpriority="high"><span class="art-caption">UM NOVO IDIOMA. UM NOVO COMEÇO.</span></div>
   </div>
   <div class="wrap hero-scroll"><a href="#metodo"><span class="scroll-cue" aria-hidden="true">↓</span><span>UM NOVO IDIOMA. NOVAS POSSIBILIDADES.</span><span class="scroll-cue-label">Explore a KNN</span></a><span class="hero-scroll-line" aria-hidden="true"></span><span class="hero-scroll-index" aria-hidden="true">01 / COMECE AQUI</span></div>
 </section>

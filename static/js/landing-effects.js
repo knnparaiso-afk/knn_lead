@@ -1,4 +1,4 @@
-/* Sem dependências. A primeira tela e o formulário permanecem visíveis. */
+/* Sem dependências. Conteúdo visível sem JavaScript e com movimento reduzido. */
 (() => {
     'use strict';
 
@@ -21,7 +21,12 @@
         try {
             observer = new window.IntersectionObserver(entries => {
                 for (const entry of entries) if (entry.isIntersecting) reveal(entry.target);
-            }, { threshold: .08, rootMargin: '0px 0px -24px 0px' });
+            }, {
+                threshold: 0,
+                // Dispara depois que parte do bloco já entrou na tela, inclusive
+                // em cartões muito altos no celular (sem exigir uma razão mínima).
+                rootMargin: `0px 0px -${Math.min(120, Math.max(56, Math.round(window.innerHeight * .14)))}px 0px`,
+            });
             for (const element of targets) {
                 // Nunca oculta um destino de âncora ou controle que já tem foco.
                 if ((element.id && window.location.hash === `#${element.id}`) || element.contains(document.activeElement)) continue;
@@ -155,7 +160,7 @@
         }
 
         for (const { element, speed } of layers) {
-            if (reducedMotion || window.innerWidth < 860) {
+            if (reducedMotion) {
                 element.style.removeProperty('transform');
                 element.dataset.parallaxOffset = '0';
                 continue;
@@ -163,7 +168,10 @@
             const bounds = element.getBoundingClientRect();
             // Usa a posição original para que o transform não realimente o cálculo.
             const originalTop = bounds.top - (Number(element.dataset.parallaxOffset) || 0);
-            const offset = Math.max(-48, Math.min(48, (viewport / 2 - originalTop - bounds.height / 2) * speed));
+            const mobile = window.innerWidth < 860;
+            const limit = mobile ? 18 : 48;
+            const intensity = mobile ? .6 : 1;
+            const offset = Math.max(-limit, Math.min(limit, (viewport / 2 - originalTop - bounds.height / 2) * speed * intensity));
             element.dataset.parallaxOffset = String(offset);
             element.style.transform = `translate3d(0, ${offset.toFixed(2)}px, 0)`;
         }

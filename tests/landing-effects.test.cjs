@@ -17,7 +17,7 @@ function target(id = '') {
         contains: () => false, querySelectorAll: () => [], matches: () => true };
 }
 
-function run({ targets = [], timers = [], reduced = false, supportsObserver = true, scrolling = false } = {}) {
+function run({ targets = [], timers = [], reduced = false, supportsObserver = true, scrolling = false, width = 1200 } = {}) {
     const state = { now: Date.parse('2026-11-30T23:59:58-03:00'), cleared: [], intervals: [], unobserved: [], frames: [] };
     const events = {};
     const windowEvents = {};
@@ -28,14 +28,14 @@ function run({ targets = [], timers = [], reduced = false, supportsObserver = tr
     const motion = { matches: reduced, addEventListener: (event, callback) => { state.motionChanged = callback; } };
     const window = {
         location: { hash: '' }, matchMedia: () => motion,
-        innerHeight: 800, innerWidth: 1200, scrollY: 0,
+        innerHeight: 800, innerWidth: width, scrollY: 0,
         requestAnimationFrame: callback => { state.frames.push(callback); return state.frames.length; },
         addEventListener: (event, callback) => listen(windowEvents, event, callback),
         setInterval: callback => { state.intervals.push(callback); return state.intervals.length; },
         clearInterval: id => { state.cleared.push(id); },
     };
     if (supportsObserver) window.IntersectionObserver = class {
-        constructor(callback) { state.intersect = callback; }
+        constructor(callback, options) { state.intersect = callback; state.observerOptions = options; }
         observe() {}
         unobserve(element) { state.unobserved.push(element); }
         disconnect() { state.disconnected = true; }
@@ -162,7 +162,7 @@ test('page progress and section navigation update once per frame without changin
     assert.equal(view.fill.style.transform, 'scaleX(1)');
 });
 
-test('parallax is bounded and resets on mobile and on a reduced-motion preference change', () => {
+test('parallax has a smaller mobile amplitude and stops only for reduced motion', () => {
     const view = run({ scrolling: true });
     view.flush();
     assert.equal(view.layer.style.transform, 'translate3d(0, -30.00px, 0)');
@@ -180,8 +180,24 @@ test('parallax is bounded and resets on mobile and on a reduced-motion preferenc
     view.window.innerWidth = 390;
     view.windowEvents.resize();
     view.flush();
-    assert.equal(view.layer.style.transform, undefined);
-    assert.equal(view.layer.dataset.parallaxOffset, '0');
+    assert.equal(view.layer.style.transform, 'translate3d(0, 18.00px, 0)');
+    view.window.innerWidth = 1200;
+    view.windowEvents.resize();
+    view.flush();
+    assert.equal(view.layer.style.transform, 'translate3d(0, 48.00px, 0)');
+});
+
+test('mobile first load arms reveals even on very tall cards and keeps parallax active', () => {
+    const card = target('tall-campaign');
+    const view = run({ targets: [card], width: 390, scrolling: true });
+    view.flush();
+    assert.equal(view.layer.style.transform, 'translate3d(0, -18.00px, 0)');
+    assert.ok(card.classes.has('is-pending'));
+    // Não depende da proporção visível de um bloco maior que a tela.
+    view.state.intersect([{ target: card, isIntersecting: true, intersectionRatio: .005 }]);
+    assert.ok(card.classes.has('is-visible'));
+    assert.ok(!card.classes.has('is-pending'));
+    assert.equal(view.state.observerOptions.threshold, 0);
 });
 
 test('layout changes recalculate reading progress and hidden tabs do not queue scroll frames', () => {

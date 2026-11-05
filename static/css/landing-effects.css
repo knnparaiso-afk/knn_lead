@@ -139,17 +139,36 @@ body.conversion-page {
 
 /* O observador acrescenta is-pending apenas quando pode executar a revelação. */
 .conversion-page [data-reveal] {
-    transition: opacity .7s var(--motion-ease), transform .7s var(--motion-ease), border-color .3s ease;
+    --reveal-x: 0px;
+    --reveal-y: 28px;
+    --reveal-scale: 1;
+    --reveal-duration: .95s;
+    --reveal-delay: 0s;
+    transition: border-color .3s ease, box-shadow .3s ease;
 }
-.conversion-page [data-reveal].is-pending { opacity: 0; transform: translateY(24px); }
-.conversion-page [data-reveal-order="1"] { transition-delay: 90ms; }
-.conversion-page [data-reveal-order="2"] { transition-delay: 180ms; }
-.conversion-page [data-reveal].is-visible { opacity: 1; transform: none; }
+.conversion-page [data-reveal].is-pending {
+    opacity: 0;
+    transform: translate3d(var(--reveal-x), var(--reveal-y), 0) scale(var(--reveal-scale));
+}
+.conversion-page [data-reveal-order="1"] { --reveal-delay: 100ms; }
+.conversion-page [data-reveal-order="2"] { --reveal-delay: 200ms; }
+.conversion-page [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+    /* Keyframes preservam o fade mesmo se o observador responder antes do
+       primeiro paint. Backwards não prende o transform depois da entrada. */
+    animation: landing-reveal var(--reveal-duration) cubic-bezier(.2, .65, .3, 1) var(--reveal-delay) backwards;
+}
+@keyframes landing-reveal {
+    from { opacity: 0; transform: translate3d(var(--reveal-x), var(--reveal-y), 0) scale(var(--reveal-scale)); }
+    to { opacity: 1; transform: none; }
+}
 .conversion-page [data-reveal]:focus-within {
     opacity: 1;
     transform: none;
     transition-duration: 0s;
     transition-delay: 0s;
+    animation: none;
 }
 
 /* Urgência baseada no período cadastrado; nunca em estoque ou descontos fictícios. */
@@ -348,8 +367,9 @@ html.has-scroll-effects { scroll-padding-top: calc(var(--header-height, 82px) + 
 .hero-scroll-index { color: #92849e; white-space: nowrap; }
 @keyframes scroll-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
 .depth-photo { position: relative; min-width: 0; }
-.landing-home [data-reveal="left"].is-pending { transform: translateX(-28px); }
-.landing-home [data-reveal="right"].is-pending { transform: translateX(28px); }
+.landing-home [data-reveal="left"] { --reveal-x: -28px; --reveal-y: 0px; }
+.landing-home [data-reveal="right"] { --reveal-x: 28px; --reveal-y: 0px; }
+.landing-home [data-reveal="scale"] { --reveal-scale: .96; --reveal-y: 18px; }
 .landing-home .final { position: relative; overflow: hidden; }
 .landing-home .final > .wrap { position: relative; z-index: 1; }
 .final-depth {
@@ -367,6 +387,10 @@ html.has-scroll-effects { scroll-padding-top: calc(var(--header-height, 82px) + 
     .landing-home .top { gap: 14px; }
     .landing-home .top nav { gap: 0; }
     .landing-home .top nav a { padding-left: 8px; padding-right: 8px; font-size: 10px; }
+}
+@media (max-width: 859px) {
+    .landing-home [data-reveal] { --reveal-duration: 1.05s; }
+    .landing-home [data-reveal="left"], .landing-home [data-reveal="right"] { --reveal-x: 0px; --reveal-y: 32px; }
 }
 @media (max-width: 760px) {
     .landing-home .top { display: grid; grid-template-columns: 1fr auto; gap: 8px 14px; padding-top: 12px; padding-bottom: 8px; }
