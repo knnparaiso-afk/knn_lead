@@ -1,136 +1,25 @@
 {% extends "base.html" %}
-
-{% block title %}
-Participantes | Inglês Secreto
-{% endblock %}
-
-
+{% block title %}Participantes{% if campanha %} · {{ campanha.nome }}{% endif %} | KNN{% endblock %}
 {% block content %}
-
 <div class="admin-header">
-
-    <div>
-
-        <h1>
-            Participantes
-        </h1>
-
-    </div>
-
+    <div><h1>Participantes{% if campanha %} · {{ campanha.nome }}{% endif %}</h1><p>{{ participantes | length }} pessoa(s){% if campanha %} nesta campanha{% else %} na base{% endif %}. Cada pessoa aparece uma vez, com suas origens.</p></div>
+    {% if campanha %}<a class="btn btn-secondary" href="{{ url_for('qr.gerenciar_qr', campanha_id=campanha.id) }}">VER QR CODES</a>{% endif %}
 </div>
-
-
-<div class="table-container">
-
-    <table>
-
-        <thead>
-
-            <tr>
-
-                <th>
-                    Nome
-                </th>
-
-                <th>
-                    WhatsApp
-                </th>
-
-                <th>
-                    E-mail
-                </th>
-
-                <th>
-                    Idade
-                </th>
-
-                <th>
-                    Data e hora do cadastro (Brasília)
-                </th>
-
-                <th>
-                    Status
-                </th>
-
-                <th>
-                    Ações
-                </th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            {% for participante in participantes %}
-
-            <tr>
-
-                <td>
-                    <strong>
-                        {{ participante.nome }}
-                    </strong>
-                </td>
-
-                <td>
-                    {{ participante.whatsapp }}
-                </td>
-
-                <td>
-                    {{ participante.email or '—' }}
-                </td>
-
-                <td>
-                    {{ participante.idade or '—' }}
-                </td>
-
-                <td>
-                    {{ participante.data_cadastro | data_hora_brasilia }}
-                </td>
-
-                <td>
-
-                    {% if participante.total_descobertas >= pass_required %}
-
-                    <span class="status pass">
-                        🏆 PASS
-                    </span>
-
-                    {% else %}
-
-                    <span class="status">
-                        {{ participante.total_descobertas }}/{{ pass_required }}
-                    </span>
-
-                    {% endif %}
-
-                </td>
-
-                <td>
-                    <form method="POST" action="{{ url_for('reports.excluir_participante', usuario_id=participante.id) }}" style="display: inline-block;" onsubmit="return confirm('Tem certeza que deseja excluir o participante {{ participante.nome }}? Todas as descobertas e prêmios dele serão apagados em cascata.');">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-danger" style="padding: 6px 12px; min-height: 34px; font-size: 10px;">EXCLUIR</button>
-                    </form>
-                </td>
-
-            </tr>
-
-            {% else %}
-
-            <tr>
-
-                <td colspan="7" class="empty-table">
-                    Ainda não existem participantes.
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-        </tbody>
-
-    </table>
-
-</div>
-
+<form method="GET" action="{{ url_for('reports.participantes') }}" class="form-card">
+    <label for="campanha_id">Filtrar por campanha</label>
+    <select id="campanha_id" name="campanha_id"><option value="">Todas as campanhas</option>{% for c in campanhas %}<option value="{{ c.id }}" {% if campanha and campanha.id == c.id %}selected{% endif %}>{{ c.nome }}</option>{% endfor %}</select>
+    <button class="btn btn-secondary" type="submit">FILTRAR</button>
+</form>
+<div class="table-container" style="overflow:auto"><table>
+    <thead><tr><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Idade</th><th>Entrada{% if campanha %} na campanha{% endif %} (Brasília)</th><th>Campanha e origem</th><th>Status</th><th>Ações</th></tr></thead>
+    <tbody>{% for participante in participantes %}<tr>
+        <td><strong>{{ participante.nome }}</strong></td><td>{{ participante.whatsapp }}</td><td>{{ participante.email or '—' }}</td><td>{{ participante.idade or '—' }}</td>
+        <td>{{ (participante.data_entrada or participante.data_cadastro) | data_hora_brasilia }}</td>
+        <td>{% for origem in participante.origens %}<div><strong>{{ origem.campanha_nome or 'QR independente' }}</strong><small>{{ 'Landing' if origem.origem == 'landing' else 'QR impresso' }} · {{ origem.codigo }} · {{ origem.data_entrada | data_hora_brasilia }}</small></div>{% else %}Sem participação registrada{% endfor %}</td>
+        <td>{% if participante.total_cadastros %}<span class="status active">Cadastro recebido</span>{% endif %}
+            {% if participante.total_descobertas %}<span class="status {{ 'pass' if participante.total_descobertas >= pass_required else '' }}">{{ '🏆 PASS' if participante.total_descobertas >= pass_required else participante.total_descobertas ~ '/' ~ pass_required }}</span>{% endif %}
+            {% if not participante.total_cadastros and not participante.total_descobertas %}—{% endif %}</td>
+        <td><form method="POST" action="{{ url_for('reports.excluir_participante', usuario_id=participante.id) }}" onsubmit="return confirm('Excluir esta pessoa de toda a base, incluindo cadastros de todas as campanhas, descobertas e prêmios?');"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn btn-danger">EXCLUIR DA BASE</button></form></td>
+    </tr>{% else %}<tr><td colspan="8" class="empty-table">Ainda não existem participantes{% if campanha %} nesta campanha{% endif %}.</td></tr>{% endfor %}</tbody>
+</table></div>
 {% endblock %}

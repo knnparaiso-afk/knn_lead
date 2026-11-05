@@ -26,46 +26,64 @@ ou não responder em 30 segundos, o jogador pode tentar novamente. Ao vencer, o
 botão do prêmio espera a confirmação do servidor e oferece nova tentativa se a
 conexão falhar.
 
-## Black November — campanhas, cadastro direto e métricas
+## Campanhas de cadastro direto, origens e Black November
 
-Em **Campanhas → + CAMPANHA BLACK NOVEMBER**, cadastre a modalidade
-**Black November · Cadastro direto**, nome, chamada, descrição, período e status.
-Os links das comunidades local e nacional são editáveis nessa mesma tela. Quando
-preenchidos, aparecem na seção de comunidades da landing; até lá, os botões
-permitem pedir informações ao WhatsApp da unidade, sem links vazios.
+Use **Campanhas → + NOVA CAMPANHA**, escolha **Cadastro direto** e informe
+nome (por exemplo, Black November), período, status, chamada e descrição.
+Ao salvar, a campanha recebe um QR para impressão e uma origem exclusiva da
+landing. A modalidade funciona independentemente do nome da ação.
 
-A campanha Black vigente tem prioridade na faixa da landing, mesmo se houver
-outra campanha ativa. Fora da vigência ou com status inativo, a faixa e o cadastro
-dessa campanha ficam indisponíveis. O tema da escola continua Black November.
-As modalidades antigas conservam os desafios e seus códigos impressos.
+Marque **Exibir faixa na landing** para escolher o destaque. A faixa usa os dados
+da campanha e só aparece enquanto ela estiver ativa e vigente. Escolher outra
+campanha remove o destaque anterior; desmarcar a opção não interrompe seus QR.
+A temática, artes e demais textos da landing e do formulário continuam hardcoded,
+para atualização pelo código. Os links das comunidades permanecem no formulário
+da campanha. Configure `BASE_URL` antes de imprimir.
 
-A landing usa entradas suaves na rolagem, cards com transparência e brilho nos
-CTAs, respeitando a preferência de movimento reduzido. A contagem regressiva usa
-a data final real, até meia-noite após o último dia em Brasília. A barra representa
-o período transcorrido quando início e término estão preenchidos; não representa
-estoque. Sem data final, a contagem não aparece. As animações não ocultam conteúdo
-quando JavaScript ou Intersection Observer estão indisponíveis.
+O botão **PARTICIPANTES** de cada campanha mostra as pessoas daquela ação,
+com data de entrada e todas as origens (QR impresso ou landing). A visão geral
+permite filtrar por campanha. Uma pessoa em dois QR da mesma campanha conta uma
+vez como participante, mantendo os dois cadastros por origem. A exclusão de uma
+pessoa nessa tela é da base inteira, como o botão e a confirmação informam.
 
-Ao criar uma Black, um QR de cadastro já é criado para o acesso pela landing.
-Em **GERAR QR CODE**, na própria campanha, você pode criar outros, baixar a
-**ARTE BLACK** com a imagem fornecida ou o QR simples. Configure `BASE_URL` com
-o endereço público correto antes de imprimir. O QR abre o formulário com material
-gratuito e isenção da matrícula; o envio válido redireciona diretamente para `/`.
+**MÉTRICAS E LOG** na campanha consolida participantes, acessos, novos cadastros
+por origem, reenvios, erros e os últimos 100 eventos, em horário de Brasília.
+Cada origem também mantém seu relatório individual. Cadastros por origem e
+participantes únicos são contagens diferentes. O histórico salvo antes das
+métricas permanece disponível; acessos anteriores não são inventados.
 
-O link **QR Codes de cadastro e histórico anterior**, em Campanhas, mantém o acesso
-aos QR avulsos anteriores. Eles continuam independentes até você usar **VINCULAR
-QR EXISTENTE** dentro de uma campanha Black. A vinculação preserva o código,
-o link, os cadastros e as métricas, passando a respeitar o status e as datas da
-campanha. Excluir a campanha desativa e desvincula esses QR Codes, preservando o
-histórico, sem reabrir links antigos por acidente.
+### Adoção dos QR Black já distribuídos
 
-**VER CADASTROS SALVOS** filtra os registros pela campanha selecionada. Cada QR
-mantém **VER MÉTRICAS E LOG**: acessos, novos cadastros, reenvios, erros de
-validação, conversão e os últimos 100 eventos em horário de Brasília. O histórico
-completo fica em `eventos_qr_avulso`, separado das métricas dos desafios e sem dados
-pessoais. A migração acrescenta campos e vínculos, sem reescrever os eventos.
-Retornos ao formulário contam como acessos; HEAD e downloads do PNG não contam.
-Novos cadastros são únicos por contato e QR, gravados na mesma transação da métrica.
+Na primeira inicialização da versão, a migração
+`direct_campaigns_adopt_black_qrs_v1` vincula os QR avulsos anteriores sem campanha
+à Black November. Esta adoção corresponde à identificação desses QR como Black
+pelo responsável pela aplicação. QR já vinculados conservam sua campanha.
+
+Se existe uma única campanha de cadastro direto vigente, ela é reutilizada.
+Caso contrário, a migração cria **Black November**, ativa e sem datas, para
+preservar o acesso dos QR que funcionavam de forma independente. Ela pode ser
+editada depois pelo painel. QR desativados continuam desativados.
+
+A migração conserva IDs, códigos, endereços `/cadastro-parceiro/CODIGO`,
+identificações, datas de cadastro, consentimentos e todos os eventos existentes.
+Os cadastros antigos passam a aparecer na campanha por meio dos mesmos QR.
+Ela executa uma vez, com bloqueio e transação: uma falha desfaz a adoção parcial.
+Novos avulsos criados depois não são reatribuídos automaticamente ao reiniciar.
+
+As categorias antigas `black_november` são convertidas para `cadastro_direto`.
+Links públicos `/black-november/CODIGO` continuam aceitando GET e POST; os novos
+links da landing usam `/cadastro/CODIGO`. Ambos resolvem a origem exclusiva da
+landing. QR impressos continuam resolvendo a própria origem.
+
+Depois da vinculação, status e período da campanha controlam seus acessos.
+**Arquivar** encerra novos cadastros e preserva a campanha, o vínculo dos QR,
+participantes e métricas. A operação anterior de excluir campanhas de cadastro
+direto agora arquiva, sem apagar o histórico. Campanhas de desafios conservam
+seus fluxos e regras anteriores.
+
+Faça backup do banco antes de publicar. As migrações são executadas por
+`init_db()` na inicialização. Os testes usam bancos temporários; a alteração do
+código local não executa a migração no banco de produção.
 
 ## Banco de dados
 

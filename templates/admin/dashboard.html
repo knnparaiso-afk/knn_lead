@@ -11,7 +11,7 @@
     </div>
 </section>
 
-<section class="setup-card"><span class="setup-number">BN</span><div><h2>Black November em campanha</h2><p>Gerencie cadastro direto, QR Codes e métricas em Campanhas.</p><a class="table-link" href="{{ url_for('partner_qr.cadastros') }}">Ver cadastros salvos →</a></div><a href="{{ url_for('campaigns.nova_campanha', categoria='black_november') }}" class="btn btn-primary">CRIAR CAMPANHA BLACK <span>→</span></a></section>
+<section class="setup-card"><span class="setup-number">+</span><div><h2>Uma campanha, suas origens.</h2><p>Crie campanhas com cadastro direto e acompanhe participantes, QR Codes e métricas.</p></div><a href="{{ url_for('campaigns.nova_campanha') }}" class="btn btn-primary">CRIAR CAMPANHA <span>→</span></a></section>
 
 <section class="metric-grid">
     <article class="metric-card"><span>LEADS CAPTADOS</span><strong>{{ participantes }}</strong><p>cadastros na base</p></article>
@@ -25,7 +25,7 @@
 <section class="current-campaign">
     <div class="current-campaign-top">
         <div>
-            <span class="admin-kicker">{% if campanha.categoria == 'black_november' %}BLACK NOVEMBER · CADASTRO DIRETO{% elif campanha.categoria == 'jogos' %}JOGOS INTERATIVOS{% else %}FRASES EM INGLÊS{% endif %}</span>
+            <span class="admin-kicker">{% if campanha.categoria == 'cadastro_direto' %}CADASTRO DIRETO{% elif campanha.categoria == 'jogos' %}JOGOS INTERATIVOS{% else %}FRASES EM INGLÊS{% endif %}</span>
             <h2>{{ campanha.nome or campanha.frase }}</h2>
         </div>
         <span class="live-badge">AO VIVO</span>
@@ -35,7 +35,9 @@
     {% endif %}
     <div class="campaign-health">
         <div><strong>{{ campanha.total_qrs }}</strong><span>QR Codes gerados</span></div>
-        <div><strong>{{ campanha.total_cadastros if campanha.categoria == 'black_november' else campanha.total_descobertas }}</strong><span>Leads desta campanha</span></div>
+        <div><strong>{{ campanha.total_cadastros if campanha.categoria == 'cadastro_direto' else campanha.total_descobertas }}</strong><span>{{ 'Participantes desta campanha' if campanha.categoria == 'cadastro_direto' else 'Descobertas desta campanha' }}</span></div>
+        <a href="{{ url_for('reports.participantes', campanha_id=campanha.id) }}" class="table-link">PARTICIPANTES</a>
+        {% if campanha.categoria == 'cadastro_direto' %}<a href="{{ url_for('partner_qr.metricas_campanha', campanha_id=campanha.id) }}" class="table-link">MÉTRICAS E LOG</a>{% endif %}
         <a href="{{ url_for('qr.gerenciar_qr', campanha_id=campanha.id) }}" class="btn btn-secondary">GERENCIAR QR CODES <span>→</span></a>
     </div>
 </section>

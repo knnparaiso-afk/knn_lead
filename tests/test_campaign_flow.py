@@ -138,8 +138,45 @@ class CampaignFlowMixin:
             self.assertEqual((old["id"], old["codigo"], old["campanha_id"]),
                              (new["id"], new["codigo"], new["campanha_id"]))
         self.assertEqual(len({q["local_id"] for q in after}), 1)
-        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM app_migrations"), 1)
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM app_migrations WHERE migration_key = 'qr_location_tracking_disabled_v1'"), 1)
         self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM locais WHERE ativo = 1"), 1)
+
+    def test_direct_qr_adoption_preserves_codes_history_and_challenge_campaigns(self):
+        user_id = self.insert_id(
+            "INSERT INTO usuarios (nome, whatsapp, email, idade) VALUES ('Cadastro legado', '35988880000', 'legacy@example.com', 30) RETURNING id", ()
+        )
+        qr_id = self.insert_id("INSERT INTO qrs_avulsos (codigo, parceiro) VALUES ('CITY-BLACK', 'Black November') RETURNING id", ())
+        signup_id = self.insert_id(
+            "INSERT INTO cadastros_qr_avulso (usuario_id, qr_avulso_id, data_cadastro) VALUES (?, ?, '2026-11-01 12:00:00') RETURNING id",
+            (user_id, qr_id),
+        )
+        self.connection.execute("INSERT INTO eventos_qr_avulso (qr_avulso_id, evento) VALUES (?, 'acesso')", (qr_id,))
+        self.connection.execute("DELETE FROM app_migrations WHERE migration_key = 'direct_campaigns_adopt_black_qrs_v1'")
+        self.connection.commit()
+        database.init_db()
+        database.init_db()
+        saved = self.connection.execute("SELECT * FROM qrs_avulsos WHERE id = ?", (qr_id,)).fetchone()
+        self.assertEqual((saved["codigo"], saved["ativo"]), ("CITY-BLACK", 1))
+        self.assertIsNotNone(saved["campanha_id"])
+        signup = self.connection.execute("SELECT * FROM cadastros_qr_avulso WHERE id = ?", (signup_id,)).fetchone()
+        self.assertEqual((signup["usuario_id"], signup["qr_avulso_id"], signup["data_cadastro"]), (user_id, qr_id, "2026-11-01 12:00:00"))
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM eventos_qr_avulso WHERE qr_avulso_id = ?", (qr_id,)), 1)
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM campanhas WHERE categoria IN ('frases', 'jogos')"), 2)
+        for old in self.qrs:
+            current = self.connection.execute("SELECT codigo, campanha_id FROM qr_codes WHERE id = ?", (old["id"],)).fetchone()
+            self.assertEqual((current["codigo"], current["campanha_id"]), (old["codigo"], old["campanha_id"]))
+        # Libera a transação de leitura no PostgreSQL antes do request que grava o acesso.
+        self.connection.commit()
+        visitor = self.app.test_client()
+        form = visitor.get("/cadastro-parceiro/CITY-BLACK")
+        self.assertEqual(form.status_code, 200)
+        response = visitor.post("/cadastro-parceiro/CITY-BLACK", data={
+            "csrf_token": self.csrf(form), "nome": "Cadastro legado", "whatsapp": "35988880000",
+            "email": "legacy@example.com", "idade": "30", "participacao_confirmada": "on",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM cadastros_qr_avulso WHERE qr_avulso_id = ?", (qr_id,)), 1)
+        self.assertEqual(self.scalar("SELECT COUNT(*) AS total FROM eventos_qr_avulso WHERE qr_avulso_id = ? AND evento = 'cadastro_reenviado'", (qr_id,)), 1)
 
     def test_reward_precedes_form_without_creating_participation(self):
         for qr in self.qrs[:2]:

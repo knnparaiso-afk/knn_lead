@@ -1,11 +1,12 @@
 """Dashboard, participantes, descobertas e English Pass (admin)."""
-from flask import Blueprint, flash, redirect, render_template, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 
 from config import ENGLISH_PASS_REQUIRED
 from database import get_connection
 
 from ..decorators import admin_required
 from ..services.campaigns import filtro_campanha_vigente, parametros_vigencia
+from ..services.participant_reports import listar_participantes
 
 bp = Blueprint("reports", __name__)
 
@@ -22,14 +23,14 @@ def admin_dashboard():
     participantes = _contar(connection, "SELECT COUNT(*) AS total FROM usuarios")
     descobertas = _contar(connection, "SELECT COUNT(*) AS total FROM descobertas")
     passes = _contar(connection, "SELECT COUNT(*) AS total FROM premios")
-    qrs_emitidos = _contar(connection, "SELECT COUNT(*) AS total FROM qr_codes") + _contar(connection, "SELECT COUNT(*) AS total FROM qrs_avulsos")
+    qrs_emitidos = _contar(connection, "SELECT COUNT(*) AS total FROM qr_codes") + _contar(connection, "SELECT COUNT(*) AS total FROM qrs_avulsos WHERE origem = 'qr'")
     campanhas_ativas = connection.execute(
         f"""
         SELECT
             campanhas.*,
             COUNT(DISTINCT descobertas.id) AS total_descobertas,
-            COUNT(DISTINCT qr_codes.id) + (SELECT COUNT(*) FROM qrs_avulsos q WHERE q.campanha_id = campanhas.id) AS total_qrs,
-            (SELECT COUNT(*) FROM cadastros_qr_avulso c JOIN qrs_avulsos q ON q.id = c.qr_avulso_id
+            COUNT(DISTINCT qr_codes.id) + (SELECT COUNT(*) FROM qrs_avulsos q WHERE q.campanha_id = campanhas.id AND q.origem = 'qr') AS total_qrs,
+            (SELECT COUNT(DISTINCT c.usuario_id) FROM cadastros_qr_avulso c JOIN qrs_avulsos q ON q.id = c.qr_avulso_id
              WHERE q.campanha_id = campanhas.id) AS total_cadastros
         FROM campanhas
         LEFT JOIN descobertas ON descobertas.campanha_id = campanhas.id
@@ -79,26 +80,29 @@ def metricas():
         ORDER BY ultima_data DESC, campanha_nome, qr_codigo, evento
         """
     ).fetchall()
+    cadastros = connection.execute("SELECT id, nome FROM campanhas WHERE categoria = 'cadastro_direto' ORDER BY id DESC").fetchall()
     connection.close()
-    return render_template("admin/metricas.html", totais=totais, linhas=linhas)
+    return render_template("admin/metricas.html", totais=totais, linhas=linhas, campanhas_cadastro=cadastros)
 
 
 @bp.route("/admin/participantes")
+@bp.route("/admin/campanhas/<int:campanha_id>/participantes")
 @admin_required
-def participantes():
+def participantes(campanha_id=None):
+    if campanha_id is None:
+        campanha_id = request.args.get("campanha_id", type=int)
     connection = get_connection()
-    lista = connection.execute(
-        """
-        SELECT usuarios.*, COUNT(descobertas.id) AS total_descobertas
-        FROM usuarios
-        LEFT JOIN descobertas ON descobertas.usuario_id = usuarios.id
-        GROUP BY usuarios.id
-        ORDER BY total_descobertas DESC
-        """
-    ).fetchall()
-    connection.close()
+    try:
+        campanha = connection.execute("SELECT * FROM campanhas WHERE id = ?", (campanha_id,)).fetchone() if campanha_id is not None else None
+        if campanha_id is not None and not campanha:
+            abort(404)
+        lista = listar_participantes(connection, campanha_id)
+        campanhas = connection.execute("SELECT id, nome FROM campanhas ORDER BY id DESC").fetchall()
+    finally:
+        connection.close()
     return render_template("admin/participantes.html",
-                           participantes=lista, pass_required=ENGLISH_PASS_REQUIRED)
+                           participantes=lista, pass_required=ENGLISH_PASS_REQUIRED,
+                           campanha=campanha, campanhas=campanhas)
 
 
 @bp.route("/admin/participantes/<int:usuario_id>/excluir", methods=["POST"])

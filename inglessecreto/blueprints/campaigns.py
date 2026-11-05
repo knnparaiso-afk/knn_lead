@@ -7,21 +7,23 @@ from database import get_connection
 from desafios import CATEGORIAS, DESAFIOS
 
 from ..decorators import admin_required
-from ..services.campaigns import BLACK_NOVEMBER, gerar_codigo, situacao_campanha
+from ..services.campaigns import (CADASTRO_DIRETO, cadastro_direto, gerar_codigo,
+                                  normalizar_modalidade, situacao_campanha)
 from ..services.qr_art import remover_arquivos_qr
 
 bp = Blueprint("campaigns", __name__)
-MODALIDADES = {**CATEGORIAS, BLACK_NOVEMBER: "Black November · Cadastro direto"}
+MODALIDADES = {CADASTRO_DIRETO: "Cadastro direto", **CATEGORIAS}
 
 
 def _dados_formulario():
     f = request.form
     return {
         "nome": f.get("nome", "").strip(),
-        "categoria": f.get("categoria", "frases").strip(),
+        "categoria": normalizar_modalidade(f.get("categoria", CADASTRO_DIRETO).strip()),
         "data_inicio": f.get("data_inicio", "").strip() or None,
         "data_fim": f.get("data_fim", "").strip() or None,
         "ativa": 1 if f.get("ativa") else 0,
+        "exibir_faixa": 1 if f.get("exibir_faixa") or f.get("categoria") == "black_november" else 0,
         "chamada": f.get("chamada", "").strip(),
         "descricao": f.get("descricao", "").strip(),
         "comunidade_url": f.get("comunidade_url", "").strip(),
@@ -75,7 +77,7 @@ def campanhas():
     lista = connection.execute(
         """
         SELECT campanhas.*, COUNT(descobertas.id) AS total_descobertas,
-               (SELECT COUNT(*) FROM cadastros_qr_avulso c JOIN qrs_avulsos q ON q.id = c.qr_avulso_id
+               (SELECT COUNT(DISTINCT c.usuario_id) FROM cadastros_qr_avulso c JOIN qrs_avulsos q ON q.id = c.qr_avulso_id
                 WHERE q.campanha_id = campanhas.id) AS total_cadastros
         FROM campanhas
         LEFT JOIN descobertas ON descobertas.campanha_id = campanhas.id
@@ -92,8 +94,8 @@ def campanhas():
 @admin_required
 def nova_campanha():
     if request.method != "POST":
-        categoria = request.args.get("categoria", "frases")
-        return _render_form(None, categoria, {"categoria": categoria, "ativa": 1})
+        categoria = normalizar_modalidade(request.args.get("categoria", CADASTRO_DIRETO))
+        return _render_form(None, categoria, {"categoria": categoria, "ativa": 1, "exibir_faixa": 1})
 
     d = _dados_formulario()
     if not d["nome"] or len(d["nome"]) > 150:
@@ -113,24 +115,27 @@ def nova_campanha():
         """
         INSERT INTO campanhas
         (codigo, nome, semana, frase, traducao, categoria, data_inicio, data_fim, ativa,
-         chamada, descricao, comunidade_url, comunidade_nacional_url)
-        VALUES (?, ?, ?, '', '', ?, ?, ?, ?, ?, ?, ?, ?)
+         chamada, descricao, comunidade_url, comunidade_nacional_url, exibir_faixa)
+        VALUES (?, ?, ?, '', '', ?, ?, ?, ?, ?, ?, ?, ?, ?)
         RETURNING id
         """,
         (gerar_codigo(), d["nome"], max_semana + 1, d["categoria"],
          d["data_inicio"], d["data_fim"], d["ativa"], d["chamada"], d["descricao"],
-         d["comunidade_url"], d["comunidade_nacional_url"]),
+         d["comunidade_url"], d["comunidade_nacional_url"], d["exibir_faixa"]),
     )
     campanha_id = cursor.fetchone()["id"]
-    if d["categoria"] == BLACK_NOVEMBER:
-        connection.execute(
-            "INSERT INTO qrs_avulsos (codigo, parceiro, campanha_id) VALUES (?, ?, ?)",
-            (gerar_codigo(), d["nome"], campanha_id),
-        )
+    if d["exibir_faixa"]:
+        connection.execute("UPDATE campanhas SET exibir_faixa = 0 WHERE id <> ?", (campanha_id,))
+    if d["categoria"] == CADASTRO_DIRETO:
+        for origem in ("qr", "landing"):
+            connection.execute(
+                "INSERT INTO qrs_avulsos (codigo, parceiro, campanha_id, origem) VALUES (?, ?, ?, ?)",
+                (gerar_codigo(), d["nome"], campanha_id, origem),
+            )
     connection.commit()
     connection.close()
 
-    flash("Campanha criada! Seu primeiro QR de cadastro já está pronto." if d["categoria"] == BLACK_NOVEMBER
+    flash("Campanha criada! Seu primeiro QR de cadastro já está pronto." if d["categoria"] == CADASTRO_DIRETO
           else "Campanha criada! Agora gere o QR Code geral da campanha.", "success")
     return redirect(url_for("qr.gerenciar_qr", campanha_id=campanha_id))
 
@@ -149,13 +154,17 @@ def editar_campanha(campanha_id):
         return redirect(url_for("campaigns.campanhas"))
 
     if request.method == "POST":
+        if campanha["arquivada"]:
+            connection.close()
+            flash("Esta campanha está arquivada. Seu histórico foi preservado.", "error")
+            return redirect(url_for("campaigns.campanhas"))
         d = _dados_formulario()
         if not d["nome"] or len(d["nome"]) > 150:
             connection.close()
             flash("Preencha um nome válido para a campanha.", "error")
             return _render_form(campanha, d["categoria"], d)
         erro_periodo = _erro_periodo(d)
-        if (d["categoria"] == BLACK_NOVEMBER) != (campanha["categoria"] == BLACK_NOVEMBER):
+        if (d["categoria"] == CADASTRO_DIRETO) != cadastro_direto(campanha):
             erro_periodo = "Crie outra campanha para mudar a modalidade e preservar os QR Codes existentes."
         if erro_periodo:
             connection.close()
@@ -166,12 +175,14 @@ def editar_campanha(campanha_id):
             """
             UPDATE campanhas
             SET nome = ?, categoria = ?, data_inicio = ?, data_fim = ?, ativa = ?,
-                chamada = ?, descricao = ?, comunidade_url = ?, comunidade_nacional_url = ?
+                chamada = ?, descricao = ?, comunidade_url = ?, comunidade_nacional_url = ?, exibir_faixa = ?
             WHERE id = ?
             """,
             (d["nome"], d["categoria"], d["data_inicio"], d["data_fim"], d["ativa"],
-             d["chamada"], d["descricao"], d["comunidade_url"], d["comunidade_nacional_url"], campanha_id),
+             d["chamada"], d["descricao"], d["comunidade_url"], d["comunidade_nacional_url"], d["exibir_faixa"], campanha_id),
         )
+        if d["exibir_faixa"]:
+            connection.execute("UPDATE campanhas SET exibir_faixa = 0 WHERE id <> ?", (campanha_id,))
         connection.commit()
         connection.close()
         flash("Campanha atualizada com sucesso.", "success")
@@ -190,12 +201,19 @@ def excluir_campanha(campanha_id):
         "SELECT codigo FROM qr_codes WHERE campanha_id = ?", (campanha_id,)
     ).fetchall()
     campanha = connection.execute(
-        "SELECT id FROM campanhas WHERE id = ?", (campanha_id,)
+        "SELECT * FROM campanhas WHERE id = ?", (campanha_id,)
     ).fetchone()
 
     if not campanha:
         connection.close()
         flash("Campanha não encontrada.", "error")
+        return redirect(url_for("campaigns.campanhas"))
+
+    if cadastro_direto(campanha):
+        connection.execute("UPDATE campanhas SET ativa = 0, arquivada = 1, exibir_faixa = 0 WHERE id = ?", (campanha_id,))
+        connection.commit()
+        connection.close()
+        flash("Campanha arquivada. Cadastros, origens, QR Codes e métricas foram preservados.", "success")
         return redirect(url_for("campaigns.campanhas"))
 
     connection.execute("UPDATE qrs_avulsos SET ativo = 0 WHERE campanha_id = ?", (campanha_id,))

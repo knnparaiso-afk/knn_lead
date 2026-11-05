@@ -13,15 +13,14 @@ from ..security import permitir_requisicao
 from ..utils import hoje_brasilia
 from ..services.challenges import guardar_historico, sortear_para_navegador
 from ..services.qr_metrics import registrar_evento_qr_avulso
-from ..services.campaigns import (BLACK_NOVEMBER, filtro_campanha_vigente,
+from ..services.campaigns import (CADASTRO_DIRETO, cadastro_direto, filtro_campanha_vigente,
                                   parametros_vigencia, situacao_campanha, periodo_campanha)
 from ..services.participants import (criar_pass_se_necessario,
                                      salvar_participacao, validar_formulario,
                                      gerar_token_participante, obter_id_por_token,
                                      quantidade_descobertas, descoberta_ja_registrada,
                                      obter_progresso_por_whatsapp,
-                                     DIRECT_REGISTRATION_CONSENT_TEXT,
-                                     DIRECT_REGISTRATION_CONSENT_VERSION)
+                                     DIRECT_REGISTRATION_CONSENT_TEXT, salvar_cadastro_direto)
 
 bp = Blueprint("public", __name__)
 
@@ -87,8 +86,8 @@ def _campanha_ativa(so_desafios=False):
     connection = get_connection()
     campanha = connection.execute(
         f"SELECT * FROM campanhas WHERE {filtro_campanha_vigente()} "
-        + ("AND categoria IN ('frases', 'jogos') " if so_desafios else "")
-        + "ORDER BY CASE WHEN categoria = 'black_november' THEN 0 ELSE 1 END, id DESC LIMIT 1",
+        + ("AND categoria IN ('frases', 'jogos') " if so_desafios else "AND exibir_faixa = 1 ")
+        + "ORDER BY id DESC LIMIT 1",
         parametros_vigencia(),
     ).fetchone()
     connection.close()
@@ -100,7 +99,7 @@ def index():
     """Landing completa da escola."""
     campanha = _campanha_ativa()
     return render_template("landing.html", campanha=campanha, u=UNIDADE,
-                           periodo=periodo_campanha(campanha) if campanha and campanha["categoria"] == BLACK_NOVEMBER else None)
+                           periodo=periodo_campanha(campanha) if cadastro_direto(campanha) else None)
 
 
 @bp.route("/ingles-secreto")
@@ -350,12 +349,12 @@ def participar(codigo, mostrar_recompensa=False):
 
 @bp.route("/cadastro-parceiro/<codigo>", methods=["GET", "POST"])
 def cadastro_parceiro(codigo):
-    """Cadastro direto por QR avulso, sem campanha ou desafio."""
+    """Entrada estável dos QR impressos, vinculados ou ainda independentes."""
     if request.method == "POST" and not permitir_requisicao("cadastro_parceiro", 30, 600):
         return make_response("Muitas tentativas de cadastro. Aguarde alguns minutos e tente novamente.", 429)
     connection = get_connection()
     qr = connection.execute(
-        "SELECT id, codigo, parceiro, campanha_id FROM qrs_avulsos WHERE codigo = ? AND ativo = 1",
+        "SELECT id, codigo, parceiro, campanha_id, origem FROM qrs_avulsos WHERE codigo = ? AND ativo = 1",
         (codigo,),
     ).fetchone()
     if not qr:
@@ -364,7 +363,7 @@ def cadastro_parceiro(codigo):
     campanha = None
     if qr["campanha_id"]:
         campanha = connection.execute("SELECT * FROM campanhas WHERE id = ?", (qr["campanha_id"],)).fetchone()
-        if not campanha or campanha["categoria"] != BLACK_NOVEMBER or situacao_campanha(campanha) != "ativa":
+        if not cadastro_direto(campanha) or situacao_campanha(campanha) != "ativa":
             connection.close()
             return render_template("black_indisponivel.html"), 404
 
@@ -407,40 +406,7 @@ def cadastro_parceiro(codigo):
         return formulario(), 400
     whatsapp = normalizar_whatsapp(whatsapp)
     try:
-        # Usa o mesmo cadastro central por WhatsApp, preservando o consentimento;
-        # a tabela separada registra cada origem de parceiro sem campanha.
-        from ..services.participants import _bloquear_gravacao, _ids_por_whatsapp, registrar_consentimento
-        _bloquear_gravacao(connection)
-        ids = _ids_por_whatsapp(connection, whatsapp)
-        if ids:
-            usuario_id = ids[0]
-            connection.execute(
-                "UPDATE usuarios SET nome = ?, email = ?, idade = ?, whatsapp = ? WHERE id = ?",
-                (nome, email, idade, whatsapp, usuario_id),
-            )
-        else:
-            usuario_id = connection.execute(
-                "INSERT INTO usuarios (nome, whatsapp, email, idade) VALUES (?, ?, ?, ?) RETURNING id",
-                (nome, whatsapp, email, idade),
-            ).fetchone()["id"]
-        novo_cadastro = connection.execute(
-            "INSERT INTO cadastros_qr_avulso (usuario_id, qr_avulso_id) VALUES (?, ?) "
-            "ON CONFLICT (usuario_id, qr_avulso_id) DO NOTHING RETURNING id",
-            (usuario_id, qr["id"]),
-        ).fetchone()
-        registrar_evento_qr_avulso(
-            connection, qr["id"],
-            "cadastro_concluido" if novo_cadastro else "cadastro_reenviado",
-        )
-        registrar_consentimento(
-            connection, usuario_id, "cadastro_parceiro",
-            DIRECT_REGISTRATION_CONSENT_TEXT, DIRECT_REGISTRATION_CONSENT_VERSION,
-        )
-        if idade < 18:
-            registrar_consentimento(
-                connection, usuario_id, "responsavel_legal",
-                DIRECT_REGISTRATION_CONSENT_TEXT, DIRECT_REGISTRATION_CONSENT_VERSION,
-            )
+        salvar_cadastro_direto(connection, qr, nome, whatsapp, email, idade)
         connection.commit()
     except Exception:
         connection.rollback()
@@ -450,20 +416,26 @@ def cadastro_parceiro(codigo):
     return redirect(url_for("public.index"))
 
 
-@bp.route("/black-november/<codigo>", methods=["GET", "POST"])
-def cadastro_black(codigo):
+@bp.route("/cadastro/<codigo>", methods=["GET", "POST"])
+def cadastro_campanha(codigo):
     connection = get_connection()
     try:
         qr = connection.execute(
             "SELECT q.codigo FROM qrs_avulsos q JOIN campanhas c ON c.id = q.campanha_id "
-            "WHERE c.codigo = ? AND c.categoria = ? AND q.ativo = 1 ORDER BY q.id LIMIT 1",
-            (codigo, BLACK_NOVEMBER),
+            "WHERE c.codigo = ? AND c.categoria = ? AND q.ativo = 1 AND q.origem = 'landing' LIMIT 1",
+            (codigo, CADASTRO_DIRETO),
         ).fetchone()
     finally:
         connection.close()
     if not qr:
         return render_template("black_indisponivel.html"), 404
     return cadastro_parceiro(qr["codigo"])
+
+
+@bp.route("/black-november/<codigo>", methods=["GET", "POST"])
+def cadastro_black(codigo):
+    """Compatibilidade com links já divulgados; mantém inclusive POST e CSRF."""
+    return cadastro_campanha(codigo)
 
 
 @bp.route("/cadastro-parceiro/concluido")

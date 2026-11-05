@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block body_class %}admin-black-campaign{% endblock %}
-{% block title %}Métricas do QR avulso | KNN{% endblock %}
+{% block title %}Métricas {{ 'da landing' if qr.origem == 'landing' else 'do QR' }} | KNN{% endblock %}
 {% block content %}
 <div class="admin-header">
-    <div><h1>Métricas do QR avulso</h1><p>{{ qr.parceiro }} · Código {{ qr.codigo }}</p></div>
+    <div><h1>Métricas {{ 'da landing' if qr.origem == 'landing' else 'do QR avulso' }}</h1><p>{{ qr.parceiro }} · Código {{ qr.codigo }}</p></div>
     <a class="btn btn-secondary" href="{{ url_for('partner_qr.lista_qrs', campanha_id=qr.campanha_id) }}">VOLTAR AOS QR CODES</a>
 </div>
 <section class="metric-grid" aria-label="Métricas exclusivas deste QR code">

@@ -18,7 +18,7 @@
     <article class="qr-campaign-card">
         <div class="qr-campaign-card-top">
             <span class="admin-kicker">
-                {% if campanha.categoria == 'black_november' %}BLACK NOVEMBER · CADASTRO DIRETO{% elif campanha.categoria == 'jogos' %}JOGO INTERATIVO{% else %}FRASES EM INGLÊS{% endif %}
+                {% if campanha.categoria == 'cadastro_direto' %}CADASTRO DIRETO{% elif campanha.categoria == 'jogos' %}JOGO INTERATIVO{% else %}FRASES EM INGLÊS{% endif %}
             </span>
             <span class="qr-campaign-status status {{ 'active' if situacao == 'ativa' else '' }}">{{ situacao }}</span>
         </div>

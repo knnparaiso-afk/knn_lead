@@ -2,6 +2,7 @@ from itsdangerous import URLSafeTimedSerializer
 from config import ENGLISH_PASS_REQUIRED, SECRET_KEY
 from database import get_connection, PostgreSQLConnection
 from telefones import normalizar_whatsapp
+from .qr_metrics import registrar_evento_qr_avulso
 
 _signer = URLSafeTimedSerializer(SECRET_KEY, salt="knn-participante-salt")
 
@@ -40,11 +41,11 @@ GUARDIAN_CONSENT_TEXT = (
 
 DIRECT_REGISTRATION_CONSENT_TEXT = (
     "Autorizo a unidade KNN responsável a entrar em contato comigo por WhatsApp ou e-mail "
-    "sobre os benefícios da Black November e os cursos da unidade. "
+    "sobre os benefícios da campanha e os cursos da unidade. "
     "Se a pessoa cadastrada tiver menos de 18 anos, declaro ser pai, mãe ou responsável "
     "legal e autorizo seu cadastro e esses contatos."
 )
-DIRECT_REGISTRATION_CONSENT_VERSION = "2026-11-04-v1"
+DIRECT_REGISTRATION_CONSENT_VERSION = "2026-11-05-v1"
 
 
 def validar_formulario(nome, whatsapp, email, idade):
@@ -126,11 +127,8 @@ def descoberta_ja_registrada(connection, usuario_id, qr_id):
     ).fetchone() is not None
 
 
-def salvar_participacao(connection, qr, nome, whatsapp, email, idade):
-    """Cria/atualiza o usuário, registra a descoberta e os consentimentos.
-
-    Não faz commit: quem chama controla a transação.
-    """
+def salvar_pessoa(connection, nome, whatsapp, email, idade):
+    """Identidade compartilhada pelos cadastros diretos e pelos desafios, sem commit."""
     whatsapp = normalizar_whatsapp(whatsapp)
     if len(whatsapp) not in (10, 11):
         raise ValueError("Informe um WhatsApp válido com DDD.")
@@ -153,6 +151,29 @@ def salvar_participacao(connection, qr, nome, whatsapp, email, idade):
             (nome, whatsapp, email, idade),
         )
         usuario_id = cursor.fetchone()["id"]
+    return usuario_id
+
+
+def salvar_cadastro_direto(connection, qr, nome, whatsapp, email, idade):
+    """Grava pessoa, origem, evento e consentimento na transação do chamador."""
+    usuario_id = salvar_pessoa(connection, nome, whatsapp, email, idade)
+    novo = connection.execute(
+        "INSERT INTO cadastros_qr_avulso (usuario_id, qr_avulso_id) VALUES (?, ?) "
+        "ON CONFLICT (usuario_id, qr_avulso_id) DO NOTHING RETURNING id",
+        (usuario_id, qr["id"]),
+    ).fetchone() is not None
+    registrar_evento_qr_avulso(connection, qr["id"], "cadastro_concluido" if novo else "cadastro_reenviado")
+    registrar_consentimento(connection, usuario_id, "cadastro_direto",
+                           DIRECT_REGISTRATION_CONSENT_TEXT, DIRECT_REGISTRATION_CONSENT_VERSION)
+    if idade < 18:
+        registrar_consentimento(connection, usuario_id, "responsavel_legal",
+                               DIRECT_REGISTRATION_CONSENT_TEXT, DIRECT_REGISTRATION_CONSENT_VERSION)
+    return usuario_id, novo
+
+
+def salvar_participacao(connection, qr, nome, whatsapp, email, idade):
+    """Cria/atualiza o usuário, registra a descoberta e os consentimentos, sem commit."""
+    usuario_id = salvar_pessoa(connection, nome, whatsapp, email, idade)
 
     ja_encontrou = descoberta_ja_registrada(connection, usuario_id, qr["id"])
 

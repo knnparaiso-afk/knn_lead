@@ -1,6 +1,9 @@
 import os
 import re
 import sqlite3
+import secrets
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from config import DATABASE_PATH, DATABASE_URL, QR_LOCAL_GENERICO
 from telefones import normalizar_whatsapp
@@ -37,6 +40,8 @@ CREATE TABLE IF NOT EXISTS campanhas (
     comunidade_url TEXT NOT NULL DEFAULT '',
     comunidade_nacional_url TEXT NOT NULL DEFAULT '',
     ativa INTEGER NOT NULL DEFAULT 0,
+    exibir_faixa INTEGER NOT NULL DEFAULT 0,
+    arquivada INTEGER NOT NULL DEFAULT 0,
     data_criacao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -62,6 +67,7 @@ CREATE TABLE IF NOT EXISTS qrs_avulsos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     codigo TEXT NOT NULL UNIQUE,
     parceiro TEXT NOT NULL,
+    origem TEXT NOT NULL DEFAULT 'qr',
     data_criacao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ativo INTEGER NOT NULL DEFAULT 1,
     campanha_id INTEGER REFERENCES campanhas(id) ON DELETE SET NULL
@@ -485,6 +491,85 @@ def _migrate_black_campaigns(connection):
     connection.commit()
 
 
+def _codigo_migracao(connection):
+    while True:
+        codigo = secrets.token_hex(6).upper()
+        if not any(connection.execute(f"SELECT id FROM {tabela} WHERE codigo = ?", (codigo,)).fetchone()
+                   for tabela in ("campanhas", "qr_codes", "qrs_avulsos")):
+            return codigo
+
+
+def _migrate_direct_campaigns(connection):
+    """Adota os QR Black já impressos uma única vez, preservando IDs e histórico."""
+    campos = {
+        "campanhas": {"exibir_faixa": "INTEGER NOT NULL DEFAULT 0", "arquivada": "INTEGER NOT NULL DEFAULT 0"},
+        "qrs_avulsos": {"origem": "TEXT NOT NULL DEFAULT 'qr'"},
+    }
+    for tabela, definicoes in campos.items():
+        existentes = set() if DATABASE_URL else {
+            row["name"] for row in connection.execute(f"PRAGMA table_info({tabela})").fetchall()
+        }
+        for campo, ddl in definicoes.items():
+            if DATABASE_URL or campo not in existentes:
+                condicao = "IF NOT EXISTS " if DATABASE_URL else ""
+                connection.execute(f"ALTER TABLE {tabela} ADD COLUMN {condicao}{campo} {ddl}")
+    connection.commit()
+
+    if DATABASE_URL:
+        connection.execute("SELECT pg_advisory_xact_lock(?)", (7193042108,))
+    else:
+        connection.execute("BEGIN IMMEDIATE")
+    chave = "direct_campaigns_adopt_black_qrs_v1"
+    if connection.execute("SELECT migration_key FROM app_migrations WHERE migration_key = ?", (chave,)).fetchone():
+        connection.commit()
+        return
+
+    # A categoria antiga era uma mecânica de cadastro direto, não um tipo sazonal.
+    connection.execute("UPDATE campanhas SET categoria = 'cadastro_direto' WHERE categoria = 'black_november'")
+    hoje = datetime.now(ZoneInfo("America/Sao_Paulo")).date().isoformat()
+    vigentes = connection.execute(
+        "SELECT id FROM campanhas WHERE categoria = 'cadastro_direto' AND ativa = 1 AND arquivada = 0 "
+        "AND (data_inicio IS NULL OR data_inicio = '' OR data_inicio <= ?) "
+        "AND (data_fim IS NULL OR data_fim = '' OR data_fim >= ?) ORDER BY id DESC", (hoje, hoje),
+    ).fetchall()
+    avulsos = connection.execute("SELECT id FROM qrs_avulsos WHERE campanha_id IS NULL").fetchall()
+    if avulsos:
+        # Reutiliza uma Black vigente inequívoca. Em outro caso, a campanha de
+        # adoção nasce ativa e sem prazo para não bloquear QR que já funcionava.
+        if len(vigentes) == 1:
+            campanha_id = vigentes[0]["id"]
+        else:
+            semana = connection.execute("SELECT COALESCE(MAX(semana), 0) + 1 AS proxima FROM campanhas").fetchone()["proxima"]
+            campanha_id = connection.execute(
+                "INSERT INTO campanhas (codigo, nome, semana, frase, traducao, categoria, ativa) "
+                "VALUES (?, 'Black November', ?, '', '', 'cadastro_direto', 1) RETURNING id",
+                (_codigo_migracao(connection), semana),
+            ).fetchone()["id"]
+        connection.execute("UPDATE qrs_avulsos SET campanha_id = ? WHERE campanha_id IS NULL", (campanha_id,))
+
+    # Landing tem uma origem própria; nunca reutiliza o primeiro QR das ruas.
+    for campanha in connection.execute("SELECT id, nome FROM campanhas WHERE categoria = 'cadastro_direto'").fetchall():
+        if not connection.execute("SELECT id FROM qrs_avulsos WHERE campanha_id = ? AND origem = 'landing'", (campanha["id"],)).fetchone():
+            connection.execute(
+                "INSERT INTO qrs_avulsos (codigo, parceiro, campanha_id, origem) VALUES (?, ?, ?, 'landing')",
+                (_codigo_migracao(connection), campanha["nome"], campanha["id"]),
+            )
+    destaque = connection.execute(
+        "SELECT id FROM campanhas WHERE ativa = 1 AND arquivada = 0 "
+        "AND (data_inicio IS NULL OR data_inicio = '' OR data_inicio <= ?) "
+        "AND (data_fim IS NULL OR data_fim = '' OR data_fim >= ?) "
+        "ORDER BY CASE WHEN categoria = 'cadastro_direto' THEN 0 ELSE 1 END, id DESC LIMIT 1", (hoje, hoje),
+    ).fetchone()
+    if destaque:
+        connection.execute("UPDATE campanhas SET exibir_faixa = 1 WHERE id = ?", (destaque["id"],))
+    connection.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_qrs_landing_campanha ON qrs_avulsos(campanha_id) "
+        "WHERE origem = 'landing' AND campanha_id IS NOT NULL"
+    )
+    connection.execute("INSERT INTO app_migrations (migration_key) VALUES (?)", (chave,))
+    connection.commit()
+
+
 def init_db():
     connection = get_connection()
     try:
@@ -503,11 +588,12 @@ def init_db():
             connection.commit()
 
         _migrate_black_campaigns(connection)
+        _migrate_direct_campaigns(connection)
         _migrate_qr_location_tracking(connection)
 
         # Corrige registros antigos de campanhas que ainda não tinham opções separadas.
         campanhas_existentes = connection.execute(
-            "SELECT id, traducao, opcao_a FROM campanhas"
+            "SELECT id, traducao, opcao_a FROM campanhas WHERE categoria IN ('frases', 'jogos')"
         ).fetchall()
         for camp in campanhas_existentes:
             if not camp["opcao_a"]:

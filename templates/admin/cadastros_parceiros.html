@@ -1,6 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Cadastros avulsos | Inglês Secreto{% endblock %}
+{% block title %}Cadastros por origem | KNN{% endblock %}
 {% block content %}
-<div class="admin-header"><div><h1>Cadastros Black November</h1><p>{{ registros | length }} cadastro(s) salvo(s){% if campanha_id %} nesta campanha{% endif %}, do mais recente ao mais antigo.</p></div><a class="btn btn-secondary" href="{{ url_for('partner_qr.lista_qrs', campanha_id=campanha_id) }}">VER QR CODES</a></div>
-<div class="table-container" style="overflow:auto"><table><thead><tr><th>Data</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Idade</th><th>Origem</th><th>QR</th></tr></thead><tbody>{% for row in registros %}<tr><td>{{ row.data_cadastro | data_hora_brasilia }}</td><td><strong>{{ row.nome }}</strong></td><td>{{ row.whatsapp }}</td><td>{{ row.email or '—' }}</td><td>{{ row.idade or '—' }}</td><td>{{ row.parceiro }}</td><td>{{ row.codigo }}</td></tr>{% else %}<tr><td colspan="7" class="empty-table">Ainda não há cadastros por QR avulso.</td></tr>{% endfor %}</tbody></table></div>
+<div class="admin-header"><div><h1>Cadastros por origem</h1><p>{{ registros | length }} cadastro(s) salvo(s){% if campanha_id %} nesta campanha{% endif %}, do mais recente ao mais antigo.</p></div><a class="btn btn-secondary" href="{{ url_for('partner_qr.lista_qrs', campanha_id=campanha_id) }}">VER QR CODES</a></div>
+<div class="table-container" style="overflow:auto"><table>
+    <thead><tr><th>Data</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Idade</th><th>Campanha</th><th>Origem</th><th>Código</th></tr></thead>
+    <tbody>{% for row in registros %}<tr><td>{{ row.data_cadastro | data_hora_brasilia }}</td><td><strong>{{ row.nome }}</strong></td><td>{{ row.whatsapp }}</td><td>{{ row.email or '—' }}</td><td>{{ row.idade or '—' }}</td><td>{{ row.campanha_nome or 'Sem campanha' }}</td><td>{{ 'Landing' if row.origem == 'landing' else 'QR impresso' }} · {{ row.parceiro }}</td><td>{{ row.codigo }}</td></tr>{% else %}<tr><td colspan="8" class="empty-table">Ainda não há cadastros por QR avulso.</td></tr>{% endfor %}</tbody>
+</table></div>
 {% endblock %}

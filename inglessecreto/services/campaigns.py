@@ -6,6 +6,16 @@ from database import get_connection
 from ..utils import TZ_BRASIL, hoje_brasilia
 
 BLACK_NOVEMBER = "black_november"
+CADASTRO_DIRETO = "cadastro_direto"
+
+
+def normalizar_modalidade(categoria):
+    """Aceita formulários/links antigos sem acoplar a mecânica ao nome Black."""
+    return CADASTRO_DIRETO if categoria == BLACK_NOVEMBER else categoria
+
+
+def cadastro_direto(campanha):
+    return bool(campanha) and normalizar_modalidade(campanha["categoria"]) == CADASTRO_DIRETO
 
 
 def periodo_campanha(campanha, agora=None):
@@ -28,7 +38,7 @@ def periodo_campanha(campanha, agora=None):
 def filtro_campanha_vigente(alias="campanhas"):
     """Filtro SQL portátil para as datas ISO (YYYY-MM-DD) das campanhas."""
     return (
-        f"{alias}.ativa = 1 "
+        f"{alias}.ativa = 1 AND {alias}.arquivada = 0 "
         f"AND ({alias}.data_inicio IS NULL OR {alias}.data_inicio = '' OR {alias}.data_inicio <= ?) "
         f"AND ({alias}.data_fim IS NULL OR {alias}.data_fim = '' OR {alias}.data_fim >= ?)"
     )
@@ -42,6 +52,8 @@ def parametros_vigencia():
 def situacao_campanha(campanha):
     """Estado exibido no admin e usado pelo QR, sem alterar o banco."""
     hoje = hoje_brasilia().isoformat()
+    if "arquivada" in campanha.keys() and campanha["arquivada"]:
+        return "arquivada"
     if not campanha["ativa"]:
         return "inativa"
     if campanha["data_inicio"] and campanha["data_inicio"] > hoje:

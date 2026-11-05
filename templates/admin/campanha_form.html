@@ -3,40 +3,37 @@
 {% block title %}{{ 'Editar' if campanha else 'Nova' }} campanha | KNN{% endblock %}
 {% block content %}
 {% set f = form_data or campanha %}
-{% set modalidade_fixa = campanha and campanha.categoria == 'black_november' %}
-<div class="admin-header"><div><h1>{{ 'Editar' if campanha else 'Nova' }} campanha</h1><p>Escolha a experiência e configure sua presença na landing page.</p></div></div>
+{% set modalidade_fixa = campanha and campanha.categoria == 'cadastro_direto' %}
+<div class="admin-header"><div><h1>{{ 'Editar' if campanha else 'Nova' }} campanha</h1><p>Configure a campanha, seu cadastro e a faixa da landing page.</p></div></div>
 <form method="POST" class="form-card campaign-editor">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="nome">Nome da campanha</label>
-    <input id="nome" name="nome" maxlength="120" value="{{ f.nome if f else '' }}" required placeholder="Ex.: Black November KNN Paraisópolis">
+    <input id="nome" name="nome" maxlength="150" value="{{ f.nome if f else '' }}" required placeholder="Ex.: Black November">
     <label for="categoria">Modalidade</label>
     {% if modalidade_fixa %}<input type="hidden" name="categoria" value="{{ campanha.categoria }}">{% endif %}
     <select id="categoria" {% if modalidade_fixa %}disabled{% else %}name="categoria"{% endif %}>
-        {% for codigo, nome in categorias.items() %}<option value="{{ codigo }}" {% if f and f.categoria == codigo %}selected{% endif %} {% if campanha and codigo == 'black_november' and not modalidade_fixa %}disabled{% endif %}>{{ nome }}</option>{% endfor %}
+        {% for codigo, nome in categorias.items() %}<option value="{{ codigo }}" {% if f and f.categoria == codigo %}selected{% endif %} {% if campanha and codigo == 'cadastro_direto' and not modalidade_fixa %}disabled{% endif %}>{{ nome }}</option>{% endfor %}
     </select>
-    <p class="campaign-help">Black November abre direto no cadastro, com arte e métricas próprias. As modalidades de Halloween mantêm seus desafios.</p>
-    <fieldset id="black-fields" {% if not f or f.categoria != 'black_november' %}hidden{% endif %}>
-        <legend>Black November na landing</legend>
+    <p class="campaign-help">Cadastro direto abre o formulário pelo QR Code, com cadastros, logs e métricas próprios. Frases e jogos mantêm a experiência de desafios.</p>
+    <fieldset>
+        <legend>Faixa da campanha na landing</legend>
+        <label class="checkbox-label" for="exibir_faixa"><input id="exibir_faixa" type="checkbox" name="exibir_faixa" {% if f and f.exibir_faixa %}checked{% endif %}>Exibir faixa na landing</label>
+        <p class="campaign-help">Uma campanha em destaque por vez, apenas enquanto estiver ativa e dentro do período. O restante da landing mantém a temática definida no código.</p>
         <label for="chamada">Chamada da faixa</label>
-        <input id="chamada" name="chamada" maxlength="120" value="{{ f.chamada or '' if f else '' }}" placeholder="Plante hoje. Transforme seu amanhã.">
+        <input id="chamada" name="chamada" maxlength="120" value="{{ f.chamada or '' if f else '' }}" placeholder="Chamada da campanha">
         <label for="descricao">Mensagem da campanha</label>
-        <textarea id="descricao" name="descricao" maxlength="500" rows="3" placeholder="Invista em educação e faça parte do movimento Sementes da Liberdade.">{{ f.descricao or '' if f else '' }}</textarea>
-        <label for="comunidade_url">Link da Comunidade VIP KNN Paraisópolis</label>
+        <textarea id="descricao" name="descricao" maxlength="500" rows="3">{{ f.descricao or '' if f else '' }}</textarea>
+        <label for="comunidade_url">Link da comunidade da unidade</label>
         <input id="comunidade_url" name="comunidade_url" type="url" maxlength="500" value="{{ f.comunidade_url or '' if f else '' }}" placeholder="https://chat.whatsapp.com/...">
         <label for="comunidade_nacional_url">Link da comunidade nacional</label>
         <input id="comunidade_nacional_url" name="comunidade_nacional_url" type="url" maxlength="500" value="{{ f.comunidade_nacional_url or '' if f else '' }}" placeholder="https://chat.whatsapp.com/...">
-        <p class="campaign-help">Os links aparecem na faixa Black da landing quando preenchidos. Até lá, o contato da unidade continua disponível.</p>
     </fieldset>
     <div class="form-grid">
         <div><label for="data_inicio">Data de início</label><input id="data_inicio" name="data_inicio" type="date" value="{{ f.data_inicio or '' if f else '' }}"></div>
         <div><label for="data_fim">Data de término</label><input id="data_fim" name="data_fim" type="date" value="{{ f.data_fim or '' if f else '' }}"></div>
     </div>
-    <p class="campaign-help">Sem datas, a disponibilidade depende apenas do status ativo. Com datas, a campanha aparece dentro do período informado.</p>
+    <p class="campaign-help">Sem datas, a disponibilidade depende apenas do status ativo. As datas também controlam o acesso aos QR vinculados.</p>
     <label class="checkbox-label" for="ativa"><input id="ativa" type="checkbox" name="ativa" {% if not f or f.ativa %}checked{% endif %}>Campanha ativa</label>
-    <div class="form-actions"><a class="btn btn-secondary" href="{{ url_for('campaigns.campanhas') }}">CANCELAR</a><button class="btn btn-primary" type="submit">SALVAR CAMPANHA</button></div>
+    <div class="form-actions"><a class="btn btn-secondary" href="{{ url_for('campaigns.campanhas') }}">CANCELAR</a><button class="btn btn-primary" type="submit" {% if campanha and campanha.arquivada %}disabled{% endif %}>SALVAR CAMPANHA</button></div>
 </form>
-<script>
-const categoria = document.getElementById('categoria');
-categoria.addEventListener('change', () => { document.getElementById('black-fields').hidden = categoria.value !== 'black_november'; });
-</script>
 {% endblock %}

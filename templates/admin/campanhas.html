@@ -23,7 +23,7 @@ Campanhas | Inglês Secreto
 
 </div>
 
-<div class="campaign-quick-links"><a class="btn btn-secondary" href="{{ url_for('campaigns.nova_campanha', categoria='black_november') }}">+ CAMPANHA BLACK NOVEMBER</a><a class="table-link" href="{{ url_for('partner_qr.lista_qrs') }}">QR Codes de cadastro e histórico anterior →</a></div>
+<div class="campaign-quick-links"><a class="table-link" href="{{ url_for('partner_qr.lista_qrs') }}">QR Codes de cadastro e histórico anterior →</a></div>
 
 <div class="table-container">
 
@@ -66,13 +66,14 @@ Campanhas | Inglês Secreto
                     </strong>
 
                     <small>
-                        {% if campanha.categoria == 'black_november' %}Black November · Cadastro direto{% elif campanha.categoria == 'jogos' %}Jogos Interativos{% else %}Frases em Inglês{% endif %}
+                        {% if campanha.categoria == 'cadastro_direto' %}Cadastro direto{% elif campanha.categoria == 'jogos' %}Jogos Interativos{% else %}Frases em Inglês{% endif %}
+                        {% if campanha.exibir_faixa %} · Faixa na landing{% endif %}
                     </small>
 
                 </td>
 
                 <td>
-                    {{ campanha.total_cadastros if campanha.categoria == 'black_november' else campanha.total_descobertas }}
+                    {{ campanha.total_cadastros if campanha.categoria == 'cadastro_direto' else campanha.total_descobertas }}
                 </td>
 
                 <td>
@@ -95,6 +96,8 @@ Campanhas | Inglês Secreto
                         ENCERRADA
                     </span>
 
+                    {% elif situacoes[campanha.id] == 'arquivada' %}
+                    <span class="status">ARQUIVADA</span>
                     {% else %}
 
                     <span class="status">
@@ -115,10 +118,13 @@ Campanhas | Inglês Secreto
                         GERAR QR CODE
                     </a>
 
-                    <form method="POST" action="{{ url_for('campaigns.excluir_campanha', campanha_id=campanha.id) }}" style="display: inline-block;" onsubmit="return confirm('Tem certeza que deseja excluir esta campanha e todos os seus QR Codes?');">
+                    <a href="{{ url_for('reports.participantes', campanha_id=campanha.id) }}" class="table-link">PARTICIPANTES</a>
+                    {% if campanha.categoria == 'cadastro_direto' %}<a href="{{ url_for('partner_qr.metricas_campanha', campanha_id=campanha.id) }}" class="table-link">MÉTRICAS E LOG</a>{% endif %}
+
+                    {% if not campanha.arquivada %}<form method="POST" action="{{ url_for('campaigns.excluir_campanha', campanha_id=campanha.id) }}" style="display: inline-block;" onsubmit="return confirm('{{ 'Arquivar a campanha e encerrar os cadastros, preservando o histórico?' if campanha.categoria == 'cadastro_direto' else 'Excluir esta campanha e seus QR Codes?' }}');">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-danger" style="padding: 6px 12px; min-height: 34px; font-size: 10px;">EXCLUIR</button>
-                    </form>
+                        <button type="submit" class="btn btn-danger" style="padding: 6px 12px; min-height: 34px; font-size: 10px;">{{ 'ARQUIVAR' if campanha.categoria == 'cadastro_direto' else 'EXCLUIR' }}</button>
+                    </form>{% endif %}
 
                 </td>
 

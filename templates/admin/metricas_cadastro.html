@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block body_class %}admin-black-campaign{% endblock %}
+{% block title %}Métricas · {{ campanha.nome }} | KNN{% endblock %}
+{% block content %}
+<div class="admin-header"><div><h1>{{ campanha.nome }} · Métricas</h1><p>Cadastros diretos da landing e dos QR Codes desta campanha.</p></div><a class="btn btn-secondary" href="{{ url_for('reports.participantes', campanha_id=campanha.id) }}">PARTICIPANTES</a></div>
+<section class="metric-grid">
+    <article class="metric-card"><span>PARTICIPANTES ÚNICOS</span><strong>{{ participantes }}</strong><p>cada pessoa uma vez nesta campanha</p></article>
+    <article class="metric-card"><span>ACESSOS AO FORMULÁRIO</span><strong>{{ totais.acesso }}</strong><p>incluindo retornos</p></article>
+    <article class="metric-card"><span>NOVOS CADASTROS POR ORIGEM</span><strong>{{ totais.cadastro_concluido }}</strong><p>uma pessoa pode usar mais de uma origem</p></article>
+    <article class="metric-card"><span>REENVIOS</span><strong>{{ totais.cadastro_reenviado }}</strong><p>cadastros repetidos na mesma origem</p></article>
+    <article class="metric-card"><span>ERROS DE VALIDAÇÃO</span><strong>{{ totais.erro_validacao }}</strong><p>envios com dados inválidos ou incompletos</p></article>
+</section>
+<h2>Origens da campanha</h2>
+<p>Cadastros salvos incluem o histórico anterior. Os eventos mostram apenas o que foi medido; visitas antigas não são estimadas.</p>
+<div class="table-container"><table><thead><tr><th>Origem</th><th>Código</th><th>Cadastros salvos</th><th>Acessos medidos</th><th>Detalhes</th></tr></thead><tbody>{% for origem in origens %}<tr><td>{{ 'Landing' if origem.origem == 'landing' else 'QR impresso' }}</td><td>{{ origem.codigo }}</td><td>{{ origem.cadastros }}</td><td>{{ origem.acessos }}</td><td><a class="table-link" href="{{ url_for('partner_qr.metricas', qr_id=origem.id) }}">MÉTRICAS E LOG</a></td></tr>{% endfor %}</tbody></table></div>
+<h2>Últimos 100 eventos · Brasília</h2>
+<div class="table-container"><table><thead><tr><th>Data</th><th>Origem</th><th>Código</th><th>Evento</th></tr></thead><tbody>{% for evento in eventos %}<tr><td>{{ evento.data_evento | data_hora_brasilia }}</td><td>{{ 'Landing' if evento.origem == 'landing' else 'QR impresso' }}</td><td>{{ evento.codigo }}</td><td>{{ nomes_eventos.get(evento.evento, evento.evento) }}</td></tr>{% else %}<tr><td colspan="4">Nenhum evento registrado.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

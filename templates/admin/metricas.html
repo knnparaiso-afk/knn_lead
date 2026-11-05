@@ -23,6 +23,8 @@
     </div>
 </section>
 
+{% if campanhas_cadastro %}<section class="workflow-section"><h2>Campanhas de cadastro direto</h2><p>Consulte acessos, participantes e logs da landing e dos QR impressos.</p>{% for campanha in campanhas_cadastro %}<p><a class="table-link" href="{{ url_for('partner_qr.metricas_campanha', campanha_id=campanha.id) }}">{{ campanha.nome }} · Métricas e log →</a></p>{% endfor %}</section>{% endif %}
+
 <section class="metric-grid">
     {% for evento in ['qr_open', 'challenge_start', 'challenge_complete', 'reward_view', 'form_start', 'form_complete', 'whatsapp_click', 'friend_share_click', 'friend_invite_open', 'friend_invite_accept'] %}
     <article class="metric-card"><span>{{ labels[evento] }}</span><strong>{{ totais.get(evento, 0) }}</strong><p>eventos registrados</p></article>

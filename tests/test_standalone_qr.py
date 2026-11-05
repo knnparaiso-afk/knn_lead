@@ -84,7 +84,7 @@ class StandaloneQRTests(unittest.TestCase):
 
     def test_generation_without_campaign_or_partner_and_png_destination(self):
         qr = self.generate()
-        self.assertEqual(qr["parceiro"], "Black November")
+        self.assertEqual(qr["parceiro"], "Cadastro direto")
         second = self.generate()
         self.assertNotEqual(qr["codigo"], second["codigo"])
         page = self.admin.get("/admin/qr-avulso")
@@ -149,7 +149,7 @@ class StandaloneQRTests(unittest.TestCase):
         qr = self.generate()
         self.assertEqual(self.register(qr["codigo"], idade="16").status_code, 302)
         types = {row["tipo"] for row in self.rows("SELECT tipo FROM registros_consentimento")}
-        self.assertEqual(types, {"cadastro_parceiro", "responsavel_legal"})
+        self.assertEqual(types, {"cadastro_direto", "responsavel_legal"})
 
     def test_auth_csrf_unknown_and_disabled_codes(self):
         qr = self.generate()
@@ -258,7 +258,7 @@ class StandaloneQRTests(unittest.TestCase):
         landing = self.visitor.get("/")
         body = landing.get_data(as_text=True)
         for text in ("Uma nova possibilidade", "Invista em educação.", "local-test", "national-test",
-                     "black-november-knn.jpeg", f"/black-november/{campaign['codigo']}"):
+                     "black-november-knn.jpeg", f"/cadastro/{campaign['codigo']}"):
             self.assertIn(text, body)
         self.assertNotIn("Halloween", body)
         self.assertNotIn("FRANQUEADO", body)
@@ -270,7 +270,9 @@ class StandaloneQRTests(unittest.TestCase):
             "email": "black@example.com", "idade": "28", "participacao_confirmada": "on",
         })
         self.assertEqual(response.location, "/")
-        self.assertEqual(self.events(qr["id"]), {"acesso": 1, "cadastro_concluido": 1})
+        landing_qr = self.rows("SELECT * FROM qrs_avulsos WHERE campanha_id = ? AND origem = 'landing'", (campaign["id"],))[0]
+        self.assertEqual(self.events(landing_qr["id"]), {"acesso": 1, "cadastro_concluido": 1})
+        self.assertEqual(self.events(qr["id"]), {})
         self.assertEqual(self.total("qr_codes"), 0)
         self.assertEqual(self.total("descobertas"), 0)
         self.assertEqual(self.total("premios"), 0)
@@ -338,15 +340,17 @@ class StandaloneQRTests(unittest.TestCase):
         self.assertIn("Pessoa Black November", self.admin.get(
             f"/admin/cadastros-parceiros?campanha_id={campaign['id']}").get_data(as_text=True))
 
-    def test_deleting_black_campaign_preserves_history_and_disables_its_qrs(self):
+    def test_archiving_direct_campaign_preserves_history_campaign_and_qrs(self):
         campaign, qr = self.black_campaign()
         self.register(qr["codigo"])
         page = self.admin.get("/admin/campanhas")
         self.assertEqual(self.admin.post(f"/admin/campanhas/{campaign['id']}/excluir",
                                         data={"csrf_token": self.csrf(page)}).status_code, 302)
         saved = self.rows("SELECT * FROM qrs_avulsos WHERE id = ?", (qr["id"],))[0]
-        self.assertEqual(saved["ativo"], 0)
-        self.assertIsNone(saved["campanha_id"])
+        self.assertEqual(saved["ativo"], 1)
+        self.assertEqual(saved["campanha_id"], campaign["id"])
+        archived = self.rows("SELECT * FROM campanhas WHERE id = ?", (campaign["id"],))[0]
+        self.assertEqual((archived["ativa"], archived["arquivada"], archived["exibir_faixa"]), (0, 1, 0))
         self.assertEqual(self.total("cadastros_qr_avulso"), 1)
         self.assertEqual(self.events(qr["id"]), {"acesso": 1, "cadastro_concluido": 1})
         self.assertEqual(self.visitor.get(f"/cadastro-parceiro/{qr['codigo']}").status_code, 404)
@@ -412,9 +416,196 @@ class StandaloneQRTests(unittest.TestCase):
             database.init_db()
             saved = self.rows("SELECT * FROM qrs_avulsos")[0]
             self.assertEqual((saved["id"], saved["codigo"], saved["ativo"]), (qr_id, "IMPRESSO", 1))
-            self.assertIsNone(saved["campanha_id"])
+            self.assertIsNotNone(saved["campanha_id"])
+            campaign = self.rows("SELECT * FROM campanhas WHERE id = ?", (saved["campanha_id"],))[0]
+            self.assertEqual((campaign["nome"], campaign["categoria"], campaign["ativa"]), ("Black November", "cadastro_direto", 1))
+            self.assertIsNone(campaign["data_inicio"])
+            self.assertIsNone(campaign["data_fim"])
             self.assertEqual(self.total("cadastros_qr_avulso"), 1)
             self.assertEqual(self.events(qr_id), {"acesso": 1})
+
+    def write(self, sql, params=()):
+        connection = database.get_connection()
+        try:
+            result = connection.execute(sql, params)
+            rows = result.fetchall() if result.description else []
+            connection.commit()
+            return rows
+        finally:
+            connection.close()
+
+    def rerun_adoption(self):
+        self.write("DELETE FROM app_migrations WHERE migration_key = 'direct_campaigns_adopt_black_qrs_v1'")
+        database.init_db()
+
+    def test_city_black_qrs_are_adopted_once_with_history_and_old_get_post_intact(self):
+        first, second = self.generate(), self.generate()
+        self.register(first["codigo"])
+        self.register(second["codigo"])
+        self.write("UPDATE cadastros_qr_avulso SET data_cadastro = '2026-11-02 12:00:00'")
+        before = [dict(row) for row in self.rows("SELECT * FROM cadastros_qr_avulso ORDER BY id")]
+        events_before = [dict(row) for row in self.rows("SELECT * FROM eventos_qr_avulso ORDER BY id")]
+        self.rerun_adoption()
+        campaign = self.rows("SELECT * FROM campanhas")[0]
+        for old in (first, second):
+            saved = self.rows("SELECT * FROM qrs_avulsos WHERE id = ?", (old["id"],))[0]
+            self.assertEqual((saved["id"], saved["codigo"], saved["ativo"], saved["campanha_id"]),
+                             (old["id"], old["codigo"], old["ativo"], campaign["id"]))
+        self.assertEqual(before, [dict(row) for row in self.rows("SELECT * FROM cadastros_qr_avulso ORDER BY id")])
+        self.assertEqual(events_before, [dict(row) for row in self.rows("SELECT * FROM eventos_qr_avulso ORDER BY id")])
+        self.assertEqual((campaign["categoria"], campaign["ativa"], campaign["exibir_faixa"]), ("cadastro_direto", 1, 1))
+        snapshot = [dict(row) for row in self.rows("SELECT * FROM qrs_avulsos ORDER BY id")]
+        database.init_db()
+        self.assertEqual(snapshot, [dict(row) for row in self.rows("SELECT * FROM qrs_avulsos ORDER BY id")])
+        page = self.admin.get(f"/admin/campanhas/{campaign['id']}/participantes").get_data(as_text=True)
+        self.assertIn("1 pessoa(s)", page)
+        for qr in (first, second):
+            self.assertIn(qr["codigo"], page)
+        self.assertIn("Cadastro recebido", page)
+        self.assertNotIn("0/3", page)
+        self.assertEqual(self.register(first["codigo"]).status_code, 302)
+        self.assertEqual(self.events(first["id"]), {"acesso": 2, "cadastro_concluido": 1, "cadastro_reenviado": 1})
+        self.assertEqual(self.register(second["codigo"], whatsapp="35999990000").status_code, 302)
+        self.assertEqual(self.total("usuarios"), 2)
+        # A atualização é única: futuros avulsos independentes não são adotados no startup.
+        independent = self.generate()
+        database.init_db()
+        self.assertIsNone(self.rows("SELECT campanha_id FROM qrs_avulsos WHERE id = ?", (independent["id"],))[0]["campanha_id"])
+
+    def test_adoption_reuses_existing_current_black_and_keeps_disabled_codes_disabled(self):
+        campaign, printed = self.black_campaign()
+        self.write("UPDATE campanhas SET categoria = 'black_november' WHERE id = ?", (campaign["id"],))
+        old = self.generate()
+        self.write("UPDATE qrs_avulsos SET ativo = 0 WHERE id = ?", (old["id"],))
+        self.rerun_adoption()
+        self.assertEqual(self.total("campanhas"), 1)
+        adopted = self.rows("SELECT * FROM qrs_avulsos WHERE id = ?", (old["id"],))[0]
+        self.assertEqual((adopted["campanha_id"], adopted["ativo"]), (campaign["id"], 0))
+        self.assertEqual(self.visitor.get(f"/cadastro-parceiro/{old['codigo']}").status_code, 404)
+        self.assertEqual(self.visitor.get(f"/cadastro-parceiro/{printed['codigo']}").status_code, 200)
+        self.assertEqual(len(self.rows("SELECT id FROM qrs_avulsos WHERE origem = 'landing'")), 1)
+
+    def test_failed_adoption_rolls_back_links_and_can_retry_without_losing_data(self):
+        qr = self.generate()
+        self.register(qr["codigo"])
+        self.write("DELETE FROM app_migrations WHERE migration_key = 'direct_campaigns_adopt_black_qrs_v1'")
+        original = database._codigo_migracao
+        calls = []
+
+        def fail_after_link(connection):
+            calls.append(True)
+            if len(calls) == 2:
+                raise RuntimeError("migration interrupted")
+            return original(connection)
+
+        with patch.object(database, "_codigo_migracao", side_effect=fail_after_link):
+            with self.assertRaisesRegex(RuntimeError, "migration interrupted"):
+                database.init_db()
+        self.assertEqual(self.total("campanhas"), 0)
+        saved = self.rows("SELECT * FROM qrs_avulsos WHERE id = ?", (qr["id"],))[0]
+        self.assertIsNone(saved["campanha_id"])
+        self.assertEqual(saved["codigo"], qr["codigo"])
+        self.assertEqual(self.total("cadastros_qr_avulso"), 1)
+        self.assertEqual(self.events(qr["id"]), {"acesso": 1, "cadastro_concluido": 1})
+        database.init_db()
+        self.assertIsNotNone(self.rows("SELECT campanha_id FROM qrs_avulsos WHERE id = ?", (qr["id"],))[0]["campanha_id"])
+        self.assertEqual(self.register(qr["codigo"]).status_code, 302)
+
+    def test_adoption_does_not_put_running_qr_into_future_or_expired_black(self):
+        scheduled, _ = self.black_campaign(data_inicio="2999-01-01")
+        old = self.generate()
+        self.rerun_adoption()
+        saved = self.rows("SELECT * FROM qrs_avulsos WHERE id = ?", (old["id"],))[0]
+        self.assertNotEqual(saved["campanha_id"], scheduled["id"])
+        campaign = self.rows("SELECT * FROM campanhas WHERE id = ?", (saved["campanha_id"],))[0]
+        self.assertIsNone(campaign["data_inicio"])
+        self.assertIsNone(campaign["data_fim"])
+        self.assertEqual(self.register(old["codigo"]).status_code, 302)
+
+    def test_create_direct_campaign_from_common_button_and_choose_landing_banner(self):
+        form = self.admin.get("/admin/campanhas/nova").get_data(as_text=True)
+        self.assertIn('<option value="cadastro_direto" selected', form)
+        self.assertNotIn('<option value="black_november"', form)
+        campaign, printed = self.black_campaign(nome="Matrículas", categoria="cadastro_direto", exibir_faixa="on", chamada="Chamada dinâmica")
+        landing = self.visitor.get("/").get_data(as_text=True)
+        self.assertIn("Chamada dinâmica", landing)
+        self.assertIn(f"/cadastro/{campaign['codigo']}", landing)
+        self.assertIn("BLACK NOVEMBER KNN", landing)  # A temática continua hardcoded.
+        other, other_qr = self.black_campaign(nome="Outra ação", categoria="cadastro_direto", exibir_faixa="on")
+        self.assertNotIn(f"/cadastro/{campaign['codigo']}", self.visitor.get("/").get_data(as_text=True))
+        self.assertIn(f"/cadastro/{other['codigo']}", self.visitor.get("/").get_data(as_text=True))
+        edit = self.admin.get(f"/admin/campanhas/{other['id']}/editar")
+        response = self.admin.post(f"/admin/campanhas/{other['id']}/editar", data={
+            "csrf_token": self.csrf(edit), "nome": other["nome"], "categoria": "cadastro_direto", "ativa": "on",
+        })
+        self.assertEqual(response.status_code, 302)
+        landing = self.visitor.get("/").get_data(as_text=True)
+        self.assertNotIn('id="campanha"', landing)
+        self.assertIn("BLACK NOVEMBER KNN", landing)
+        for qr in (printed, other_qr):
+            self.assertEqual(self.visitor.get(f"/cadastro-parceiro/{qr['codigo']}").status_code, 200)
+
+    def test_campaign_landing_and_printed_qr_have_separate_origins_and_one_participant(self):
+        campaign, printed = self.black_campaign()
+        self.register(printed["codigo"])
+        page = self.visitor.get(f"/cadastro/{campaign['codigo']}")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn("no-store", page.headers["Cache-Control"])
+        self.assertIn("noindex", page.headers["X-Robots-Tag"])
+        self.assertEqual(self.visitor.post(f"/cadastro/{campaign['codigo']}", data={}).status_code, 400)
+        response = self.visitor.post(f"/cadastro/{campaign['codigo']}", data={
+            "csrf_token": self.csrf(page), "nome": "Mesma pessoa", "whatsapp": "35988881111",
+            "email": "same@example.com", "idade": "30", "participacao_confirmada": "on",
+        })
+        self.assertEqual(response.status_code, 302)
+        landing = self.rows("SELECT * FROM qrs_avulsos WHERE campanha_id = ? AND origem = 'landing'", (campaign["id"],))[0]
+        self.assertEqual(self.events(printed["id"]), {"acesso": 1, "cadastro_concluido": 1})
+        self.assertEqual(self.events(landing["id"]), {"acesso": 1, "cadastro_concluido": 1})
+        self.assertEqual((self.total("usuarios"), self.total("cadastros_qr_avulso")), (1, 2))
+        participants = self.admin.get(f"/admin/campanhas/{campaign['id']}/participantes").get_data(as_text=True)
+        self.assertIn("1 pessoa(s)", participants)
+        self.assertIn("Landing", participants)
+        self.assertIn("QR impresso", participants)
+        for code in (printed["codigo"], landing["codigo"]):
+            self.assertIn(code, participants)
+        metrics = self.admin.get(f"/admin/campanhas/{campaign['id']}/metricas-cadastro")
+        self.assertEqual(metrics.status_code, 200)
+        self.assertIn("PARTICIPANTES ÚNICOS</span><strong>1</strong>", metrics.get_data(as_text=True))
+        self.assertIn("NOVOS CADASTROS POR ORIGEM</span><strong>2</strong>", metrics.get_data(as_text=True))
+        self.assertEqual(self.visitor.get(f"/admin/campanhas/{campaign['id']}/metricas-cadastro").status_code, 302)
+        self.assertEqual(self.admin.get("/admin/campanhas/999999/metricas-cadastro").status_code, 404)
+
+    def test_participant_filter_preserves_campaign_entry_date_and_other_campaigns(self):
+        first, first_qr = self.black_campaign(nome="Black November")
+        second, second_qr = self.black_campaign(nome="Outra campanha", categoria="cadastro_direto")
+        self.register(first_qr["codigo"], nome="Primeira pessoa")
+        self.write("UPDATE usuarios SET data_cadastro = '2026-10-01 12:00:00'")
+        self.write("UPDATE cadastros_qr_avulso SET data_cadastro = '2026-11-03 12:00:00'")
+        self.register(second_qr["codigo"], nome="Outra pessoa", whatsapp="35988882222")
+        first_page = self.admin.get(f"/admin/campanhas/{first['id']}/participantes").get_data(as_text=True)
+        self.assertIn("Primeira pessoa", first_page)
+        self.assertNotIn("Outra pessoa", first_page)
+        self.assertIn("03/11/2026", first_page)
+        self.assertNotIn("01/10/2026", first_page)
+        self.assertIn(first_qr["codigo"], first_page)
+        self.assertNotIn(second_qr["codigo"], first_page)
+        all_page = self.admin.get("/admin/participantes").get_data(as_text=True)
+        self.assertIn("2 pessoa(s)", all_page)
+        self.assertIn("Primeira pessoa", all_page)
+        self.assertIn("Outra pessoa", all_page)
+        self.assertEqual(self.admin.get("/admin/campanhas/999999/participantes").status_code, 404)
+
+    def test_archived_campaign_keeps_origin_reports_and_cannot_generate_new_qrs(self):
+        campaign, qr = self.black_campaign()
+        self.register(qr["codigo"])
+        page = self.admin.get("/admin/campanhas")
+        self.admin.post(f"/admin/campanhas/{campaign['id']}/excluir", data={"csrf_token": self.csrf(page)})
+        self.assertIn(qr["codigo"], self.admin.get(f"/admin/campanhas/{campaign['id']}/participantes").get_data(as_text=True))
+        self.assertIn(qr["codigo"], self.admin.get(f"/admin/campanhas/{campaign['id']}/metricas-cadastro").get_data(as_text=True))
+        self.assertEqual(self.visitor.get(f"/black-november/{campaign['codigo']}").status_code, 404)
+        self.assertEqual(self.admin.post("/admin/qr-avulso", data={
+            "csrf_token": self.csrf(page), "campanha_id": campaign["id"],
+        }).status_code, 409)
 
 
 if __name__ == "__main__":

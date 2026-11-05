@@ -3,18 +3,19 @@
 {% block body_class %}admin-black-campaign{% endblock %}
 {% block content %}
 <div class="admin-header">
-    <div><h1>{{ campanha.nome if campanha else 'QR de cadastro' }}</h1><p>{% if campanha %}Black November · Cadastro direto e métricas exclusivas por QR.{% else %}QR Codes anteriores e de campanhas Black November.{% endif %}</p></div>
-    <a class="btn btn-secondary" href="{{ url_for('partner_qr.cadastros', campanha_id=campanha.id if campanha else none) }}">VER CADASTROS SALVOS</a>
+    <div><h1>{{ campanha.nome if campanha else 'QR de cadastro' }}</h1><p>{% if campanha %}Cadastro direto · QR impressos e landing com origens identificadas.{% else %}QR Codes e origens de cadastro das campanhas.{% endif %}</p></div>
+    <a class="btn btn-secondary" href="{{ url_for('reports.participantes', campanha_id=campanha.id) if campanha else url_for('reports.participantes') }}">PARTICIPANTES</a>
+    {% if campanha %}<a class="table-link" href="{{ url_for('partner_qr.metricas_campanha', campanha_id=campanha.id) }}">MÉTRICAS E LOG DA CAMPANHA</a>{% endif %}
 </div>
 <section class="qr-generator standalone-generator">
-    <div><span class="small-label">BLACK NOVEMBER</span><h2>Um QR. Direto para o cadastro.</h2><p>Material gratuito e isenção da taxa de matrícula. Após o cadastro, a pessoa segue para a landing page.</p></div>
-    <form method="POST">
+    <div><span class="small-label">CADASTRO DIRETO</span><h2>Um QR. Direto para o cadastro.</h2><p>Após o cadastro, a pessoa segue para a landing page. Os links impressos continuam com os mesmos códigos.</p></div>
+    {% if campanha and not campanha.arquivada %}<form method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% if campanha %}<input type="hidden" name="campanha_id" value="{{ campanha.id }}">{% endif %}
-        <button class="btn btn-primary" type="submit">{{ 'GERAR QR DE CADASTRO' if campanha else 'GERAR QR CODE AVULSO' }}</button>
-    </form>
+        <button class="btn btn-primary" type="submit">GERAR QR DE CADASTRO</button>
+    </form>{% elif not campanha %}<a class="btn btn-primary" href="{{ url_for('campaigns.nova_campanha') }}">CRIAR CAMPANHA</a>{% endif %}
 </section>
-{% if campanha and disponiveis %}
+{% if campanha and not campanha.arquivada and disponiveis %}
 <section class="qr-generator standalone-import"><form method="POST" action="{{ url_for('partner_qr.vincular') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="campanha_id" value="{{ campanha.id }}">
     <label for="qr_id">Trazer um QR avulso já emitido para esta campanha</label>
@@ -28,12 +29,12 @@
         <tbody>
         {% for qr in qrs %}
         <tr>
-            <td><img class="standalone-qr-preview is-black-art" src="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id, preview=1, arte='black') }}" alt="Arte Black November e QR {{ qr.codigo }}" width="112" height="192" loading="lazy"></td>
-            <td><strong>{{ qr.campanha_nome or qr.parceiro }}</strong><small>{% if not qr.campanha_id %}QR independente{% endif %}{% if not qr.ativo %} · Desativado{% endif %}</small><small><a class="table-link" href="{{ base_url }}/cadastro-parceiro/{{ qr.codigo }}">{{ base_url }}/cadastro-parceiro/{{ qr.codigo }}</a></small></td>
+            <td>{% if qr.origem == 'landing' %}Landing{% else %}<img class="standalone-qr-preview is-black-art" src="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id, preview=1, arte='black') }}" alt="Arte Black November e QR {{ qr.codigo }}" width="112" height="192" loading="lazy">{% endif %}</td>
+            <td><strong>{{ qr.campanha_nome or qr.parceiro }}</strong><small>{{ 'Landing' if qr.origem == 'landing' else 'QR impresso' }}{% if not qr.campanha_id %} · QR independente{% endif %}{% if not qr.ativo %} · Desativado{% endif %}</small>{% set link = (base_url ~ url_for('public.cadastro_campanha', codigo=qr.campanha_codigo)) if qr.origem == 'landing' else (base_url ~ '/cadastro-parceiro/' ~ qr.codigo) %}<small><a class="table-link" href="{{ link }}">{{ link }}</a></small></td>
             <td>{{ qr.total_cadastros }}</td>
             <td><strong>{{ qr.total_acessos }} acesso(s)</strong><small><a class="table-link" href="{{ url_for('partner_qr.metricas', qr_id=qr.id) }}">VER MÉTRICAS E LOG</a></small></td>
             <td>{{ qr.data_criacao | data_hora_brasilia }}</td>
-            <td><a class="btn btn-secondary" href="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id, arte='black') }}">BAIXAR ARTE BLACK</a><small><a class="table-link" href="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id) }}">QR simples (PNG)</a></small></td>
+            <td>{% if qr.origem != 'landing' %}<a class="btn btn-secondary" href="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id, arte='black') }}">BAIXAR ARTE BLACK</a><small><a class="table-link" href="{{ url_for('partner_qr.imagem_qr', qr_id=qr.id) }}">QR simples (PNG)</a></small>{% else %}Origem exclusiva da landing{% endif %}</td>
         </tr>
         {% else %}<tr><td colspan="6" class="empty-table">Nenhum QR avulso criado. Clique no botão acima para gerar o primeiro.</td></tr>{% endfor %}
         </tbody>

@@ -8,7 +8,7 @@ from database import get_connection
 
 from ..decorators import admin_required
 from ..security import permitir_requisicao
-from ..services.campaigns import BLACK_NOVEMBER, gerar_codigo
+from ..services.campaigns import cadastro_direto, gerar_codigo
 from ..services.qr_art import (ARTE_QR_PADRAO, artes_qr_disponiveis,
                                caminho_qr, gerar_arte_qrcode,
                                normalizar_arte_qr, normalizar_tamanho_papel,
@@ -66,7 +66,7 @@ def gerenciar_qr(campanha_id):
     campanha = connection.execute(
         "SELECT * FROM campanhas WHERE id = ?", (campanha_id,)
     ).fetchone()
-    if campanha and campanha["categoria"] == BLACK_NOVEMBER:
+    if cadastro_direto(campanha):
         connection.close()
         return redirect(url_for("partner_qr.lista_qrs", campanha_id=campanha_id))
     locais = connection.execute(
@@ -113,7 +113,7 @@ def gerar_qr(campanha_id, local_id):
         flash("Campanha ou local não encontrado.", "error")
         return redirect(url_for("campaigns.campanhas"))
 
-    if campanha["categoria"] == BLACK_NOVEMBER:
+    if cadastro_direto(campanha):
         connection.close()
         return redirect(url_for("partner_qr.lista_qrs", campanha_id=campanha_id))
 
