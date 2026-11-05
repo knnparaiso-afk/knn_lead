@@ -69,7 +69,8 @@
     </div>
 
     <div class="share-options">
-    <div class="share-networks" aria-label="Opções de compartilhamento" tabindex="0">
+      <button class="share-scroll share-scroll-prev" type="button" aria-label="Opções anteriores de compartilhamento" aria-controls="share-networks" hidden><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+    <div class="share-networks" id="share-networks" aria-label="Opções de compartilhamento" tabindex="0">
       <button class="share-option" type="button" data-copy-link>
         <span class="share-circle share-copy"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="m13 19 6-6m-7-1 3-3a6 6 0 0 1 9 8l-3 3m-1 0-3 3a6 6 0 0 1-9-8l3-3"/></svg></span>
         <span data-copy-label>Copiar link</span>
@@ -89,9 +90,6 @@
       <a class="share-option" data-share-network="messenger" target="_blank" rel="noopener noreferrer" aria-label="Abrir o Messenger para compartilhar">
         <span class="share-circle share-messenger"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="messenger-color" x2="0" y2="1"><stop stop-color="#ff5aab"/><stop offset=".5" stop-color="#a33bff"/><stop offset="1" stop-color="#168aff"/></linearGradient></defs><path fill="url(#messenger-color)" d="M16 3C8 3 3 8 3 15c0 4 2 8 5 10v4l5-2h3c8 0 13-5 13-12S24 3 16 3Z"/><path fill="#fff" d="m7 20 7-9 5 4 6-4-7 9-5-4Z"/></svg></span><span>Messenger</span>
       </a>
-      <a class="share-option" data-share-network="snapchat" aria-label="Compartilhar no Snapchat">
-        <span class="share-circle share-snapchat"><svg viewBox="0 0 32 32" fill="white" aria-hidden="true"><path d="M16 3c-6 0-7 5-6 10-3-2-5 1-1 3-1 4-3 5-5 6-1 1 1 2 4 2l1 3 4-1 3 2 3-2 4 1 1-3c3 0 5-1 4-2-2-1-4-2-5-6 4-2 2-5-1-3 1-5 0-10-6-10Z"/></svg></span><span>Snapchat</span>
-      </a>
       <a class="share-option" data-share-network="email" aria-label="Compartilhar por e-mail">
         <span class="share-circle share-email"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="4" y="7" width="24" height="18" rx="2"/><path d="m4 8 12 10L28 8"/></svg></span><span>E-mail</span>
       </a>
@@ -99,7 +97,7 @@
         <span class="share-circle share-copy"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="7" cy="16" r="1"/><circle cx="16" cy="16" r="1"/><circle cx="25" cy="16" r="1"/></svg></span><span>Mais</span>
       </button>
     </div>
-      <button class="share-scroll" type="button" aria-label="Ver mais opções de compartilhamento" hidden><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="share-scroll share-scroll-next" type="button" aria-label="Próximas opções de compartilhamento" aria-controls="share-networks" hidden><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
     </div>
 
     <footer class="share-footer">

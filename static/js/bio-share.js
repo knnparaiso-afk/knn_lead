@@ -16,22 +16,41 @@
   const copyLabels = copyButtons.map(button => button.querySelector('[data-copy-label]'));
   const originalLabels = copyLabels.map(label => label.textContent);
   const networks = dialog.querySelector('.share-networks');
-  const scrollNext = dialog.querySelector('.share-scroll');
+  const scrollPrev = dialog.querySelector('.share-scroll-prev');
+  const scrollNext = dialog.querySelector('.share-scroll-next');
+  let scrollTarget = null;
   function updateScroll() {
-    scrollNext.hidden = networks.scrollLeft + networks.clientWidth >= networks.scrollWidth - 2;
+    const maxScroll = Math.max(0, networks.scrollWidth - networks.clientWidth);
+    const overflowing = maxScroll > 2;
+    scrollPrev.hidden = scrollNext.hidden = !overflowing;
+    scrollPrev.disabled = networks.scrollLeft <= 2;
+    scrollNext.disabled = networks.scrollLeft >= maxScroll - 2;
+    if (scrollTarget !== null && Math.abs(networks.scrollLeft - scrollTarget) <= 2) scrollTarget = null;
   }
+  function navigateOptions(direction) {
+    const firstOption = networks.querySelector('.share-option');
+    const gap = parseFloat(window.getComputedStyle(networks).columnGap) || 0;
+    const step = firstOption.offsetWidth + gap;
+    const page = Math.max(1, Math.floor((networks.clientWidth + gap) / step)) * step;
+    const maxScroll = Math.max(0, networks.scrollWidth - networks.clientWidth);
+    scrollTarget = Math.max(0, Math.min(maxScroll, (scrollTarget ?? networks.scrollLeft) + direction * page));
+    networks.scrollTo({ left: scrollTarget, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    updateScroll();
+  }
+  function cancelScrollTarget() { scrollTarget = null; }
   networks.addEventListener('scroll', updateScroll);
+  networks.addEventListener('scrollend', cancelScrollTarget);
+  ['pointerdown', 'wheel', 'keydown'].forEach(event => networks.addEventListener(event, cancelScrollTarget));
   window.addEventListener('resize', updateScroll);
-  scrollNext.addEventListener('click', () => {
-    networks.scrollBy({ left: 240, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
-  });
+  if (typeof ResizeObserver === 'function') new ResizeObserver(updateScroll).observe(networks);
+  scrollPrev.addEventListener('click', () => navigateOptions(-1));
+  scrollNext.addEventListener('click', () => navigateOptions(1));
   const destinations = {
     x: `https://x.com/intent/tweet?text=${encodedMessage}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
     whatsapp: `https://wa.me/?text=${encodedMessage}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
     messenger: 'https://www.messenger.com/new',
-    snapchat: `snapchat://creativeKitWeb/camera/1?attachmentUrl=${encodedUrl}`,
     email: `mailto:?subject=${encodeURIComponent(title)}&body=${encodedMessage}`,
   };
 
@@ -44,7 +63,8 @@
     status.textContent = '';
     copyLabels.forEach((label, index) => { label.textContent = originalLabels[index]; });
     dialog.showModal();
-    networks.scrollLeft = 0;
+    scrollTarget = null;
+    networks.scrollTo({ left: 0, behavior: 'instant' });
     updateScroll();
     document.documentElement.classList.add('share-is-open');
   });
