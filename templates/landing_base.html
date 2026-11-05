@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/landing-effects.css') | v }}">
 {% block head %}{% endblock %}
 </head>
-<body class="conversion-page">
+<body class="conversion-page {% block body_class %}{% endblock %}">
 {% block body %}{% endblock %}
 <script src="{{ url_for('static', filename='js/landing-effects.js') | v }}" defer></script>
 </body>
