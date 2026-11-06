@@ -44,6 +44,11 @@ As três fotos institucionais escolhidas no site oficial da rede usam WebP e
 carregamento tardio. Origens dos arquivos e licença da fonte estão em
 `docs/landing-assets.md`.
 
+**Avaliações** apresenta três trechos reais do perfil da KNN Paraisópolis no
+Google Maps, em cartões com estrelas e autoria. A nota média, o total e a data da
+consulta aparecem separados da seleção. Os dados são uma seleção manual em
+`inglessecreto/reviews.py`; origem e critérios estão em `docs/avaliacoes-google.md`.
+
 Uma campanha marcada como ativa só aparece ao público entre as datas de início e
 término informadas (inclusive). Fora desse período, respostas e cadastros pelo QR
 são bloqueados. As datas são verificadas nas consultas; visitas ao site não alteram

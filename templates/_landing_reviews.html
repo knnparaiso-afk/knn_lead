@@ -1,0 +1,37 @@
+{{ bridge() }}
+<section class="sec reviews-section" id="avaliacoes" data-chain-stop aria-labelledby="reviews-title">
+  <div class="wrap">
+    <div class="reviews-intro" data-reveal>
+      <div class="reviews-heading">
+        <p class="eyebrow">AVALIAÇÕES DA NOSSA UNIDADE</p>
+        <h2 id="reviews-title">Quem viveu a<br><span class="gradient-text">experiência conta.</span></h2>
+        <p>Um primeiro contato, uma nova descoberta. Veja o que disseram sobre conhecer a KNN Paraisópolis.</p>
+      </div>
+      <a class="reviews-score" href="{{ reviews.url }}" target="_blank" rel="noopener noreferrer" aria-label="Nota {{ reviews.rating }} de 5 em {{ reviews.total }} avaliações. Ver avaliações da KNN Paraisópolis no Google">
+        <span class="reviews-platform">Avaliações no <strong>Google</strong> <span aria-hidden="true">↗</span></span>
+        <span class="reviews-score-line"><strong>{{ reviews.rating }}</strong><span>de 5</span></span>
+        <span class="review-stars" aria-hidden="true">★★★★★</span>
+        <span class="reviews-total">{{ reviews.total }} avaliações da unidade</span>
+      </a>
+    </div>
+
+    <div class="reviews-grid">
+      {% for review in reviews['items'] %}
+      <article class="review-card{% if loop.first %} review-card-featured{% endif %}" data-reveal{% if not loop.first %} data-reveal-order="{{ loop.index0 }}"{% endif %} aria-label="Avaliação de {{ review.author }}">
+        <div class="review-card-top"><span class="review-stars" role="img" aria-label="{{ review.rating }} de 5 estrelas">★★★★★</span><span class="review-quote-mark" aria-hidden="true">“</span></div>
+        <p class="review-theme">{{ review.theme }}</p>
+        <blockquote cite="{{ reviews.url }}"><p>“{{ review.excerpt }}”</p></blockquote>
+        <footer class="review-author">
+          <span class="review-avatar" aria-hidden="true">{{ review.initials }}</span>
+          <div><strong>{{ review.author }}</strong><span>Avaliação publicada no Google</span></div>
+        </footer>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="reviews-bottom">
+      <p>Trechos selecionados de avaliações públicas. Nota e total consultados em <time datetime="{{ reviews.checked_at }}">{{ reviews.checked_label }}</time>.</p>
+      <a class="text-link" href="{{ reviews.url }}" target="_blank" rel="noopener noreferrer">Ler avaliações completas no Google ↗</a>
+    </div>
+  </div>
+</section>

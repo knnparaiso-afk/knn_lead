@@ -10,6 +10,7 @@ from desafios import obter_desafio_por_id
 from telefones import normalizar_whatsapp
 
 from config import BASE_URL, BIO_COMUNIDADE_URL, ENGLISH_PASS_REQUIRED, UNIDADE
+from ..reviews import GOOGLE_REVIEWS
 from ..security import permitir_requisicao
 from ..utils import hoje_brasilia
 from ..services.challenges import guardar_historico, sortear_para_navegador
@@ -109,7 +110,7 @@ def _comunidade_local_url(campanha):
 def index():
     """Landing completa da escola."""
     campanha = _campanha_ativa()
-    return render_template("landing.html", campanha=campanha, u=UNIDADE,
+    return render_template("landing.html", campanha=campanha, u=UNIDADE, reviews=GOOGLE_REVIEWS,
                            comunidade_local_url=_comunidade_local_url(campanha),
                            periodo=periodo_campanha(campanha) if cadastro_direto(campanha) else None)
 
