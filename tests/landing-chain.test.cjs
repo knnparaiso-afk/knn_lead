@@ -9,12 +9,17 @@ function view({ width = 1200, reduced = false } = {}) {
     const frames = [];
     const events = {};
     const windowEvents = {};
-    const element = () => ({ style: {}, attrs: {}, setAttribute(k, v) { this.attrs[k] = v; } });
+    let writes = 0;
+    let layoutReads = 0;
+    const element = () => ({ style: new Proxy({}, { set(obj, key, value) { writes++; obj[key] = value; return true; } }),
+        attrs: {}, setAttribute(k, v) { writes++; this.attrs[k] = v; } });
     const svg = element(), track = element(), fill = element(), head = element();
     let measures = 0;
-    fill.getTotalLength = () => { measures++; return 3000; };
-    fill.getPointAtLength = length => ({ x: 20, y: 720 + length });
-    const root = { scrollHeight: 4200, classList: { add() {} } };
+    fill.getTotalLength = () => { throw new Error('Native SVG measurement must not run'); };
+    fill.getPointAtLength = () => { throw new Error('Native SVG position lookup must not run'); };
+    let scrollHeight = 4200;
+    const root = { get scrollHeight() { layoutReads++; return scrollHeight; },
+        set scrollHeight(value) { scrollHeight = value; }, classList: { add() {} } };
     const motion = { matches: reduced, addEventListener(event, cb) { motion.change = cb; } };
     const window = { innerHeight: 800, scrollY: 0, width,
         requestAnimationFrame(cb) { frames.push(cb); return frames.length; },
@@ -23,12 +28,12 @@ function view({ width = 1200, reduced = false } = {}) {
         ResizeObserver: class { constructor(cb) { window.resizeObserved = cb; } observe() {} },
     };
     const layer = { hidden: true, parentElement: {},
-        getBoundingClientRect: () => ({ width: window.width, height: 4000, top: 100 - window.scrollY }),
+        getBoundingClientRect: () => { measures++; layoutReads++; return { width: window.width, height: 4000, top: 100 - window.scrollY }; },
         querySelector: s => ({ svg, '[data-chain-track]': track, '[data-chain-fill]': fill, '[data-chain-head]': head }[s]),
     };
     const stops = [900, 1900, 2900].map(top => ({
-        getBoundingClientRect: () => ({ top: top - window.scrollY, height: 800 }),
-        previousElementSibling: { getBoundingClientRect: () => ({ height: 80 }) },
+        getBoundingClientRect: () => { layoutReads++; return { top: top - window.scrollY, height: 800 }; },
+        previousElementSibling: { getBoundingClientRect: () => { layoutReads++; return { height: 80 }; } },
     }));
     const document = { hidden: false, documentElement: root,
         querySelector: () => layer, querySelectorAll: () => stops,
@@ -37,14 +42,15 @@ function view({ width = 1200, reduced = false } = {}) {
     vm.runInNewContext(script, { window, document });
     const flush = () => frames.splice(0).forEach(cb => cb());
     return { window, document, root, layer, svg, track, fill, head, motion,
-        events, windowEvents, frames, flush, measures: () => measures };
+        events, windowEvents, frames, flush, measures: () => measures,
+        layoutReads: () => layoutReads, writes: () => writes };
 }
 
 test('chain follows scrolling in both directions, finishes at page end and reuses geometry', () => {
     const v = view();
     v.flush();
     assert.equal(v.layer.hidden, false);
-    assert.equal(v.fill.style.strokeDashoffset, '1');
+    assert.equal(Number(v.fill.style.strokeDashoffset), 1);
     v.window.scrollY = 1500;
     for (let i = 0; i < 10; i++) v.windowEvents.scroll();
     assert.equal(v.frames.length, 1);
@@ -54,10 +60,10 @@ test('chain follows scrolling in both directions, finishes at page end and reuse
     assert.equal(v.head.style.opacity, '1');
     v.window.scrollY = 3400;
     v.windowEvents.scroll(); v.flush();
-    assert.equal(v.fill.style.strokeDashoffset, '0');
+    assert.equal(Number(v.fill.style.strokeDashoffset), 0);
     v.window.scrollY = 0;
     v.windowEvents.scroll(); v.flush();
-    assert.equal(v.fill.style.strokeDashoffset, '1');
+    assert.equal(Number(v.fill.style.strokeDashoffset), 1);
     assert.equal(v.measures(), 1);
     assert.equal(v.frames.length, 0);
 });
@@ -77,10 +83,10 @@ test('resize rebuilds the chain and mobile vertical rails stay at the margin', (
 
 test('reduced motion keeps a static complete chain and hides the moving point', () => {
     const v = view({ reduced: true }); v.flush();
-    assert.equal(v.fill.style.strokeDashoffset, '0');
+    assert.equal(Number(v.fill.style.strokeDashoffset), 0);
     assert.equal(v.head.style.opacity, '0');
     v.motion.matches = false; v.motion.change(); v.flush();
-    assert.equal(v.fill.style.strokeDashoffset, '1');
+    assert.equal(Number(v.fill.style.strokeDashoffset), 1);
 });
 
 test('hidden tabs and printing suspend updates; reopening details recalculates geometry', () => {
@@ -95,4 +101,30 @@ test('hidden tabs and printing suspend updates; reopening details recalculates g
     v.windowEvents.afterprint(); v.flush();
     v.events.toggle(); v.flush();
     assert.equal(v.measures(), 3);
+});
+
+test('scrolling uses cached geometry and avoids duplicate SVG writes', () => {
+    const v = view(); v.flush();
+    const reads = v.layoutReads();
+    v.window.scrollY = 1500;
+    v.windowEvents.scroll(); v.flush();
+    assert.equal(v.layoutReads(), reads);
+    const writes = v.writes();
+    v.windowEvents.scroll(); v.flush();
+    assert.equal(v.writes(), writes);
+    v.window.scrollY = 1300;
+    v.windowEvents.scroll(); v.flush();
+    assert.equal(v.layoutReads(), reads);
+    assert.ok(v.writes() > writes);
+});
+
+test('the moving point follows reader height and a viewport resize refreshes its position', () => {
+    const v = view({ width: 390 }); v.flush();
+    v.window.scrollY = 1500;
+    v.windowEvents.scroll(); v.flush();
+    assert.equal(Number(v.head.attrs.cx), 10);
+    assert.equal(Number(v.head.attrs.cy), 1920);
+    v.window.innerHeight = 600;
+    v.windowEvents.resize(); v.flush();
+    assert.equal(Number(v.head.attrs.cy), 1790);
 });

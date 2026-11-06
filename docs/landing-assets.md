@@ -24,3 +24,9 @@ O traçado que conecta as seções é um SVG próprio, inspirado no comportament
 referência. Seu preenchimento acompanha a altura da leitura e recua ao voltar a
 página. A geometria é refeita em mudanças de layout; não existe animação contínua
 com a página parada. Em movimento reduzido, o caminho fica completo e estático.
+
+As curvas são convertidas em uma tabela de pontos quando o layout muda. A rolagem
+consulta essa tabela e interpola a posição da ponta e do preenchimento, sem usar
+`getPointAtLength()` nem medir o layout a cada quadro. Posições e estilos iguais
+não são reescritos. A aproximação das curvas limita o desvio geométrico a 0,15 px;
+o comprimento aproximado é usado com o `pathLength="1"` do SVG.
