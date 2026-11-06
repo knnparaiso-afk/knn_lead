@@ -106,18 +106,24 @@ class StandaloneQRTests(unittest.TestCase):
         self.assertEqual(self.total("campanhas"), 0)
         self.assertEqual(self.total("qr_codes"), 0)
 
-    def test_direct_form_persists_registration_then_redirects_to_landing(self):
+    def test_direct_form_persists_registration_then_confirms_next_step(self):
         qr = self.generate()
         page = self.visitor.get(f"/cadastro-parceiro/{qr['codigo']}")
         body = page.get_data(as_text=True)
         for text in ("BLACK", "NOVEMBER", "material gratuito", "isenção da taxa de matrícula", "black-november.css"):
             self.assertIn(text, body)
         self.assertNotIn("public-lead", body)
+        self.assertNotIn("INGLÊS SECRETO", body)
         self.assertIn("no-store", page.headers["Cache-Control"])
         response = self.register(qr["codigo"])
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, "/")
-        self.assertEqual(self.visitor.get(response.location).status_code, 200)
+        self.assertEqual(response.location, "/cadastro-parceiro/concluido")
+        confirmation = self.visitor.get(response.location)
+        self.assertEqual(confirmation.status_code, 200)
+        self.assertIn("CONVERSAR COM A KNN", confirmation.get_data(as_text=True))
+        self.assertIn("no-store", confirmation.headers["Cache-Control"])
+        self.visitor.get(response.location)
+        self.assertEqual(self.events(qr["id"]), {"acesso": 2, "cadastro_concluido": 1})
         user = self.rows("SELECT * FROM usuarios")[0]
         self.assertEqual(user["whatsapp"], "35988881111")
         registration = self.rows("SELECT * FROM cadastros_qr_avulso")[0]
@@ -275,7 +281,11 @@ class StandaloneQRTests(unittest.TestCase):
             "csrf_token": self.csrf(form), "nome": "Cadastro pela landing", "whatsapp": "35999991111",
             "email": "black@example.com", "idade": "28", "participacao_confirmada": "on",
         })
-        self.assertEqual(response.location, "/")
+        self.assertEqual(response.location, "/cadastro-parceiro/concluido")
+        confirmation = self.visitor.get(response.location).get_data(as_text=True)
+        self.assertIn("local-test", confirmation)
+        self.assertIn("national-test", confirmation)
+        self.assertNotIn("INGLÊS SECRETO", confirmation)
         landing_qr = self.rows("SELECT * FROM qrs_avulsos WHERE campanha_id = ? AND origem = 'landing'", (campaign["id"],))[0]
         self.assertEqual(self.events(landing_qr["id"]), {"acesso": 1, "cadastro_concluido": 1})
         self.assertEqual(self.events(qr["id"]), {})
@@ -303,6 +313,40 @@ class StandaloneQRTests(unittest.TestCase):
         self.assertIn('data-end="2099-12-01T00:00:00-03:00"', body)
         self.assertIn("30/11/2099", body)
         self.assertNotIn("data-campaign-progress", body)
+
+    def test_confirmation_requires_completed_registration_and_keeps_campaign_context(self):
+        self.assertEqual(self.visitor.get("/cadastro-parceiro/concluido").location, "/")
+        first, qr = self.black_campaign(comunidade_url="https://chat.whatsapp.com/first-local",
+                                        comunidade_nacional_url="https://chat.whatsapp.com/first-national")
+        self.register(qr["codigo"])
+        self.black_campaign(comunidade_url="https://chat.whatsapp.com/second-local",
+                            comunidade_nacional_url="https://chat.whatsapp.com/second-national")
+        body = self.visitor.get("/cadastro-parceiro/concluido").get_data(as_text=True)
+        self.assertIn("first-local", body)
+        self.assertIn("first-national", body)
+        self.assertNotIn("second-local", body)
+        self.assertNotIn("second-national", body)
+        self.write("DELETE FROM qrs_avulsos WHERE id = ?", (qr["id"],))
+        self.assertEqual(self.visitor.get("/cadastro-parceiro/concluido").location, "/")
+
+    def test_landing_reuses_bio_community_and_campaign_link_takes_precedence(self):
+        campaign, _ = self.black_campaign()
+        with patch("inglessecreto.blueprints.public.BIO_COMUNIDADE_URL", "https://chat.whatsapp.com/bio-local"):
+            body = self.visitor.get("/").get_data(as_text=True)
+            self.assertIn('href="https://chat.whatsapp.com/bio-local"', body)
+            self.write("UPDATE campanhas SET comunidade_url = ? WHERE id = ?",
+                       ("https://chat.whatsapp.com/campaign-local", campaign["id"]))
+            body = self.visitor.get("/").get_data(as_text=True)
+            self.assertIn('href="https://chat.whatsapp.com/campaign-local"', body)
+            self.assertNotIn("bio-local", body)
+        self.write("UPDATE campanhas SET comunidade_url = '' WHERE id = ?", (campaign["id"],))
+        for invalid in ("javascript:alert(1)", "https://["):
+            with patch("inglessecreto.blueprints.public.BIO_COMUNIDADE_URL", invalid):
+                page = self.visitor.get("/")
+                self.assertEqual(page.status_code, 200)
+                body = page.get_data(as_text=True)
+                self.assertIn("PEÇA O LINK À UNIDADE", body)
+                self.assertNotIn(invalid, body)
 
     def test_campaign_progress_uses_inclusive_local_dates_and_clamps_at_boundaries(self):
         campaign = {"data_inicio": "2026-11-01", "data_fim": "2026-11-30"}

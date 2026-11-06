@@ -95,11 +95,22 @@ def _campanha_ativa(so_desafios=False):
     return campanha
 
 
+def _comunidade_local_url(campanha):
+    """Reutiliza o convite permanente da bio quando a campanha não tem um próprio."""
+    link = (campanha["comunidade_url"] if campanha else "") or BIO_COMUNIDADE_URL
+    try:
+        destino = urlsplit(link)
+    except ValueError:
+        return ""
+    return link if destino.scheme == "https" and destino.netloc else ""
+
+
 @bp.route("/")
 def index():
     """Landing completa da escola."""
     campanha = _campanha_ativa()
     return render_template("landing.html", campanha=campanha, u=UNIDADE,
+                           comunidade_local_url=_comunidade_local_url(campanha),
                            periodo=periodo_campanha(campanha) if cadastro_direto(campanha) else None)
 
 
@@ -443,7 +454,8 @@ def cadastro_parceiro(codigo):
         raise
     finally:
         connection.close()
-    return redirect(url_for("public.index"))
+    session["cadastro_direto_qr_id"] = qr["id"]
+    return redirect(url_for("public.cadastro_parceiro_concluido"))
 
 
 @bp.route("/cadastro/<codigo>", methods=["GET", "POST"])
@@ -471,7 +483,25 @@ def cadastro_black(codigo):
 @bp.route("/cadastro-parceiro/concluido")
 def cadastro_parceiro_concluido():
     session.pop("cadastro_parceiro_concluido", None)
-    return redirect(url_for("public.index"))
+    qr_id = session.get("cadastro_direto_qr_id")
+    if not qr_id:
+        return redirect(url_for("public.index"))
+    connection = get_connection()
+    try:
+        qr = connection.execute("SELECT campanha_id FROM qrs_avulsos WHERE id = ?", (qr_id,)).fetchone()
+        if not qr:
+            return redirect(url_for("public.index"))
+        campanha = (connection.execute("SELECT * FROM campanhas WHERE id = ?", (qr["campanha_id"],)).fetchone()
+                    if qr["campanha_id"] else None)
+    finally:
+        connection.close()
+    if campanha and (not cadastro_direto(campanha) or situacao_campanha(campanha) != "ativa"):
+        campanha = None
+    whatsapp_url = "https://wa.me/" + UNIDADE["whatsapp"] + "?" + urlencode({
+        "text": "Olá! Fiz meu cadastro na Black November da KNN Paraisópolis e quero conhecer os cursos e as condições dos benefícios."
+    })
+    return render_template("cadastro_parceiro_concluido.html", campanha=campanha, u=UNIDADE,
+                           whatsapp_url=whatsapp_url, comunidade_local_url=_comunidade_local_url(campanha))
 
 
 @bp.route("/e/<codigo>/redefinir", methods=["POST"])

@@ -31,7 +31,7 @@
         <a class="brand"
             href="{% if session.get('admin_logged') %}{{ url_for('reports.admin_dashboard') }}{% else %}{{ url_for('public.index') }}{% endif %}">
             <span class="brand-knn">KNN</span>
-            <span class="brand-secret">INGLÊS SECRETO</span>
+            <span class="brand-secret">{% block brand_label %}INGLÊS SECRETO{% endblock %}</span>
         </a>
 
         {% if session.get('admin_logged') %}

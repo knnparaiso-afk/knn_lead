@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Black November | Cadastro KNN{% endblock %}
+{% block brand_label %}BLACK NOVEMBER{% endblock %}
 {% block body_class %}public-page black-november conversion-page{% endblock %}
 {% block stylesheets %}
 {{ super() }}
@@ -16,24 +17,27 @@
         <div class="black-offer">
             <img class="black-official-art" src="{{ url_for('static', filename='img/black-november-knn.jpeg') | v }}" alt="KNN Idiomas — Black November" width="1254" height="1254">
             <h1 class="black-offer-heading">Seu novo idioma começa aqui.</h1>
-            <p class="black-description">Cadastre-se para receber <strong>material gratuito</strong> e <strong>isenção da taxa de matrícula.</strong></p>
+            <p class="black-description">Conheça as condições da Black November para estudar com <strong>material gratuito</strong> e <strong>isenção da taxa de matrícula.</strong></p>
             <div class="black-benefits" aria-label="Benefícios Black November">
                 <div><span>01</span><p>Material<strong>GRATUITO</strong></p></div>
                 <div><span>02</span><p>Taxa de matrícula<strong>ISENTA</strong></p></div>
             </div>
             <p class="black-signature">Sementes da Liberdade. Plante hoje, transforme seu amanhã.</p>
+            <p class="black-conditions">O cadastro inicia o atendimento. A equipe confirma os cursos, turmas, valores e condições dos benefícios antes de você decidir pela matrícula.</p>
+            {% if campanha %}<a class="black-community-link" href="{{ url_for('public.index') }}#comunidades">Faça parte das comunidades da Black November ↗</a>{% else %}<a class="black-community-link" href="{{ url_for('public.bio') }}">Entre na comunidade KNN Paraisópolis ↗</a>{% endif %}
         </div>
     <form method="POST" class="black-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <p class="black-eyebrow">CADASTRO BLACK NOVEMBER</p>
-        <h2>Garanta seus benefícios.</h2>
-        <p class="black-form-intro">Preencha seus dados para a equipe KNN entrar em contato.</p>
+        <h2>Seu próximo passo na Black.</h2>
+        <p class="black-form-intro">Preencha seus dados para conversar com a KNN Paraisópolis pelo WhatsApp sobre seu objetivo, horários e os benefícios da campanha.</p>
         <div class="field"><label for="nome">Nome completo</label><input id="nome" type="text" name="nome" maxlength="120" autocomplete="name" value="{{ request.form.get('nome', '') }}" required></div>
         <div class="field"><label for="whatsapp">WhatsApp com DDD</label><input id="whatsapp" type="tel" name="whatsapp" maxlength="32" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" value="{{ request.form.get('whatsapp', '') }}" required></div>
         <div class="field"><label for="email">E-mail</label><input id="email" type="email" name="email" maxlength="254" autocomplete="email" value="{{ request.form.get('email', '') }}" required></div>
         <div class="field"><label for="idade">Idade</label><input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" value="{{ request.form.get('idade', '') }}" required></div>
         <div class="consent"><input type="checkbox" id="participacao_confirmada" name="participacao_confirmada" {% if request.form.get('participacao_confirmada') %}checked{% endif %} required><label for="participacao_confirmada">{{ consentimento }}</label></div>
-        <button type="submit" class="black-submit">QUERO MEUS BENEFÍCIOS <span aria-hidden="true">→</span></button>
+        <button type="submit" class="black-submit">QUERO CONHECER AS CONDIÇÕES <span aria-hidden="true">→</span></button>
+        <p class="black-next-step">Depois de enviar, você verá a confirmação e poderá iniciar a conversa com a unidade. O cadastro não conclui a matrícula.</p>
         <p class="black-privacy">A equipe KNN usará seus dados para entrar em contato sobre os benefícios e os cursos da unidade.</p>
     </form>
     </div>

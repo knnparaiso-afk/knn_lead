@@ -158,6 +158,10 @@ h3 {
     max-width:420px;
     font-size:17px;
     color:#bbbdca}
+.hero-description strong { color:var(--text); }
+.hero-actions { align-items:stretch; gap:12px; }
+.hero-note { max-width:470px; }
+.final-actions { justify-content:center; }
 .hero-note {
     margin:16px 0 0;
     color:#999bad;
@@ -258,7 +262,7 @@ h3 {
     border:1px solid var(--line);
     border-radius:12px;
     background:#0b0f1c}
-.community-card.is-local {
+.community-card {
     border-color:#8b6bce6b;
     background:radial-gradient(ellipse at 0 0,#37225a66,transparent 80%),#0b0f1c}
 .community-card h3 {
@@ -285,6 +289,17 @@ h3 {
     padding:6px 14px;
     font-size:10px;
     color:#c7c3d7}
+.black-journey { margin-top:72px; }
+.journey-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; list-style:none; padding:0; margin:0; }
+.journey-grid li { padding:24px; border-top:1px solid #8b6bce6b; background:#ffffff04; }
+.journey-grid h3 { margin:18px 0 14px; font-size:23px; }
+.journey-grid p { margin:0; color:var(--muted); font-size:14px; }
+.confirmation-shell { padding-top:64px; padding-bottom:64px; }
+.confirmation-card { max-width:760px; padding:40px; border:1px solid #8b6bce6b; border-radius:18px; background:linear-gradient(120deg,#151326,#0a0e1e); }
+.confirmation-card h1 { margin-bottom:24px; }
+.confirmation-card > p:not(.eyebrow):not(.note) { max-width:580px; color:#bbbdca; font-size:18px; }
+.confirmation-communities { margin-top:64px; }
+.confirmation-communities > p:not(.eyebrow):not(.note) { max-width:680px; color:var(--muted); }
 .method-section {
     border-top:1px solid var(--line);
     background:#080b16}
@@ -434,6 +449,14 @@ footer {
 }
 
 @media(max-width:760px) {
+.hero-actions { flex-direction:column; align-items:stretch; }
+.hero-actions .btn { width:100%; }
+.journey-grid { grid-template-columns:1fr; gap:16px; }
+.black-journey { margin-top:48px; }
+.confirmation-shell { padding-top:32px; padding-bottom:40px; }
+.confirmation-card { padding:28px 22px; }
+.confirmation-card > .btn { width:100%; }
+.confirmation-communities { margin-top:48px; }
     .wrap {
     padding:0 22px}
 .top {

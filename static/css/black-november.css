@@ -37,6 +37,10 @@ body.black-november {
 .black-submit:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 .black-submit span { font-size: 21px; }
 .black-privacy { margin: 14px 0 0; color: #b3b0aa; font-size: 10px; line-height: 1.6; text-align: center; }
+.black-conditions, .black-next-step { color: #c4c1bc; font-size: 12px; line-height: 1.6; }
+.black-conditions { max-width: 430px; margin: 22px 0 14px; }
+.black-community-link { display: inline-block; color: #d1c7ff; font-size: 13px; line-height: 1.6; text-underline-offset: 4px; }
+.black-next-step { margin: 16px 0 0; }
 .black-november .flash.error { border: 1px solid #ff9b9b; background: #401c20; color: #ffe8e8; }
 @media (max-width: 800px) {
     .black-shell { max-width: 540px; padding: 22px 22px 36px; }
