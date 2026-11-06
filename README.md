@@ -36,6 +36,14 @@ cadastros nem eventos de conclusão. O cadastro inicia o atendimento; não confi
 matrícula nem reserva de vaga. O formulário permanece com os campos atuais e usa
 o cabeçalho Black November. As demais experiências conservam sua identidade.
 
+A landing e o cadastro usam a fonte variável Manrope, servida pelo próprio site.
+O campo WhatsApp mantém o rótulo e a máscara de digitação, sem placeholder.
+Um caminho SVG conecta as seções e se preenche conforme a rolagem avança; ao
+voltar, o preenchimento recua. Em movimento reduzido, ele fica completo e estático.
+As três fotos institucionais escolhidas no site oficial da rede usam WebP e
+carregamento tardio. Origens dos arquivos e licença da fonte estão em
+`docs/landing-assets.md`.
+
 Uma campanha marcada como ativa só aparece ao público entre as datas de início e
 término informadas (inclusive). Fora desse período, respostas e cadastros pelo QR
 são bloqueados. As datas são verificadas nas consultas; visitas ao site não alteram

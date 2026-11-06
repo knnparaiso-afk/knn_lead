@@ -11,6 +11,8 @@
 <link rel="icon" href="{{ url_for('static', filename='img/logo-knn.png') | v }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') | v }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/landing-effects.css') | v }}">
+<link rel="preload" href="{{ url_for('static', filename='fonts/manrope-variable.ttf') }}" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/black-typography.css') | v }}">
 {% block head %}{% endblock %}
 </head>
 <body class="conversion-page {% block body_class %}{% endblock %}">

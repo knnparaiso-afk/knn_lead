@@ -1,0 +1,72 @@
+@font-face {
+    font-family: "Manrope";
+    src: url("../fonts/manrope-variable.ttf") format("truetype");
+    font-weight: 200 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+.conversion-page {
+    --font: "Manrope", "Segoe UI", sans-serif;
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+}
+.conversion-page :is(button, input, select, textarea) { font-family: var(--font); }
+.conversion-page :is(h1, h2, h3) { font-family: var(--font); text-wrap: balance; }
+.conversion-page h1 { font-weight: 750; letter-spacing: -.055em; line-height: 1.08; }
+.conversion-page h2 { font-weight: 700; letter-spacing: -.045em; line-height: 1.15; }
+.conversion-page h3 { font-weight: 650; letter-spacing: -.035em; line-height: 1.25; }
+.conversion-page p { text-wrap: pretty; }
+.conversion-page :is(.eyebrow, .card-index, .black-eyebrow) { font-weight: 650; letter-spacing: .12em; }
+.conversion-page .hero-description { font-size: 17px; line-height: 1.8; }
+.conversion-page .hero-description strong { font-weight: 650; }
+.conversion-page .btn { font-family: var(--font); font-weight: 750; font-size: 11px; letter-spacing: .035em; }
+.conversion-page .btn-sm { font-size: 10px; }
+.conversion-page .hero-note { font-size: 12px; line-height: 1.75; }
+.conversion-page .community-card p { line-height: 1.85; }
+.conversion-page .offer-stack strong { font-weight: 650; }
+
+/* A mesma família acompanha a pessoa da landing ao cadastro. */
+body.black-november { font-family: var(--font); }
+.black-november .black-layout { align-items: start; padding-top: 48px; }
+.black-november .black-offer h1.black-offer-heading {
+    max-width: 440px;
+    margin: 22px 0 20px;
+    font: 700 clamp(30px, 3.2vw, 42px)/1.16 var(--font);
+    letter-spacing: -.045em;
+}
+.black-november .black-description { max-width: 460px; font-size: 16px; line-height: 1.85; color: #d1cbdc; }
+.black-november .black-description strong { font-weight: 650; }
+.black-november .black-benefits { gap: 16px; margin-top: 32px; }
+.black-november .black-benefits > div { padding: 22px; border-radius: 16px; }
+.black-november .black-benefits > div > span { color: #a89cbb; font-size: 10px; letter-spacing: .1em; }
+.black-november .black-benefits p { margin-top: 23px; font-size: 13px; line-height: 1.5; }
+.black-november .black-benefits strong { margin-top: 9px; font-size: clamp(25px, 2.5vw, 32px); font-weight: 650; letter-spacing: -.045em; line-height: 1.15; color: #c7b6ff; }
+.black-november .black-signature { max-width: 430px; margin-top: 24px; font-size: 12px; line-height: 1.8; color: #afa6bd; }
+.black-november .black-conditions { padding-top: 20px; margin-top: 24px; border-top: 1px solid #ffffff18; line-height: 1.85; }
+.black-november .black-community-link { font-weight: 600; line-height: 1.8; }
+.black-november .black-form { padding: 32px; border-radius: 20px; }
+.black-november .black-form h2 { font-size: 30px; line-height: 1.2; letter-spacing: -.04em; }
+.black-november .black-form-intro { margin: 14px 0 28px; font-size: 14px; line-height: 1.8; }
+.black-november .black-form .field { margin-bottom: 20px; }
+.black-november .black-form .field label { display: block; margin-bottom: 9px; font-size: 12px; font-weight: 600; letter-spacing: 0; }
+.black-november .black-form .field input { height: 54px; padding: 0 16px; border-radius: 10px; border-color: #b0a0ca38; background: #14121a; font: 500 16px var(--font); }
+.black-november .black-form .field input:focus { border-color: #bba3ff; box-shadow: 0 0 0 3px #bba3ff20; }
+.black-november .black-form .consent { font-size: 11px; line-height: 1.75; }
+.black-november .black-submit { min-height: 56px; padding: 16px 20px; border-radius: 10px; font: 750 11px/1.5 var(--font); letter-spacing: .025em; }
+.black-november .black-next-step { font-size: 12px; line-height: 1.8; }
+.black-november .black-privacy { font-size: 10px; line-height: 1.8; }
+.black-november .black-official-art { margin-top: -24px; border-radius: 16px; }
+
+@media (max-width: 800px) {
+    .black-november .black-layout { padding-top: 28px; gap: 36px; }
+    .black-november .black-offer h1.black-offer-heading { margin-top: 18px; font-size: 32px; }
+    .black-november .black-form { padding: 28px 22px; }
+    .black-november .black-form h2 { font-size: 28px; }
+    .black-november .black-benefits > div { padding: 20px 16px; }
+    .black-november .black-description { font-size: 15px; }
+}
+@media (max-width: 760px) {
+    .conversion-page .hero-description { font-size: 15px; }
+    .conversion-page .hero-note { font-size: 11px; }
+}

@@ -1,0 +1,37 @@
+.landing-home #conteudo { position: relative; isolation: isolate; }
+.scroll-chain { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+.scroll-chain[hidden] { display: none; }
+.scroll-chain svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.scroll-chain path { fill: none; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.chain-track { stroke: #a98bd926; }
+.chain-fill { stroke: url(#journey-chain-color); stroke-dasharray: 1; stroke-dashoffset: 1; }
+.chain-head { fill: #e5d7ff; stroke: #a78ce9; stroke-width: 5; opacity: 0; }
+.chain-bridge { height: 0; }
+.has-scroll-chain .chain-bridge { height: 112px; background: #14131a; }
+.landing-home #conteudo > section > .wrap { position: relative; z-index: 2; }
+.landing-home .movement-strip { position: relative; z-index: 2; }
+
+/* Três imagens da rede complementam a arte Black e a fachada de Paraisópolis. */
+.network-collage { position: relative; min-width: 0; margin: 0; padding: 0 30px 110px 0; }
+.network-photo { width: 100%; aspect-ratio: 1.36; object-fit: cover; object-position: center; border-radius: 22px; }
+.network-inset { position: absolute; right: 0; bottom: 26px; width: 48%; aspect-ratio: 1.18; object-fit: cover; border: 7px solid #1a191f; border-radius: 20px; box-shadow: 0 16px 36px #0004; }
+.network-collage figcaption { max-width: 48%; margin-top: 20px; color: #d9cbed; font-size: 9px; font-weight: 650; letter-spacing: .09em; line-height: 1.9; }
+.network-collage figcaption span { display: block; margin-top: 8px; color: #9e96ac; font-size: 10px; font-weight: 400; letter-spacing: 0; }
+.courses-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; margin-bottom: 40px; }
+.courses-intro .section-intro { margin: 0; }
+.course-photo { position: relative; margin: 0; }
+.course-photo img { width: 100%; aspect-ratio: 1.85; object-fit: cover; border-radius: 22px; }
+.course-photo figcaption { margin-top: 10px; color: #9e96ac; font-size: 10px; text-align: right; }
+@media (max-width: 760px) {
+    .has-scroll-chain .chain-bridge { height: 80px; }
+    .scroll-chain path { stroke-width: 3; }
+    .chain-head { r: 5; stroke-width: 3; }
+    .network-collage { padding-right: 16px; padding-bottom: 90px; }
+    .network-photo { aspect-ratio: 1.55; border-radius: 16px; }
+    .network-inset { bottom: 12px; border-width: 5px; border-radius: 15px; }
+    .network-collage figcaption { margin-top: 14px; font-size: 8px; }
+    .courses-intro { grid-template-columns: 1fr; gap: 28px; margin-bottom: 32px; }
+    .course-photo img { aspect-ratio: 1.6; border-radius: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .chain-head { display: none; } }
+@media print { .scroll-chain, .chain-bridge { display: none !important; } }

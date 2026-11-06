@@ -6,6 +6,8 @@
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/black-november.css') | v }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/landing-effects.css') | v }}">
+<link rel="preload" href="{{ url_for('static', filename='fonts/manrope-variable.ttf') }}" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/black-typography.css') | v }}">
 {% endblock %}
 {% block content %}
 <section class="black-shell">
@@ -19,8 +21,8 @@
             <h1 class="black-offer-heading">Seu novo idioma começa aqui.</h1>
             <p class="black-description">Conheça as condições da Black November para estudar com <strong>material gratuito</strong> e <strong>isenção da taxa de matrícula.</strong></p>
             <div class="black-benefits" aria-label="Benefícios Black November">
-                <div><span>01</span><p>Material<strong>GRATUITO</strong></p></div>
-                <div><span>02</span><p>Taxa de matrícula<strong>ISENTA</strong></p></div>
+                <div><span>01 / PARA COMEÇAR</span><p>Material<strong>Gratuito</strong></p></div>
+                <div><span>02 / PARA IR ALÉM</span><p>Taxa de matrícula<strong>Isenta</strong></p></div>
             </div>
             <p class="black-signature">Sementes da Liberdade. Plante hoje, transforme seu amanhã.</p>
             <p class="black-conditions">O cadastro inicia o atendimento. A equipe confirma os cursos, turmas, valores e condições dos benefícios antes de você decidir pela matrícula.</p>
@@ -32,7 +34,7 @@
         <h2>Seu próximo passo na Black.</h2>
         <p class="black-form-intro">Preencha seus dados para conversar com a KNN Paraisópolis pelo WhatsApp sobre seu objetivo, horários e os benefícios da campanha.</p>
         <div class="field"><label for="nome">Nome completo</label><input id="nome" type="text" name="nome" maxlength="120" autocomplete="name" value="{{ request.form.get('nome', '') }}" required></div>
-        <div class="field"><label for="whatsapp">WhatsApp com DDD</label><input id="whatsapp" type="tel" name="whatsapp" maxlength="32" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000" value="{{ request.form.get('whatsapp', '') }}" required></div>
+        <div class="field"><label for="whatsapp">WhatsApp com DDD</label><input id="whatsapp" type="tel" name="whatsapp" maxlength="32" autocomplete="tel" inputmode="tel" value="{{ request.form.get('whatsapp', '') }}" required></div>
         <div class="field"><label for="email">E-mail</label><input id="email" type="email" name="email" maxlength="254" autocomplete="email" value="{{ request.form.get('email', '') }}" required></div>
         <div class="field"><label for="idade">Idade</label><input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" value="{{ request.form.get('idade', '') }}" required></div>
         <div class="consent"><input type="checkbox" id="participacao_confirmada" name="participacao_confirmada" {% if request.form.get('participacao_confirmada') %}checked{% endif %} required><label for="participacao_confirmada">{{ consentimento }}</label></div>
