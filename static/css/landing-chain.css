@@ -16,12 +16,10 @@
 .network-photo { width: 100%; aspect-ratio: 1.36; object-fit: cover; object-position: center; border-radius: 22px; }
 .network-inset { position: absolute; right: 0; bottom: 26px; width: 48%; aspect-ratio: 1.18; object-fit: cover; border: 7px solid #1a191f; border-radius: 20px; box-shadow: 0 16px 36px #0004; }
 .network-collage figcaption { max-width: 48%; margin-top: 20px; color: #d9cbed; font-size: 9px; font-weight: 650; letter-spacing: .09em; line-height: 1.9; }
-.network-collage figcaption span { display: block; margin-top: 8px; color: #9e96ac; font-size: 10px; font-weight: 400; letter-spacing: 0; }
 .courses-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; margin-bottom: 40px; }
 .courses-intro .section-intro { margin: 0; }
 .course-photo { position: relative; margin: 0; }
 .course-photo img { width: 100%; aspect-ratio: 1.85; object-fit: cover; border-radius: 22px; }
-.course-photo figcaption { margin-top: 10px; color: #9e96ac; font-size: 10px; text-align: right; }
 @media (max-width: 760px) {
     .has-scroll-chain .chain-bridge { height: 80px; }
     .scroll-chain path { stroke-width: 3; }

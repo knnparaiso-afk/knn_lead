@@ -45,8 +45,8 @@ carregamento tardio. Origens dos arquivos e licença da fonte estão em
 `docs/landing-assets.md`.
 
 **Avaliações** apresenta três trechos reais do perfil da KNN Paraisópolis no
-Google Maps, em cartões com estrelas e autoria. A nota média, o total e a data da
-consulta aparecem separados da seleção. Os dados são uma seleção manual em
+Google Maps, em cartões com estrelas e autoria. A nota média e o total aparecem
+separados da seleção. A data da consulta fica registrada nos dados de origem em
 `inglessecreto/reviews.py`; origem e critérios estão em `docs/avaliacoes-google.md`.
 
 Uma campanha marcada como ativa só aparece ao público entre as datas de início e

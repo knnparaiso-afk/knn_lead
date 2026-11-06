@@ -15,7 +15,7 @@ títulos temáticos são editoriais; os trechos entre aspas conservam o texto
 original. Não foram baixadas fotos dos perfis nem adicionados selos de verificação.
 
 Os dados ficam em `inglessecreto/reviews.py`. A nota é a média de todo o perfil,
-não a média da seleção de cinco estrelas. A data de consulta aparece na landing.
+não a média da seleção de cinco estrelas. A data de consulta fica registrada nos dados de origem.
 Para atualizar, confira novamente o mesmo perfil e altere nota, total, data e
 seleção juntos. Não há coleta automática nem chamadas ao Google no carregamento.
 

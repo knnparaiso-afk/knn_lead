@@ -23,14 +23,13 @@
         <blockquote cite="{{ reviews.url }}"><p>“{{ review.excerpt }}”</p></blockquote>
         <footer class="review-author">
           <span class="review-avatar" aria-hidden="true">{{ review.initials }}</span>
-          <div><strong>{{ review.author }}</strong><span>Avaliação publicada no Google</span></div>
+          <div><strong>{{ review.author }}</strong></div>
         </footer>
       </article>
       {% endfor %}
     </div>
 
     <div class="reviews-bottom">
-      <p>Trechos selecionados de avaliações públicas. Nota e total consultados em <time datetime="{{ reviews.checked_at }}">{{ reviews.checked_label }}</time>.</p>
       <a class="text-link" href="{{ reviews.url }}" target="_blank" rel="noopener noreferrer">Ler avaliações completas no Google ↗</a>
     </div>
   </div>
