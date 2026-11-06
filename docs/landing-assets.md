@@ -24,6 +24,8 @@ O traçado que conecta as seções é um SVG próprio, inspirado no comportament
 referência. Seu preenchimento acompanha a altura da leitura e recua ao voltar a
 página. A geometria é refeita em mudanças de layout; não existe animação contínua
 com a página parada. Em movimento reduzido, o caminho fica completo e estático.
+Em telas de até 760 px, a corrente e seus espaços entre seções ficam ocultos,
+e o JavaScript não agenda quadros nem mede o traçado durante a rolagem.
 
 As curvas são convertidas em uma tabela de pontos quando o layout muda. A rolagem
 consulta essa tabela e interpola a posição da ponta e do preenchimento, sem usar

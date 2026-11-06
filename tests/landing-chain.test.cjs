@@ -19,11 +19,12 @@ function view({ width = 1200, reduced = false } = {}) {
     fill.getPointAtLength = () => { throw new Error('Native SVG position lookup must not run'); };
     let scrollHeight = 4200;
     const root = { get scrollHeight() { layoutReads++; return scrollHeight; },
-        set scrollHeight(value) { scrollHeight = value; }, classList: { add() {} } };
+        set scrollHeight(value) { scrollHeight = value; }, classList: { toggle() {} } };
     const motion = { matches: reduced, addEventListener(event, cb) { motion.change = cb; } };
+    const desktop = { matches: width > 760, addEventListener(event, cb) { desktop.change = cb; } };
     const window = { innerHeight: 800, scrollY: 0, width,
         requestAnimationFrame(cb) { frames.push(cb); return frames.length; },
-        matchMedia: () => motion,
+        matchMedia: query => query.includes('min-width') ? desktop : motion,
         addEventListener(event, cb) { windowEvents[event] = cb; },
         ResizeObserver: class { constructor(cb) { window.resizeObserved = cb; } observe() {} },
     };
@@ -41,7 +42,7 @@ function view({ width = 1200, reduced = false } = {}) {
     };
     vm.runInNewContext(script, { window, document });
     const flush = () => frames.splice(0).forEach(cb => cb());
-    return { window, document, root, layer, svg, track, fill, head, motion,
+    return { window, document, root, layer, svg, track, fill, head, motion, desktop,
         events, windowEvents, frames, flush, measures: () => measures,
         layoutReads: () => layoutReads, writes: () => writes };
 }
@@ -68,17 +69,30 @@ test('chain follows scrolling in both directions, finishes at page end and reuse
     assert.equal(v.frames.length, 0);
 });
 
-test('resize rebuilds the chain and mobile vertical rails stay at the margin', () => {
+test('resize rebuilds the desktop chain and suspends it on mobile', () => {
     const v = view(); v.flush();
     const desktop = v.fill.attrs.d;
-    v.window.width = 390;
+    v.window.width = 1000;
     v.windowEvents.resize(); v.flush();
     assert.notEqual(v.fill.attrs.d, desktop);
-    const rails = [...v.fill.attrs.d.matchAll(/ L ([\d.]+) /g)].map(m => Number(m[1]));
-    assert.ok(rails.length > 0 && rails.every(x => x < 22));
     assert.equal(v.measures(), 2);
     v.window.resizeObserved(); v.flush();
     assert.equal(v.measures(), 3);
+    v.desktop.matches = false;
+    v.desktop.change(); v.flush();
+    assert.equal(v.layer.hidden, true);
+    v.windowEvents.scroll();
+    assert.equal(v.frames.length, 0);
+    assert.equal(v.measures(), 3);
+    v.desktop.matches = true;
+    v.desktop.change(); v.flush();
+    assert.equal(v.layer.hidden, false);
+    assert.equal(v.measures(), 4);
+    const mobile = view({ width: 760 });
+    mobile.windowEvents.scroll(); mobile.flush();
+    assert.equal(mobile.layer.hidden, true);
+    assert.equal(mobile.frames.length, 0);
+    assert.equal(mobile.measures(), 0);
 });
 
 test('reduced motion keeps a static complete chain and hides the moving point', () => {
@@ -119,10 +133,10 @@ test('scrolling uses cached geometry and avoids duplicate SVG writes', () => {
 });
 
 test('the moving point follows reader height and a viewport resize refreshes its position', () => {
-    const v = view({ width: 390 }); v.flush();
+    const v = view(); v.flush();
     v.window.scrollY = 1500;
     v.windowEvents.scroll(); v.flush();
-    assert.equal(Number(v.head.attrs.cx), 10);
+    assert.equal(Number(v.head.attrs.cx), 18);
     assert.equal(Number(v.head.attrs.cy), 1920);
     v.window.innerHeight = 600;
     v.windowEvents.resize(); v.flush();

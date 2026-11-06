@@ -11,6 +11,8 @@
     if (!stops.length) return;
     const root = document.documentElement;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const desktop = window.matchMedia('(min-width: 761px)');
+    let enabled = false;
     let dirty = true;
     let frame;
     let length = 0;
@@ -23,9 +25,6 @@
     let previousOpacity;
     let previousX;
     let previousY;
-
-    root.classList.add('has-scroll-chain');
-    layer.hidden = false;
 
     // Aproxima as curvas apenas quando o layout muda, com erro geométrico
     // limitado a 0,15 px. Na rolagem, usamos somente esta tabela em memória.
@@ -58,8 +57,7 @@
         origin = bounds.top + window.scrollY;
         viewport = window.innerHeight;
         lastScroll = Math.max(0, root.scrollHeight - viewport - 1);
-        const mobile = width < 760;
-        const rail = mobile ? 10 : Math.max(18, (width - 1240) / 2 + 18);
+        const rail = Math.max(18, (width - 1240) / 2 + 18);
         // Todas as leituras de layout precedem as alterações no SVG.
         const sections = stops.map(stop => {
             const rect = stop.getBoundingClientRect();
@@ -74,13 +72,13 @@
             const { top, height, gap } = section;
             // Absorve diferenças subpixel entre retângulos vizinhos.
             const start = Math.max(top - gap, points[points.length - 1]?.y ?? -Infinity);
-            const nextX = mobile ? rail : (index % 2 ? rail : width - rail);
+            const nextX = index % 2 ? rail : width - rail;
             if (!index) d = `M ${x} ${start}`;
             else d += ` L ${x} ${start}`;
             const a = { x, y: start };
             appendPoint(a);
-            const bend = mobile ? Math.min(width * .42, 160) : x;
-            const endBend = mobile ? bend : nextX;
+            const bend = x;
+            const endBend = nextX;
             const middleY = (start + top) / 2;
             d += ` C ${bend} ${middleY}, ${endBend} ${middleY}, ${nextX} ${top}`;
             flattenCurve(a, { x: bend, y: middleY }, { x: endBend, y: middleY }, { x: nextX, y: top });
@@ -113,7 +111,7 @@
 
     const draw = () => {
         frame = undefined;
-        if (document.hidden || printing) return;
+        if (!enabled || document.hidden || printing) return;
         if (dirty) measure();
         if (!length || points.length < 2) return;
         const scroll = window.scrollY;
@@ -136,9 +134,17 @@
         }
     };
     const schedule = () => {
-        if (frame === undefined && !document.hidden && !printing) frame = window.requestAnimationFrame(draw);
+        if (enabled && frame === undefined && !document.hidden && !printing) frame = window.requestAnimationFrame(draw);
     };
-    const invalidate = () => { dirty = true; schedule(); };
+    const invalidate = () => {
+        if (enabled !== desktop.matches) {
+            enabled = desktop.matches;
+            root.classList.toggle('has-scroll-chain', enabled);
+            layer.hidden = !enabled;
+        }
+        dirty = true;
+        schedule();
+    };
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', invalidate, { passive: true });
     if (window.visualViewport) window.visualViewport.addEventListener('resize', invalidate, { passive: true });
@@ -148,8 +154,9 @@
     document.addEventListener('toggle', invalidate, true);
     if (document.fonts) document.fonts.ready.then(invalidate);
     if (motion.addEventListener) motion.addEventListener('change', schedule);
+    if (desktop.addEventListener) desktop.addEventListener('change', invalidate);
     if ('ResizeObserver' in window) new window.ResizeObserver(invalidate).observe(layer.parentElement);
     window.addEventListener('beforeprint', () => { printing = true; });
     window.addEventListener('afterprint', () => { printing = false; invalidate(); });
-    schedule();
+    invalidate();
 })();

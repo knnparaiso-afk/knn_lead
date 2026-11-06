@@ -21,9 +21,8 @@
 .course-photo { position: relative; margin: 0; }
 .course-photo img { width: 100%; aspect-ratio: 1.85; object-fit: cover; border-radius: 22px; }
 @media (max-width: 760px) {
-    .has-scroll-chain .chain-bridge { height: 80px; }
-    .scroll-chain path { stroke-width: 3; }
-    .chain-head { r: 5; stroke-width: 3; }
+    .scroll-chain { display: none; }
+    .has-scroll-chain .chain-bridge { height: 0; }
     .network-collage { padding-right: 16px; padding-bottom: 90px; }
     .network-photo { aspect-ratio: 1.55; border-radius: 16px; }
     .network-inset { bottom: 12px; border-width: 5px; border-radius: 15px; }
