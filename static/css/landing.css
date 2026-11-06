@@ -255,6 +255,8 @@ h3 {
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:24px}
+.community-card:only-child {
+    grid-column:1/-1}
 .community-card {
     display:flex;
     flex-direction:column;

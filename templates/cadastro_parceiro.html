@@ -26,7 +26,7 @@
             </div>
             <p class="black-signature">Sementes da Liberdade. Plante hoje, transforme seu amanhã.</p>
             <p class="black-conditions">O cadastro inicia o atendimento. A equipe confirma os cursos, turmas, valores e condições dos benefícios antes de você decidir pela matrícula.</p>
-            {% if campanha %}<a class="black-community-link" href="{{ url_for('public.index') }}#comunidades">Faça parte das comunidades da Black November ↗</a>{% else %}<a class="black-community-link" href="{{ url_for('public.bio') }}">Entre na comunidade KNN Paraisópolis ↗</a>{% endif %}
+            {% if campanha %}<a class="black-community-link" href="{{ url_for('public.index') }}#comunidades">Faça parte da Comunidade VIP KNN Paraisópolis ↗</a>{% else %}<a class="black-community-link" href="{{ url_for('public.bio') }}">Entre na comunidade KNN Paraisópolis ↗</a>{% endif %}
         </div>
     <form method="POST" class="black-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

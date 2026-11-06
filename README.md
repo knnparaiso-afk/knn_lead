@@ -23,16 +23,16 @@ O agendamento abre uma conversa com mensagem pronta; a equipe confirma dia e hor
 A página não depende de campanha vigente. Configure `BASE_URL` com o domínio público
 para o endereço canônico e a imagem de compartilhamento.
 
-Na landing Black November, comunidades e benefícios têm chamadas de destaque na
-abertura. Os convites local e nacional mantêm a mesma ênfase visual. Quando a
+Na landing Black November, a comunidade VIP de Paraisópolis e os benefícios têm
+chamadas de destaque na abertura. Apenas a comunidade da unidade é exibida. Quando a
 campanha não tem convite local, a landing e a confirmação usam o convite permanente
 de `BIO_COMUNIDADE_URL`, também usado por `/bio`; o link específico da campanha tem
 prioridade. Sem um convite HTTPS válido, o visitante pode pedir acesso à unidade.
 
 Após um cadastro direto confirmado pelo servidor, o visitante chega a
-`/cadastro-parceiro/concluido`, com confirmação, conversa pelo WhatsApp e acesso às
-comunidades da campanha em que se cadastrou. Recarregar essa página não cria novos
-cadastros nem eventos de conclusão. O cadastro inicia o atendimento; não confirma
+`/cadastro-parceiro/concluido`, com confirmação, conversa pelo WhatsApp e acesso à
+comunidade da unidade na campanha em que se cadastrou. Recarregar essa página não
+cria novos cadastros nem eventos de conclusão. O cadastro inicia o atendimento; não confirma
 matrícula nem reserva de vaga. O formulário permanece com os campos atuais e usa
 o cabeçalho Black November. As demais experiências conservam sua identidade.
 

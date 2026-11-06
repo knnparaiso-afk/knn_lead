@@ -269,9 +269,12 @@ class StandaloneQRTests(unittest.TestCase):
         )
         landing = self.visitor.get("/")
         body = landing.get_data(as_text=True)
-        for text in ("Uma nova possibilidade", "Invista em educação.", "local-test", "national-test",
+        for text in ("Uma nova possibilidade", "Invista em educação.", "local-test",
                      "black-november-knn.jpeg", f"/cadastro/{campaign['codigo']}"):
             self.assertIn(text, body)
+        self.assertNotIn("national-test", body)
+        self.assertNotIn("COMUNIDADE NACIONAL", body)
+        self.assertNotIn("duas comunidades", body)
         self.assertNotIn("Halloween", body)
         self.assertNotIn("FRANQUEADO", body)
         form = self.visitor.get(f"/black-november/{campaign['codigo']}")
@@ -284,7 +287,7 @@ class StandaloneQRTests(unittest.TestCase):
         self.assertEqual(response.location, "/cadastro-parceiro/concluido")
         confirmation = self.visitor.get(response.location).get_data(as_text=True)
         self.assertIn("local-test", confirmation)
-        self.assertIn("national-test", confirmation)
+        self.assertNotIn("national-test", confirmation)
         self.assertNotIn("INGLÊS SECRETO", confirmation)
         landing_qr = self.rows("SELECT * FROM qrs_avulsos WHERE campanha_id = ? AND origem = 'landing'", (campaign["id"],))[0]
         self.assertEqual(self.events(landing_qr["id"]), {"acesso": 1, "cadastro_concluido": 1})
@@ -323,7 +326,7 @@ class StandaloneQRTests(unittest.TestCase):
                             comunidade_nacional_url="https://chat.whatsapp.com/second-national")
         body = self.visitor.get("/cadastro-parceiro/concluido").get_data(as_text=True)
         self.assertIn("first-local", body)
-        self.assertIn("first-national", body)
+        self.assertNotIn("first-national", body)
         self.assertNotIn("second-local", body)
         self.assertNotIn("second-national", body)
         self.write("DELETE FROM qrs_avulsos WHERE id = ?", (qr["id"],))
