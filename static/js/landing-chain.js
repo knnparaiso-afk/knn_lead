@@ -3,6 +3,7 @@
     'use strict';
     const layer = document.querySelector('[data-scroll-chain]');
     if (!layer || !window.requestAnimationFrame) return;
+    const heroGrid = document.querySelector('.hero-grid');
     const svg = layer.querySelector('svg');
     const track = layer.querySelector('[data-chain-track]');
     const fill = layer.querySelector('[data-chain-fill]');
@@ -57,7 +58,8 @@
         origin = bounds.top + window.scrollY;
         viewport = window.innerHeight;
         lastScroll = Math.max(0, root.scrollHeight - viewport - 1);
-        const rail = Math.max(18, (width - 1240) / 2 + 18);
+        const wrapWidth = heroGrid?.getBoundingClientRect().width ?? 1240;
+        const rail = Math.max(18, (width - wrapWidth) / 2 + 18);
         // Todas as leituras de layout precedem as alterações no SVG.
         const sections = stops.map(stop => {
             const rect = stop.getBoundingClientRect();

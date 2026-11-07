@@ -22,7 +22,7 @@ function view({ width = 1200, reduced = false } = {}) {
         set scrollHeight(value) { scrollHeight = value; }, classList: { toggle() {} } };
     const motion = { matches: reduced, addEventListener(event, cb) { motion.change = cb; } };
     const desktop = { matches: width > 760, addEventListener(event, cb) { desktop.change = cb; } };
-    const window = { innerHeight: 800, scrollY: 0, width,
+    const window = { innerHeight: 800, scrollY: 0, width, wrapWidth: 1240,
         requestAnimationFrame(cb) { frames.push(cb); return frames.length; },
         matchMedia: query => query.includes('min-width') ? desktop : motion,
         addEventListener(event, cb) { windowEvents[event] = cb; },
@@ -32,12 +32,13 @@ function view({ width = 1200, reduced = false } = {}) {
         getBoundingClientRect: () => { measures++; layoutReads++; return { width: window.width, height: 4000, top: 100 - window.scrollY }; },
         querySelector: s => ({ svg, '[data-chain-track]': track, '[data-chain-fill]': fill, '[data-chain-head]': head }[s]),
     };
+    const heroGrid = { getBoundingClientRect() { layoutReads++; return { width: Math.min(window.width, window.wrapWidth) }; } };
     const stops = [900, 1900, 2900].map(top => ({
         getBoundingClientRect: () => { layoutReads++; return { top: top - window.scrollY, height: 800 }; },
         previousElementSibling: { getBoundingClientRect: () => { layoutReads++; return { height: 80 }; } },
     }));
     const document = { hidden: false, documentElement: root,
-        querySelector: () => layer, querySelectorAll: () => stops,
+        querySelector: selector => selector === '.hero-grid' ? heroGrid : layer, querySelectorAll: () => stops,
         addEventListener(event, cb) { events[event] = cb; },
     };
     vm.runInNewContext(script, { window, document });
@@ -101,6 +102,16 @@ test('reduced motion keeps a static complete chain and hides the moving point', 
     assert.equal(v.head.style.opacity, '0');
     v.motion.matches = false; v.motion.change(); v.flush();
     assert.equal(Number(v.fill.style.strokeDashoffset), 1);
+});
+
+test('chain rails follow the measured width of the landing content', () => {
+    const v = view({ width: 1520 });
+    v.flush();
+    assert.match(v.track.attrs.d, /L 1362 1600/);
+    v.window.wrapWidth = 1420;
+    v.window.resizeObserved(); v.flush();
+    assert.match(v.track.attrs.d, /L 1452 1600/);
+    assert.match(v.track.attrs.d, /L 68 2600/);
 });
 
 test('hidden tabs and printing suspend updates; reopening details recalculates geometry', () => {

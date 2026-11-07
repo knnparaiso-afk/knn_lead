@@ -448,24 +448,14 @@ footer {
     gap:12px}
 }
 
-/* A abertura usa a altura disponível em notebooks e janelas largas e baixas. */
-@media (min-width: 1051px) and (max-height: 820px) {
-    .landing-home .hero-grid {
-        min-height: 0;
-        padding-block: clamp(16px, 3.2svh, 27px);
-        grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr);
-        column-gap: 32px;
-    }
-    .landing-home .hero-copy { padding-block: 8px; }
-    .landing-home .hero h1 {
-        font-size: clamp(44px, min(4.25vw, 8.8svh), 62px);
-        margin-bottom: 18px;
-    }
+/* Cabeçalho e seções compartilham a mesma margem em telas largas. */
+@media (min-width: 1250px) {
+    .landing-home { --landing-content-width: clamp(1160px, 88vw, 1680px); }
+    .landing-home .wrap { width: min(100%, calc(var(--landing-content-width) + 80px)); }
+    .landing-home .top { padding-inline: max(40px, calc((100% - var(--landing-content-width)) / 2)); }
+    .landing-home .hero h1 { font-size: clamp(60px, 4.65vw, 78px); }
     .landing-home .hero-description { max-width: 33rem; }
-    .landing-home .hero-art {
-        width: min(100%, max(320px, calc(100svh - 210px)));
-        justify-self: end;
-    }
+    .landing-home .hero-actions .btn { padding-inline: clamp(23px, 1.8vw, 30px); }
 }
 
 @media(max-width:760px) {
