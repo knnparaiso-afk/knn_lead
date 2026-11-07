@@ -256,6 +256,7 @@ body.conversion-page {
 /* Movimento da landing: camadas suaves, leitura contínua e navegação contextual. */
 html.has-scroll-effects { scroll-padding-top: calc(var(--header-height, 82px) + 18px); }
 .reading-progress {
+    display: none;
     position: fixed;
     inset: 0 0 auto;
     z-index: 40;
@@ -404,6 +405,7 @@ html.has-scroll-effects { scroll-padding-top: calc(var(--header-height, 82px) + 
     .landing-home [data-reveal="left"], .landing-home [data-reveal="right"] { --reveal-x: 0px; --reveal-y: 32px; }
 }
 @media (max-width: 760px) {
+    .reading-progress { display: block; }
     .landing-home .top { display: grid; grid-template-columns: 1fr auto; gap: 8px 14px; padding-top: 12px; padding-bottom: 8px; }
     .landing-home .top nav {
         position: relative;
