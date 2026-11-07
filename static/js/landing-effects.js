@@ -170,7 +170,7 @@
             const span = Math.max(64, Math.min(180, bounds.height * .28));
             const entering = (viewport - 48 - top) / span;
             const leaving = (top + bounds.height - height - 16) / span;
-            const progress = item.element.contains(document.activeElement) ? 1 :
+            const progress = reducedMotion || item.element.contains(document.activeElement) ? 1 :
                 Math.max(0, Math.min(1, entering, leaving));
             return { item, progress, offset: reducedMotion ? 0 : (1 - progress) * 24 };
         });

@@ -68,6 +68,16 @@
       window.clearTimeout(timeout);
     }
 
+    if (dialog.open && reducedMotion.matches && disc.animate) {
+      // Um ajuste curto após o toque, sem as voltas e a aceleração do giro completo.
+      const angle = (360 - 60 * resultado.fatia) % 360;
+      const spin = disc.animate([
+        { transform: `rotate(${angle - 60}deg)` },
+        { transform: `rotate(${angle}deg)` },
+      ], { duration: 550, easing: 'ease-out', fill: 'forwards' });
+      await spin.finished.catch(() => {});
+    }
+
     if (dialog.open && !reducedMotion.matches && disc.animate) {
       const rotation = `rotate(${2160 - 60 * resultado.fatia}deg)`;
       const spin = disc.animate([

@@ -222,13 +222,13 @@ test('mobile fades track actual scrolling in both directions without Intersectio
     assert.equal(view.state.intervals.length, 0);
 });
 
-test('reduced motion removes spatial effects while retaining gentle scroll opacity', () => {
+test('reduced motion keeps content fully visible without spatial effects', () => {
     const card = target();
     card.top = 700;
     card.height = 300;
     const view = run({ targets: [card], width: 390, scrolling: true, reduced: true });
     view.flush();
-    assert.equal(card.style.opacity, '0.619');
+    assert.equal(card.style.opacity, '1.000');
     assert.equal(card.style.transform, undefined);
     assert.equal(view.layer.style.transform, undefined);
 });

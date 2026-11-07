@@ -428,6 +428,7 @@ html.has-scroll-effects { scroll-padding-top: calc(var(--header-height, 82px) + 
     .depth-orbit { width: 110vw; top: 30%; opacity: .5; }
 }
 @media (prefers-reduced-motion: reduce) {
+    .landing-home .hero-copy.is-scroll-linked { animation: none !important; }
     html.has-scroll-effects { scroll-snap-type: none; }
     .landing-home [data-parallax] { transform: none !important; }
     .landing-home [data-reveal].is-pending { opacity: 1; transform: none; }
