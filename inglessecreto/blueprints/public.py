@@ -1,5 +1,6 @@
 import re
 import unicodedata
+from secrets import token_hex
 from urllib.parse import urlencode, urlsplit
 
 from flask import (Blueprint, flash, jsonify, make_response, redirect,
@@ -15,6 +16,7 @@ from ..security import permitir_requisicao
 from ..utils import hoje_brasilia
 from ..services.challenges import guardar_historico, sortear_para_navegador
 from ..services.qr_metrics import registrar_evento_qr_avulso
+from ..services.roleta import PREMIOS_ROLETA, resultado_roleta
 from ..services.campaigns import (CADASTRO_DIRETO, cadastro_direto, filtro_campanha_vigente,
                                   parametros_vigencia, situacao_campanha, periodo_campanha)
 from ..services.participants import (criar_pass_se_necessario,
@@ -110,9 +112,26 @@ def _comunidade_local_url(campanha):
 def index():
     """Landing completa da escola."""
     campanha = _campanha_ativa()
+    navegador_id = session.get("roleta_navegador_id")
+    if not navegador_id:
+        session["roleta_navegador_id"] = token_hex(16)
+    resultado = resultado_roleta(navegador_id) if navegador_id and session.get("roleta_girou") else None
     return render_template("landing.html", campanha=campanha, u=UNIDADE, reviews=GOOGLE_REVIEWS,
                            comunidade_local_url=_comunidade_local_url(campanha),
-                           periodo=periodo_campanha(campanha) if cadastro_direto(campanha) else None)
+                           periodo=periodo_campanha(campanha) if cadastro_direto(campanha) else None,
+                           premios_roleta=PREMIOS_ROLETA, resultado_roleta=resultado)
+
+
+@bp.post("/")
+def girar_roleta():
+    navegador_id = session.get("roleta_navegador_id")
+    if not navegador_id:
+        return jsonify(erro="Atualize a página para girar a roleta."), 400
+    if not session.get("roleta_girou"):
+        if not permitir_requisicao("roleta_girar", 30, 600):
+            return jsonify(erro="Aguarde alguns minutos para tentar novamente."), 429
+        session["roleta_girou"] = True
+    return jsonify(resultado_roleta(navegador_id))
 
 
 @bp.route("/bio")

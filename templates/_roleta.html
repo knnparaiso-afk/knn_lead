@@ -1,0 +1,118 @@
+{% macro icone_premio(tipo) -%}
+  {% if tipo == 'express' %}
+  <path d="M4 9.5h16a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-8l-6 4v-4H4a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3Z"/>
+  <path d="M26 5.5h8a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-2v4l-6-4M7 16.5h10"/>
+  {% elif tipo == 'kit' %}
+  <rect x="3" y="12" width="32" height="7" rx="2"/>
+  <path d="M6 19v12a2 2 0 0 0 2 2h22a2 2 0 0 0 2-2V19M19 12v21m0-21h-6a4 4 0 1 1 3.5-6L19 12Zm0 0h6a4 4 0 1 0-3.5-6L19 12Z"/>
+  {% else %}
+  <path d="M5 8h28a2 2 0 0 1 2 2v4a4 4 0 1 0 0 8v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a4 4 0 1 0 0-8v-4a2 2 0 0 1 2-2Z"/>
+  <path d="m14 23 10-10"/><circle cx="15" cy="14" r="1.3"/><circle cx="23" cy="22" r="1.3"/>
+  {% endif %}
+{%- endmacro %}
+
+<button class="knn-roleta-launch" type="button" aria-haspopup="dialog" aria-controls="knn-roleta" data-roleta-open hidden>
+  <svg viewBox="0 0 38 36" aria-hidden="true">{{ icone_premio('kit') }}</svg>
+  Roleta KNN
+</button>
+
+<dialog class="knn-roleta" id="knn-roleta" aria-labelledby="knn-roleta-title" data-roleta>
+  <button class="knn-roleta-close" type="button" aria-label="Fechar roleta" data-roleta-close>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg>
+  </button>
+
+  <div class="knn-roleta-stage">
+    <svg class="knn-roleta-decor" viewBox="0 0 440 430" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <radialGradient id="knn-roleta-halo"><stop stop-color="#ff9a66" stop-opacity=".47"/><stop offset="1" stop-color="#ff9a66" stop-opacity="0"/></radialGradient>
+        <linearGradient id="knn-roleta-coin" x2=".82" y2="1"><stop stop-color="#fff3bb"/><stop offset=".52" stop-color="#ffcb61"/><stop offset="1" stop-color="#f9933b"/></linearGradient>
+        <path id="knn-roleta-spark" d="M0-11C1.3-3 3-1.3 11 0 3 1.3 1.3 3 0 11-1.3 3-3 1.3-11 0-3-1.3-1.3-3 0-11Z"/>
+      </defs>
+      <ellipse cx="220" cy="250" rx="230" ry="205" fill="url(#knn-roleta-halo)"/>
+      <g fill="none" stroke="#ffd6af" opacity=".15">
+        <circle cx="220" cy="250" r="167"/><circle cx="220" cy="250" r="190"/><circle cx="220" cy="250" r="214"/>
+      </g>
+      <g fill="#ffe5a6">
+        <use href="#knn-roleta-spark" transform="translate(58 136) scale(.85)"/>
+        <use href="#knn-roleta-spark" transform="translate(366 108) scale(.62)"/>
+        <use href="#knn-roleta-spark" transform="translate(401 299) scale(1.05)"/>
+        <use href="#knn-roleta-spark" transform="translate(82 387) scale(.52)"/>
+        <circle cx="32" cy="185" r="2.5"/><circle cx="396" cy="157" r="2"/><circle cx="365" cy="380" r="2"/><circle cx="37" cy="369" r="2"/>
+      </g>
+      <g fill="url(#knn-roleta-coin)" stroke="#ffeba6" stroke-width="1.3">
+        <g transform="translate(41 309) rotate(-27)"><ellipse rx="11" ry="17"/><ellipse rx="6" ry="12" fill="none"/></g>
+        <g transform="translate(394 206) rotate(24)"><ellipse rx="9" ry="14"/><ellipse rx="5" ry="10" fill="none"/></g>
+      </g>
+    </svg>
+
+    <div class="knn-roleta-heading">
+      <div class="knn-roleta-kicker"><span aria-hidden="true">✦</span> Roleta premiada KNN</div>
+      <h2 id="knn-roleta-title" data-roleta-title tabindex="-1" autofocus>{{ 'Você ganhou!' if resultado_roleta else 'Gire e ganhe!' }}</h2>
+      <p data-roleta-intro {% if resultado_roleta %}hidden{% endif %}>Um giro. Um prêmio da KNN.</p>
+    </div>
+
+    <figure class="knn-roleta-wheel" data-roleta-wheel {% if resultado_roleta %}hidden{% endif %}>
+      <figcaption class="knn-roleta-sr">Prêmios disponíveis. {{ premios_roleta | map(attribute=1) | join(', ') }}.</figcaption>
+      <svg class="knn-roleta-pointer" viewBox="0 0 40 42" aria-hidden="true">
+        <path d="M8 2h24a5 5 0 0 1 4.4 7.3L23 35a3.4 3.4 0 0 1-6 0L3.6 9.3A5 5 0 0 1 8 2Z" fill="#fff5d6" stroke="#ffc869" stroke-width="2"/>
+        <circle cx="20" cy="11.5" r="3" fill="#d94837"/>
+      </svg>
+      <svg class="knn-roleta-face" viewBox="0 0 320 320" aria-hidden="true">
+        <defs>
+          <linearGradient id="knn-roleta-rim" x1=".15" y1="0" x2=".8" y2="1"><stop stop-color="#fff4ca"/><stop offset=".42" stop-color="#ffca63"/><stop offset=".78" stop-color="#eb873d"/><stop offset="1" stop-color="#fff0ae"/></linearGradient>
+          <linearGradient id="knn-roleta-hub" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f54f51"/><stop offset="1" stop-color="#a70a33"/></linearGradient>
+        </defs>
+        <g class="knn-roleta-disc" data-roleta-disc>
+          <circle cx="160" cy="160" r="159" fill="#7a142d"/>
+          <circle cx="160" cy="159" r="155" fill="url(#knn-roleta-rim)" stroke="#fff3cb" stroke-width="2"/>
+          <circle cx="160" cy="160" r="145" fill="#ffedb9"/>
+          {% for tipo, _, linha_um, linha_dois in premios_roleta * 2 %}
+          <g class="knn-roleta-slice slice-{{ loop.index0 }}" transform="rotate({{ 60 * loop.index0 }} 160 160)">
+            <path class="knn-roleta-wedge" d="M160 160 89 37.024 A142 142 0 0 1 231 37.024Z"/>
+            <circle cx="160" cy="47" r="13" fill="currentColor" opacity=".10"/>
+            <svg x="150" y="37.5" width="20" height="19" viewBox="0 0 38 36" class="knn-roleta-prize-icon">{{ icone_premio(tipo) }}</svg>
+            <text x="160" y="72" text-anchor="middle">{{ linha_um }}</text>
+            <text x="160" y="86" text-anchor="middle">{{ linha_dois }}</text>
+          </g>
+          {% endfor %}
+          {% for indice in range(24) %}
+          <circle cx="160" cy="9" r="2.5" fill="#fff9df" transform="rotate({{ 15 * indice }} 160 160)"/>
+          {% endfor %}
+          <circle cx="160" cy="161" r="36" fill="#631333" opacity=".24"/>
+          <circle cx="160" cy="160" r="32" fill="url(#knn-roleta-hub)" stroke="#ffe6a1" stroke-width="3"/>
+          <image href="{{ url_for('static', filename='img/logo-knn-branco.png') | v }}" x="139" y="148" width="42" height="24"/>
+        </g>
+      </svg>
+    </figure>
+
+    <div class="knn-roleta-reveal" data-roleta-reveal {% if not resultado_roleta %}hidden{% endif %}>
+      <div class="knn-roleta-ticket">
+        <span class="knn-roleta-ticket-icon">
+          {% for tipo, _, _, _ in premios_roleta %}
+          <svg viewBox="0 0 38 36" class="knn-roleta-prize-icon" aria-hidden="true" data-roleta-icon="{{ tipo }}" {% if not resultado_roleta or resultado_roleta.tipo != tipo %}hidden{% endif %}>{{ icone_premio(tipo) }}</svg>
+          {% endfor %}
+        </span>
+        <p>Seu prêmio</p>
+        <strong data-roleta-prize>{{ resultado_roleta.premio if resultado_roleta else '' }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="knn-roleta-actions">
+    {% if not resultado_roleta %}
+    <form action="{{ url_for('public.girar_roleta') }}" method="post" data-roleta-form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="knn-roleta-primary" type="submit" data-roleta-spin>Girar a roleta</button>
+    </form>
+    <p class="knn-roleta-status" role="status" data-roleta-status></p>
+    {% endif %}
+    <div data-roleta-claim {% if not resultado_roleta %}hidden{% endif %}>
+      <p class="knn-roleta-note">Combine o resgate com a unidade.</p>
+      <a class="knn-roleta-primary" data-roleta-whatsapp {% if resultado_roleta %}href="{{ resultado_roleta.whatsapp_url }}"{% endif %}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.6 7.5L3 20.6l1.3-4.7a8.5 8.5 0 1 1 16.2-4.1Z"/><path d="M9.2 8.2c.4-.4.8-.1 1 .3l.7 1.6c.1.3-.2.7-.6 1 .6 1.4 1.7 2.4 3 3 .4-.4.8-.8 1.1-.6l1.6.8c.4.2.5.6.2 1-1.5 2-4.7.4-6.4-1.2-1.7-1.7-2.7-4.4-.6-5.9Z"/></svg>
+        Resgatar pelo WhatsApp
+      </a>
+    </div>
+    <button class="knn-roleta-secondary" type="button" data-roleta-close data-roleta-dismiss>{{ 'Continuar no site' if resultado_roleta else 'Agora não' }}</button>
+  </div>
+</dialog>
