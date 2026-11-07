@@ -59,7 +59,7 @@
         if (!width || !bounds.height) return;
         origin = bounds.top + window.scrollY;
         viewport = window.innerHeight;
-        lastScroll = Math.max(0, root.scrollHeight - viewport - 1);
+        lastScroll = 0;
         const wrapWidth = heroGrid?.getBoundingClientRect().width ?? 1240;
         const rail = Math.max(18, (width - wrapWidth) / 2 + 18);
         // Todas as leituras de layout precedem as alterações no SVG.
@@ -68,6 +68,8 @@
             return { top: rect.top - bounds.top, height: rect.height,
                 gap: stop.previousElementSibling.getBoundingClientRect().height };
         });
+        // A cobrança termina no início da seção final colorida, não no rodapé.
+        lastScroll = Math.max(0, origin + sections[sections.length - 1].top - viewport * .65);
         points = [];
         length = 0;
         let x = width / 2;
@@ -86,8 +88,9 @@
             const middleY = (start + top) / 2;
             d += ` C ${bend} ${middleY}, ${endBend} ${middleY}, ${nextX} ${top}`;
             flattenCurve(a, { x: bend, y: middleY }, { x: endBend, y: middleY }, { x: nextX, y: top });
-            d += ` L ${nextX} ${top + height}`;
-            appendPoint({ x: nextX, y: top + height });
+            const endY = index === sections.length - 1 ? top : top + height;
+            d += ` L ${nextX} ${endY}`;
+            appendPoint({ x: nextX, y: endY });
             x = nextX;
         });
         svg.setAttribute('viewBox', `0 0 ${width} ${bounds.height}`);
