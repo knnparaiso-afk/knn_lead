@@ -26,6 +26,8 @@
     let previousOpacity;
     let previousX;
     let previousY;
+    let displayedDistance;
+    let previousTime;
 
     // Aproxima as curvas apenas quando o layout muda, com erro geométrico
     // limitado a 0,15 px. Na rolagem, usamos somente esta tabela em memória.
@@ -111,13 +113,40 @@
             distance: a.distance + (b.distance - a.distance) * fraction };
     };
 
-    const draw = () => {
+    // Interpola ao longo do caminho, para a cabeça nunca cortar uma curva
+    // nem se separar do preenchimento durante a suavização.
+    const atDistance = distance => {
+        let low = 0;
+        let high = points.length - 1;
+        while (high - low > 1) {
+            const middle = (low + high) >>> 1;
+            if (points[middle].distance < distance) low = middle;
+            else high = middle;
+        }
+        const a = points[low], b = points[high];
+        const fraction = (distance - a.distance) / (b.distance - a.distance);
+        return { x: a.x + (b.x - a.x) * fraction,
+            y: a.y + (b.y - a.y) * fraction, distance };
+    };
+
+    const draw = time => {
         frame = undefined;
         if (!enabled || document.hidden || printing) return;
-        if (dirty) measure();
+        if (dirty) { measure(); displayedDistance = undefined; }
         if (!length || points.length < 2) return;
         const scroll = window.scrollY;
-        const point = motion.matches || scroll >= lastScroll ? points[points.length - 1] : locate(scroll + viewport * .65 - origin);
+        const target = motion.matches || scroll >= lastScroll ? points[points.length - 1] : locate(scroll + viewport * .65 - origin);
+        if (displayedDistance === undefined || motion.matches) displayedDistance = target.distance;
+        // A taxa depende do tempo, não do número de frames. Limitar o passo
+        // também evita saltos ao voltar de uma aba suspensa ou de um frame lento.
+        const elapsed = previousTime === undefined ? 1000 / 60 : Math.max(0, Math.min(32, time - previousTime));
+        const remaining = target.distance - displayedDistance;
+        const step = Math.min(Math.abs(remaining) * (1 - Math.exp(-elapsed / 100)), 2.4 * elapsed);
+        displayedDistance += Math.sign(remaining) * step;
+        const settling = Math.abs(target.distance - displayedDistance) > .1;
+        if (!settling) displayedDistance = target.distance;
+        const point = atDistance(displayedDistance);
+        previousTime = settling ? time : undefined;
         const portion = Math.max(0, Math.min(1, point.distance / length));
         const offset = (1 - portion).toFixed(6);
         const opacity = motion.matches || portion === 0 ? '0' : '1';
@@ -134,6 +163,7 @@
             if (x !== previousX) { head.setAttribute('cx', x); previousX = x; }
             if (y !== previousY) { head.setAttribute('cy', y); previousY = y; }
         }
+        if (settling) schedule();
     };
     const schedule = () => {
         if (enabled && frame === undefined && !document.hidden && !printing) frame = window.requestAnimationFrame(draw);
@@ -155,7 +185,11 @@
     document.addEventListener('visibilitychange', schedule);
     document.addEventListener('toggle', invalidate, true);
     if (document.fonts) document.fonts.ready.then(invalidate);
-    if (motion.addEventListener) motion.addEventListener('change', schedule);
+    if (motion.addEventListener) motion.addEventListener('change', () => {
+        displayedDistance = undefined;
+        previousTime = undefined;
+        schedule();
+    });
     if (desktop.addEventListener) desktop.addEventListener('change', invalidate);
     if ('ResizeObserver' in window) new window.ResizeObserver(invalidate).observe(layer.parentElement);
     window.addEventListener('beforeprint', () => { printing = true; });

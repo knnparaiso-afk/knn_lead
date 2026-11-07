@@ -42,9 +42,17 @@ function view({ width = 1200, reduced = false } = {}) {
         addEventListener(event, cb) { events[event] = cb; },
     };
     vm.runInNewContext(script, { window, document });
-    const flush = () => frames.splice(0).forEach(cb => cb());
+    let time = 0;
+    const step = (elapsed = 1000 / 60) => {
+        time += elapsed;
+        frames.splice(0).forEach(cb => cb(time));
+    };
+    const flush = () => {
+        for (let i = 0; frames.length && i < 1000; i++) step();
+        assert.equal(frames.length, 0, 'animation must stop once settled');
+    };
     return { window, document, root, layer, svg, track, fill, head, motion, desktop,
-        events, windowEvents, frames, flush, measures: () => measures,
+        events, windowEvents, frames, flush, step, measures: () => measures,
         layoutReads: () => layoutReads, writes: () => writes };
 }
 
@@ -152,4 +160,46 @@ test('the moving point follows reader height and a viewport resize refreshes its
     v.window.innerHeight = 600;
     v.windowEvents.resize(); v.flush();
     assert.equal(Number(v.head.attrs.cy), 1790);
+});
+
+test('a small scroll through a wide bend advances smoothly and settles without layout reads', () => {
+    const v = view({ width: 1920 });
+    v.window.scrollY = 1340;
+    v.flush();
+    const start = Number(v.head.attrs.cx);
+    const reads = v.layoutReads();
+    v.window.scrollY += 10;
+    v.windowEvents.scroll(); v.step();
+    const first = Number(v.head.attrs.cx);
+    assert.ok(first < start);
+    assert.ok(start - first <= 40.01, 'one frame must not jump across the bend');
+    assert.equal(v.frames.length, 1);
+    v.flush();
+    const end = Number(v.head.attrs.cx);
+    assert.ok(end < first);
+    assert.equal(v.layoutReads(), reads);
+    v.window.scrollY -= 10;
+    v.windowEvents.scroll(); v.step();
+    assert.ok(Number(v.head.attrs.cx) > end, 'reversing scroll reverses the motion');
+    v.flush();
+    assert.equal(Number(v.head.attrs.cx), start);
+});
+
+test('smoothing is time based and a delayed frame cannot cause a large jump', () => {
+    const simulate = interval => {
+        const v = view(); v.flush();
+        v.window.scrollY = 1500;
+        v.windowEvents.scroll(); v.step();
+        for (let elapsed = 0; elapsed < 100 - .001; elapsed += interval) v.step(interval);
+        return v;
+    };
+    const normal = simulate(1000 / 60);
+    const fast = simulate(1000 / 120);
+    assert.equal(normal.head.attrs.cx, fast.head.attrs.cx);
+    assert.equal(normal.head.attrs.cy, fast.head.attrs.cy);
+    const before = { x: Number(normal.head.attrs.cx), y: Number(normal.head.attrs.cy) };
+    normal.step(2000);
+    assert.ok(Math.hypot(Number(normal.head.attrs.cx) - before.x,
+        Number(normal.head.attrs.cy) - before.y) <= 76.81);
+    normal.flush(); fast.flush();
 });
