@@ -170,6 +170,14 @@ CREATE TABLE IF NOT EXISTS metricas_funil (
 );
 CREATE INDEX IF NOT EXISTS idx_metricas_funil_data_evento
     ON metricas_funil(data, evento);
+
+CREATE TABLE IF NOT EXISTS resgates_roleta (
+    whatsapp TEXT NOT NULL PRIMARY KEY,
+    navegador_id TEXT NOT NULL UNIQUE,
+    tipo TEXT NOT NULL,
+    premio TEXT NOT NULL,
+    registrado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 

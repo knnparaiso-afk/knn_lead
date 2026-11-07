@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Resgates da roleta | KNN{% endblock %}
+{% block content %}
+<div class="admin-header">
+    <div>
+        <h1>Resgates da roleta</h1>
+        <p>Use o número da conversa para conferir o prêmio registrado pela roleta.</p>
+    </div>
+</div>
+<form class="form-card" method="post" action="{{ url_for('reports.resgates_roleta') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="roleta-whatsapp">WhatsApp com DDD</label>
+    <input id="roleta-whatsapp" name="whatsapp" type="tel" maxlength="32" placeholder="(35) 99999-9999" value="{{ whatsapp }}" required>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Consultar prêmio</button></div>
+</form>
+{% if registro %}
+<div class="table-container">
+    <table>
+        <thead><tr><th>Prêmio registrado</th><th>Registro (Brasília)</th></tr></thead>
+        <tbody><tr><td><strong>{{ registro.premio }}</strong></td><td>{{ registro.registrado_em | data_hora_brasilia }}</td></tr></tbody>
+    </table>
+</div>
+{% elif erro %}
+<p role="status">{{ erro }}</p>
+{% endif %}
+{% endblock %}

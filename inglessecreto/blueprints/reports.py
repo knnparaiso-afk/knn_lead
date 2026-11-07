@@ -7,12 +7,37 @@ from database import get_connection
 from ..decorators import admin_required
 from ..services.campaigns import filtro_campanha_vigente, parametros_vigencia
 from ..services.participant_reports import listar_participantes
+from ..services.roleta import telefone_roleta
 
 bp = Blueprint("reports", __name__)
 
 
 def _contar(connection, sql, parameters=()):
     return connection.execute(sql, parameters).fetchone()["total"]
+
+
+@bp.route("/admin/roleta", methods=["GET", "POST"])
+@admin_required
+def resgates_roleta():
+    whatsapp = request.form.get("whatsapp", "")
+    registro = None
+    erro = ""
+    if request.method == "POST":
+        numero = telefone_roleta(whatsapp)
+        if not numero:
+            erro = "Informe um WhatsApp válido com DDD."
+        else:
+            connection = get_connection()
+            try:
+                registro = connection.execute(
+                    "SELECT premio, registrado_em FROM resgates_roleta WHERE whatsapp = ?",
+                    (numero,),
+                ).fetchone()
+            finally:
+                connection.close()
+            if not registro:
+                erro = "Nenhum prêmio registrado para esse número."
+    return render_template("admin/resgates_roleta.html", whatsapp=whatsapp, registro=registro, erro=erro)
 
 
 @bp.route("/admin")

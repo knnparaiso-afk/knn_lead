@@ -8,11 +8,27 @@
     try { return sessionStorage.getItem(seenKey) === '1'; }
     catch { return false; }
   };
+  const viewport = window.visualViewport;
+  const fitDialog = () => {
+    if (!dialog.open) return;
+    const visibleViewport = viewport?.scale === 1 ? viewport : null;
+    const height = visibleViewport?.height ?? window.innerHeight;
+    const top = visibleViewport?.offsetTop ?? 0;
+    const bottom = Math.max(0, window.innerHeight - height - top);
+    dialog.style.setProperty('--roleta-viewport-height', `${height}px`);
+    dialog.style.setProperty('--roleta-viewport-top', `${top}px`);
+    dialog.style.setProperty('--roleta-viewport-bottom', `${bottom}px`);
+    dialog.classList.toggle('is-short', height < 540);
+  };
   const open = () => {
     dialog.showModal();
+    fitDialog();
     try { sessionStorage.setItem(seenKey, '1'); } catch {}
   };
 
+  window.addEventListener('resize', fitDialog);
+  viewport?.addEventListener('resize', fitDialog);
+  viewport?.addEventListener('scroll', fitDialog);
   opener.hidden = false;
   opener.addEventListener('click', open);
   dialog.querySelectorAll('[data-roleta-close]').forEach(button => {
@@ -26,6 +42,73 @@
   });
   dialog.addEventListener('close', () => opener.focus({ preventScroll: true }));
   if (!wasSeen()) open();
+
+  const startClaim = dialog.querySelector('[data-roleta-start-claim]');
+  const claimForm = dialog.querySelector('[data-roleta-claim-form]');
+  const claimButton = claimForm.querySelector('button');
+  const claimButtonText = claimButton.querySelector('span');
+  const claimStatus = dialog.querySelector('[data-roleta-claim-status]');
+  const phone = claimForm.elements.whatsapp;
+  const whatsapp = dialog.querySelector('[data-roleta-whatsapp]');
+
+  startClaim.addEventListener('click', () => {
+    startClaim.hidden = true;
+    claimForm.hidden = false;
+    dialog.classList.add('is-claiming');
+    phone.focus({ preventScroll: true });
+  });
+  phone.addEventListener('input', () => {
+    // Aceita colar um número internacional mesmo com o +55 já exibido no campo.
+    const digits = phone.value.replace(/\D/g, '');
+    if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
+      phone.value = digits.slice(2);
+    }
+    phone.removeAttribute('aria-invalid');
+    claimStatus.textContent = '';
+  });
+  phone.addEventListener('blur', () => {
+    const digits = phone.value.replace(/\D/g, '');
+    if (digits.length === 10 || digits.length === 11) {
+      phone.value = `(${digits.slice(0, 2)}) ${digits.slice(2, -4)}-${digits.slice(-4)}`;
+    }
+  });
+  claimForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (claimButton.disabled) return;
+    const data = new FormData(claimForm);
+    claimButton.disabled = phone.readOnly = true;
+    claimButtonText.textContent = 'Vinculando seu prêmio…';
+    claimStatus.textContent = '';
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 10000);
+    let errorMessage = 'Não deu para vincular o prêmio agora. Tente de novo.';
+    try {
+      const response = await fetch(claimForm.action, {
+        method: 'POST', body: data, headers: { Accept: 'application/json' }, signal: controller.signal,
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        errorMessage = result.erro || errorMessage;
+        if (response.status === 400 || response.status === 409) phone.setAttribute('aria-invalid', 'true');
+        throw new Error(errorMessage);
+      }
+      whatsapp.href = result.whatsapp_url;
+      claimForm.hidden = true;
+      dialog.classList.remove('is-claiming');
+      dialog.querySelector('[data-roleta-ready]').hidden = false;
+      if (dialog.open) {
+        whatsapp.focus({ preventScroll: true });
+        window.location.assign(whatsapp.href);
+      }
+    } catch {
+      claimStatus.textContent = errorMessage;
+      if (dialog.open && phone.hasAttribute('aria-invalid')) phone.focus({ preventScroll: true });
+    } finally {
+      window.clearTimeout(timeout);
+      claimButton.disabled = phone.readOnly = false;
+      claimButtonText.textContent = 'Continuar para o WhatsApp';
+    }
+  });
 
   const form = dialog.querySelector('[data-roleta-form]');
   if (!form) return;
@@ -96,7 +179,6 @@
     dialog.querySelectorAll('[data-roleta-icon]').forEach(icon => {
       icon.toggleAttribute('hidden', icon.dataset.roletaIcon !== resultado.tipo);
     });
-    dialog.querySelector('[data-roleta-whatsapp]').href = resultado.whatsapp_url;
     dialog.querySelector('[data-roleta-reveal]').hidden = false;
     dialog.querySelector('[data-roleta-claim]').hidden = false;
     dialog.querySelector('[data-roleta-dismiss]').textContent = 'Continuar no site';

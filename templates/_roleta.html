@@ -11,6 +11,10 @@
   {% endif %}
 {%- endmacro %}
 
+{% macro icone_whatsapp() -%}
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.6 7.5L3 20.6l1.3-4.7a8.5 8.5 0 1 1 16.2-4.1Z"/><path d="M9.2 8.2c.4-.4.8-.1 1 .3l.7 1.6c.1.3-.2.7-.6 1 .6 1.4 1.7 2.4 3 3 .4-.4.8-.8 1.1-.6l1.6.8c.4.2.5.6.2 1-1.5 2-4.7.4-6.4-1.2-1.7-1.7-2.7-4.4-.6-5.9Z"/></svg>
+{%- endmacro %}
+
 <button class="knn-roleta-launch" type="button" aria-haspopup="dialog" aria-controls="knn-roleta" data-roleta-open hidden>
   <svg viewBox="0 0 38 36" aria-hidden="true">{{ icone_premio('kit') }}</svg>
   Roleta KNN
@@ -107,11 +111,31 @@
     <p class="knn-roleta-status" role="status" data-roleta-status></p>
     {% endif %}
     <div data-roleta-claim {% if not resultado_roleta %}hidden{% endif %}>
-      <p class="knn-roleta-note">Combine o resgate com a unidade.</p>
-      <a class="knn-roleta-primary" data-roleta-whatsapp {% if resultado_roleta %}href="{{ resultado_roleta.whatsapp_url }}"{% endif %}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.6 7.5L3 20.6l1.3-4.7a8.5 8.5 0 1 1 16.2-4.1Z"/><path d="M9.2 8.2c.4-.4.8-.1 1 .3l.7 1.6c.1.3-.2.7-.6 1 .6 1.4 1.7 2.4 3 3 .4-.4.8-.8 1.1-.6l1.6.8c.4.2.5.6.2 1-1.5 2-4.7.4-6.4-1.2-1.7-1.7-2.7-4.4-.6-5.9Z"/></svg>
-        Resgatar pelo WhatsApp
-      </a>
+      <button class="knn-roleta-primary" type="button" data-roleta-start-claim {% if whatsapp_resgate %}hidden{% endif %}>
+        {{ icone_whatsapp() }} Resgatar pelo WhatsApp
+      </button>
+      <form class="knn-roleta-claim-form" method="post" action="{{ url_for('public.girar_roleta') }}" data-roleta-claim-form hidden>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="acao" value="resgatar">
+        <label for="knn-roleta-phone">Seu WhatsApp</label>
+        <div class="knn-roleta-phone">
+          <span aria-hidden="true">+55</span>
+          <input id="knn-roleta-phone" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel-national"
+                 placeholder="(35) 99999-9999" maxlength="32" required
+                 aria-describedby="knn-roleta-phone-hint knn-roleta-phone-status">
+        </div>
+        <p id="knn-roleta-phone-hint" class="knn-roleta-note">Use o mesmo número da conversa com a KNN.</p>
+        <p id="knn-roleta-phone-status" class="knn-roleta-status" role="status" data-roleta-claim-status></p>
+        <button class="knn-roleta-primary knn-roleta-continue" type="submit">
+          {{ icone_whatsapp() }} <span>Continuar para o WhatsApp</span>
+        </button>
+      </form>
+      <div data-roleta-ready {% if not whatsapp_resgate %}hidden{% endif %}>
+        <p class="knn-roleta-note">Prêmio vinculado ao WhatsApp informado.</p>
+        <a class="knn-roleta-primary knn-roleta-continue" data-roleta-whatsapp {% if whatsapp_resgate %}href="{{ whatsapp_resgate }}"{% endif %}>
+          {{ icone_whatsapp() }} Abrir conversa com a KNN
+        </a>
+      </div>
     </div>
     <button class="knn-roleta-secondary" type="button" data-roleta-close data-roleta-dismiss>{{ 'Continuar no site' if resultado_roleta else 'Agora não' }}</button>
   </div>

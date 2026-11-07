@@ -16,7 +16,8 @@ from ..security import permitir_requisicao
 from ..utils import hoje_brasilia
 from ..services.challenges import guardar_historico, sortear_para_navegador
 from ..services.qr_metrics import registrar_evento_qr_avulso
-from ..services.roleta import PREMIOS_ROLETA, resultado_roleta
+from ..services.roleta import (PREMIOS_ROLETA, registrar_resgate, resgate_do_navegador,
+                               resultado_roleta, telefone_roleta, whatsapp_resgate_url)
 from ..services.campaigns import (CADASTRO_DIRETO, cadastro_direto, filtro_campanha_vigente,
                                   parametros_vigencia, situacao_campanha, periodo_campanha)
 from ..services.participants import (criar_pass_se_necessario,
@@ -115,16 +116,26 @@ def index():
     navegador_id = session.get("roleta_navegador_id")
     if not navegador_id:
         session["roleta_navegador_id"] = token_hex(16)
-    resultado = resultado_roleta(navegador_id) if navegador_id and session.get("roleta_girou") else None
+    resultado = None
+    whatsapp_resgate = None
+    if navegador_id and session.get("roleta_girou"):
+        resultado = resgate_do_navegador(navegador_id)
+        if resultado:
+            whatsapp_resgate = whatsapp_resgate_url()
+        else:
+            resultado = resultado_roleta(navegador_id)
     return render_template("landing.html", campanha=campanha, u=UNIDADE, reviews=GOOGLE_REVIEWS,
                            comunidade_local_url=_comunidade_local_url(campanha),
                            periodo=periodo_campanha(campanha) if cadastro_direto(campanha) else None,
-                           premios_roleta=PREMIOS_ROLETA, resultado_roleta=resultado)
+                           premios_roleta=PREMIOS_ROLETA, resultado_roleta=resultado,
+                           whatsapp_resgate=whatsapp_resgate)
 
 
 @bp.post("/")
 def girar_roleta():
     navegador_id = session.get("roleta_navegador_id")
+    if request.form.get("acao") == "resgatar":
+        return _resgatar_roleta(navegador_id)
     if not navegador_id:
         return jsonify(erro="Atualize a página para girar a roleta."), 400
     if not session.get("roleta_girou"):
@@ -132,6 +143,19 @@ def girar_roleta():
             return jsonify(erro="Aguarde alguns minutos para tentar novamente."), 429
         session["roleta_girou"] = True
     return jsonify(resultado_roleta(navegador_id))
+
+
+def _resgatar_roleta(navegador_id):
+    if not navegador_id or not session.get("roleta_girou"):
+        return jsonify(erro="Gire a roleta antes de resgatar seu prêmio."), 400
+    whatsapp = telefone_roleta(request.form.get("whatsapp"))
+    if not whatsapp:
+        return jsonify(erro="Digite um número de WhatsApp válido com DDD."), 400
+    if not permitir_requisicao("roleta_resgatar", 20, 600):
+        return jsonify(erro="Aguarde alguns minutos e tente novamente."), 429
+    if not registrar_resgate(navegador_id, whatsapp):
+        return jsonify(erro="Este número ou giro já está vinculado a um prêmio. Confira o número e tente novamente."), 409
+    return jsonify(whatsapp_url=whatsapp_resgate_url())
 
 
 @bp.route("/bio")
