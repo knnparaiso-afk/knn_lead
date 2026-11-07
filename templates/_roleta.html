@@ -114,13 +114,13 @@
       <button class="knn-roleta-primary" type="button" data-roleta-start-claim {% if whatsapp_resgate %}hidden{% endif %}>
         {{ icone_whatsapp() }} Resgatar pelo WhatsApp
       </button>
-      <form class="knn-roleta-claim-form" method="post" action="{{ url_for('public.girar_roleta') }}" data-roleta-claim-form hidden>
+      <form class="knn-roleta-claim-form" method="post" action="{{ url_for('public.girar_roleta') }}" data-roleta-claim-form novalidate hidden>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="acao" value="resgatar">
-        <label for="knn-roleta-phone">Seu WhatsApp</label>
+        <label for="knn-roleta-phone">Seu WhatsApp com DDD</label>
         <div class="knn-roleta-phone">
           <span aria-hidden="true">+55</span>
-          <input id="knn-roleta-phone" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel-national"
+          <input id="knn-roleta-phone" name="whatsapp" type="tel" inputmode="numeric" autocomplete="tel-national"
                  placeholder="(35) 99999-9999" maxlength="32" required
                  aria-describedby="knn-roleta-phone-hint knn-roleta-phone-status">
         </div>

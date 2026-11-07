@@ -57,24 +57,50 @@
     dialog.classList.add('is-claiming');
     phone.focus({ preventScroll: true });
   });
-  phone.addEventListener('input', () => {
-    // Aceita colar um número internacional mesmo com o +55 já exibido no campo.
-    const digits = phone.value.replace(/\D/g, '');
-    if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
-      phone.value = digits.slice(2);
+  const maskPhone = event => {
+    const raw = phone.value;
+    let digits = raw.replace(/\D/g, '');
+    let digitsBeforeCaret = raw.slice(0, phone.selectionStart).replace(/\D/g, '').length;
+    // Aceita colar com o código do Brasil, sem confundir com o DDD 55.
+    if (!raw.startsWith('(') && digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
+      digits = digits.slice(2);
+      digitsBeforeCaret -= 2;
     }
+    let formatted = digits ? `(${digits.slice(0, 2)}` : '';
+    if (digits.length > 2) {
+      const split = digits[2] === '9' ? 7 : 6;
+      formatted += `) ${digits.slice(2, split)}`;
+      if (digits.length > split) formatted += `-${digits.slice(split)}`;
+    }
+    if (raw !== formatted) {
+      // Mantém o cursor junto ao dígito editado, inclusive no meio do número.
+      let caret = 0;
+      while (caret < formatted.length && digitsBeforeCaret > 0) {
+        if (/\d/.test(formatted[caret])) digitsBeforeCaret--;
+        caret++;
+      }
+      if (event?.inputType === 'deleteContentForward') {
+        while (caret < formatted.length && /\D/.test(formatted[caret])) caret++;
+      }
+      phone.value = formatted;
+      phone.setSelectionRange(caret, caret);
+    }
+    return digits;
+  };
+  phone.addEventListener('input', event => {
+    maskPhone(event);
     phone.removeAttribute('aria-invalid');
     claimStatus.textContent = '';
-  });
-  phone.addEventListener('blur', () => {
-    const digits = phone.value.replace(/\D/g, '');
-    if (digits.length === 10 || digits.length === 11) {
-      phone.value = `(${digits.slice(0, 2)}) ${digits.slice(2, -4)}-${digits.slice(-4)}`;
-    }
   });
   claimForm.addEventListener('submit', async event => {
     event.preventDefault();
     if (claimButton.disabled) return;
+    if (!/^[1-9][0-9](?:9[0-9]{8}|[2-5][0-9]{7})$/.test(maskPhone())) {
+      phone.setAttribute('aria-invalid', 'true');
+      claimStatus.textContent = 'Digite um número de WhatsApp válido com DDD.';
+      phone.focus({ preventScroll: true });
+      return;
+    }
     const data = new FormData(claimForm);
     claimButton.disabled = phone.readOnly = true;
     claimButtonText.textContent = 'Vinculando seu prêmio…';

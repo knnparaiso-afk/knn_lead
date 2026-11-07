@@ -186,6 +186,7 @@ html:has(.knn-roleta[open]) { overflow: hidden; overscroll-behavior: none; scrol
   background: #fff;
 }
 .knn-roleta-phone:focus-within { border-color: #a21942; box-shadow: 0 0 0 3px #a2194222; }
+.knn-roleta-phone:has([aria-invalid="true"]) { border-color: #a21942; background: #fff5f5; }
 .knn-roleta-phone span {
   display: grid;
   place-items: center;
