@@ -141,7 +141,10 @@
         // também evita saltos ao voltar de uma aba suspensa ou de um frame lento.
         const elapsed = previousTime === undefined ? 1000 / 60 : Math.max(0, Math.min(32, time - previousTime));
         const remaining = target.distance - displayedDistance;
-        const step = Math.min(Math.abs(remaining) * (1 - Math.exp(-elapsed / 100)), 2.4 * elapsed);
+        const progress = target.distance / length;
+        const finalAcceleration = 1 + .3 * Math.max(0, Math.min(1, (progress - .7) / .3));
+        const step = Math.min(Math.abs(remaining) * (1 - Math.exp(-elapsed * finalAcceleration / 100)),
+            2.4 * finalAcceleration * elapsed);
         displayedDistance += Math.sign(remaining) * step;
         const settling = Math.abs(target.distance - displayedDistance) > .1;
         if (!settling) displayedDistance = target.distance;
