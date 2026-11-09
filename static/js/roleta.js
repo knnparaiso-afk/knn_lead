@@ -202,6 +202,7 @@
     dialog.querySelector('[data-roleta-intro]').hidden = true;
     dialog.querySelector('[data-roleta-wheel]').hidden = true;
     dialog.querySelector('[data-roleta-prize]').textContent = resultado.premio;
+    dialog.querySelector('[data-roleta-prize-terms]').hidden = resultado.tipo !== 'desconto';
     dialog.querySelectorAll('[data-roleta-icon]').forEach(icon => {
       icon.toggleAttribute('hidden', icon.dataset.roletaIcon !== resultado.tipo);
     });

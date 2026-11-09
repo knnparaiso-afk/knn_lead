@@ -264,6 +264,7 @@ html:has(.knn-roleta[open]) { overflow: hidden; overscroll-behavior: none; scrol
 .knn-roleta-ticket-icon svg { width: 1.7rem; height: 1.7rem; }
 .knn-roleta-ticket p { margin: .6rem 0 .2rem; color: #9c2c46; font-size: .7rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
 .knn-roleta-ticket strong { max-width: 15rem; font-size: clamp(1.45rem, 6vw, 1.8rem); font-weight: 800; letter-spacing: -.045em; line-height: 1.15; text-wrap: balance; }
+.knn-roleta-ticket .knn-roleta-prize-terms { display: block; max-width: 15rem; margin-top: .55rem; color: #654752; font-size: .74rem; font-weight: 700; line-height: 1.4; text-wrap: balance; }
 
 .knn-roleta-launch {
   position: fixed;
@@ -332,6 +333,7 @@ html:has(.knn-roleta[open]) { overflow: hidden; overscroll-behavior: none; scrol
 }
 .knn-roleta.is-short.is-claiming .knn-roleta-ticket p { margin: 0; color: #ffe5bf; font-size: .62rem; white-space: nowrap; }
 .knn-roleta.is-short.is-claiming .knn-roleta-ticket strong { font-size: .95rem; }
+.knn-roleta.is-short.is-claiming [data-roleta-prize-terms] { display: none; }
 .knn-roleta.is-short.is-claiming .knn-roleta-actions {
   padding-block: .45rem max(.45rem, calc(env(safe-area-inset-bottom, 0px) - var(--roleta-viewport-bottom, 0px)));
 }

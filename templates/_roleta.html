@@ -52,7 +52,7 @@
     <div class="knn-roleta-heading">
       <div class="knn-roleta-kicker"><span aria-hidden="true">✦</span> Roleta premiada KNN</div>
       <h2 id="knn-roleta-title" data-roleta-title tabindex="-1" autofocus>{{ 'Você ganhou!' if resultado_roleta else 'Gire e ganhe!' }}</h2>
-      <p data-roleta-intro {% if resultado_roleta %}hidden{% endif %}>Um giro. Um prêmio da KNN.</p>
+      <p data-roleta-intro {% if resultado_roleta %}hidden{% endif %}>Aula KNN Express, Kit KNN ou 50% de desconto.</p>
     </div>
 
     <figure class="knn-roleta-wheel" data-roleta-wheel {% if resultado_roleta %}hidden{% endif %}>
@@ -98,6 +98,7 @@
         </span>
         <p>Seu prêmio</p>
         <strong data-roleta-prize>{{ resultado_roleta.premio if resultado_roleta else '' }}</strong>
+        <small class="knn-roleta-prize-terms" data-roleta-prize-terms {% if not resultado_roleta or resultado_roleta.tipo != 'desconto' %}hidden{% endif %}>No desconto, o 1º pagamento é após 1 mês de estudos.</small>
       </div>
     </div>
   </div>

@@ -10,7 +10,7 @@ from telefones import normalizar_whatsapp
 PREMIOS_ROLETA = (
     ("express", "Aula KNN Express", "Aula", "KNN Express"),
     ("kit", "Kit KNN", "Kit", "KNN"),
-    ("desconto", "25% de desconto na matrícula", "25%", "de desconto"),
+    ("desconto", "50% de desconto", "50%", "de desconto"),
 )
 
 
