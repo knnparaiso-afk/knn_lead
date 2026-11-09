@@ -1,27 +1,38 @@
 {% extends "landing_base.html" %}
 {% block title %}Cadastro recebido | Black November KNN Paraisópolis{% endblock %}
 {% block body_class %}black-confirmation{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/confirmation.css') | v }}">
+{% endblock %}
 {% block body %}
 <header class="top">
   <a class="logo" href="{{ url_for('public.index') }}" aria-label="KNN Paraisópolis, início"><img src="{{ url_for('static', filename='img/logo-knn-branco.png') | v }}" alt="KNN Idiomas" width="90" height="46"><span>BLACK NOVEMBER</span></a>
   <a class="text-link" href="{{ url_for('public.bio') }}">Links oficiais ↗</a>
 </header>
 <main class="wrap confirmation-shell">
+  <div class="confirmation-glow" aria-hidden="true"></div>
   <section class="confirmation-card" aria-labelledby="confirmation-title">
-    <p class="eyebrow">BLACK NOVEMBER · KNN PARAISÓPOLIS</p>
+    <div class="confirmation-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12.5 4.2 4.2L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <p class="eyebrow">BLACK NOVEMBER <span aria-hidden="true">·</span> KNN PARAISÓPOLIS</p>
     <h1 id="confirmation-title">Cadastro<br><span class="gradient-text">recebido!</span></h1>
-    <p>Seu próximo passo é conversar com a equipe da unidade pelo WhatsApp sobre seu objetivo, horários e as condições dos benefícios.</p>
-    <a class="btn btn-emphasis" href="{{ whatsapp_url }}">CONVERSAR COM A KNN ↗</a>
-    <p class="note">A equipe confirma cursos, turmas, valores e aplicação dos benefícios antes da matrícula. Seu cadastro foi salvo; a matrícula será concluída com a unidade.</p>
+    <p class="confirmation-lead">Seus dados foram enviados com sucesso.</p>
+    <p class="confirmation-copy">A equipe KNN vai conversar com você sobre seus objetivos, horários e as condições dos benefícios.</p>
+    <a class="btn btn-emphasis confirmation-whatsapp" href="{{ whatsapp_url }}"><svg class="whatsapp-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-11.1 6.6L4 19l.9-4.6A7.5 7.5 0 1 1 20 11.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 8.8c.2-.5.5-.5.7-.5h.4c.1 0 .3 0 .4.3l.7 1.5c.1.2.1.3 0 .5l-.5.6c-.1.1-.2.2-.1.4.2.4.7 1 1.2 1.4.6.5 1.1.7 1.4.8.2.1.3 0 .4-.1l.6-.7c.1-.2.3-.2.5-.1l1.4.7c.2.1.3.2.3.3 0 .2-.1.8-.5 1.1-.4.4-.9.6-1.5.5-.6-.1-1.8-.5-3-1.5-1-.8-1.7-1.8-1.9-2.4-.3-.6-.3-1.2 0-1.7Z" fill="currentColor"/></svg> CONVERSAR COM A KNN <span aria-hidden="true">↗</span></a>
+    <div class="confirmation-note"><span class="note-mark" aria-hidden="true">i</span><p>A equipe confirma cursos, turmas, valores e benefícios. A matrícula é concluída com a unidade.</p></div>
   </section>
-  <section class="confirmation-communities" aria-labelledby="confirmation-communities-title">
-    <p class="eyebrow">SEMENTES DA LIBERDADE</p>
-    <h2 id="confirmation-communities-title">Faça parte da nossa comunidade.</h2>
-    <p>Continue no movimento: acompanhe as novidades, oportunidades e condições da nossa unidade na Comunidade VIP KNN Paraisópolis.</p>
-    <div class="community-grid">
-      <article class="community-card is-local"><h3>Comunidade VIP<br>KNN Paraisópolis</h3><p>Receba os avisos e as oportunidades da nossa unidade.</p>{% if comunidade_local_url %}<a class="btn btn-emphasis" href="{{ comunidade_local_url }}" target="_blank" rel="noopener noreferrer">ENTRAR NA COMUNIDADE VIP ↗</a>{% else %}<a class="btn btn-emphasis" href="https://wa.me/{{ u.whatsapp }}?{{ {'text': 'Olá! Quero o link da Comunidade VIP KNN Paraisópolis.'} | urlencode }}">PEÇA O LINK À UNIDADE ↗</a>{% endif %}</article>
+  <section class="confirmation-community" aria-labelledby="confirmation-communities-title">
+    <div class="community-orbit orbit-one" aria-hidden="true"></div><div class="community-orbit orbit-two" aria-hidden="true"></div>
+    <div class="community-content">
+      <p class="eyebrow"><span class="community-live-dot" aria-hidden="true"></span>SEMENTES DA LIBERDADE</p>
+      <p class="community-kicker">SEU PRÓXIMO PASSO</p>
+      <h2 id="confirmation-communities-title">As oportunidades<br>florescem <span class="gradient-text">em comunidade.</span></h2>
+      <p class="community-copy">Entre na Comunidade VIP KNN Paraisópolis e acompanhe novidades e oportunidades da nossa unidade.</p>
+      <div class="community-preview"><span class="community-avatar" aria-hidden="true">K</span><span><strong>Comunidade VIP</strong><small>KNN Paraisópolis</small></span><span class="community-arrow" aria-hidden="true">↗</span></div>
+      {% if comunidade_local_url %}<a class="btn btn-emphasis community-cta" href="{{ comunidade_local_url }}" target="_blank" rel="noopener noreferrer">ENTRAR NA COMUNIDADE VIP <span aria-hidden="true">↗</span></a>{% else %}<a class="btn btn-emphasis community-cta" href="https://wa.me/{{ u.whatsapp }}?{{ {'text': 'Olá! Quero o link da Comunidade VIP KNN Paraisópolis.'} | urlencode }}">PEDIR ACESSO À COMUNIDADE <span aria-hidden="true">↗</span></a>{% endif %}
+      <p class="community-footnote">Novidades, oportunidades e avisos direto no WhatsApp.</p>
     </div>
-    <p class="note"><a class="text-link" href="{{ url_for('public.index') }}">Voltar ao site da KNN Paraisópolis ↗</a></p>
   </section>
 </main>
+<footer class="confirmation-footer"><a href="{{ url_for('public.index') }}">KNN Paraisópolis</a><span>·</span><a href="{{ url_for('public.bio') }}">Links oficiais</a></footer>
 {% endblock %}
