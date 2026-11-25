@@ -119,7 +119,7 @@ Campanhas | Inglês Secreto
                     </a>
 
                     <a href="{{ url_for('reports.participantes', campanha_id=campanha.id) }}" class="table-link">PARTICIPANTES</a>
-                    {% if campanha.categoria == 'cadastro_direto' %}<a href="{{ url_for('partner_qr.metricas_campanha', campanha_id=campanha.id) }}" class="table-link">MÉTRICAS E LOG</a>{% endif %}
+                    {% if campanha.categoria == 'cadastro_direto' %}<a href="{{ url_for('partner_qr.metricas_campanha', campanha_id=campanha.id) }}" class="table-link">MÉTRICAS BLACK</a>{% endif %}
 
                     {% if not campanha.arquivada %}<form method="POST" action="{{ url_for('campaigns.excluir_campanha', campanha_id=campanha.id) }}" style="display: inline-block;" onsubmit="return confirm('{{ 'Arquivar a campanha e encerrar os cadastros, preservando o histórico?' if campanha.categoria == 'cadastro_direto' else 'Excluir esta campanha e seus QR Codes?' }}');">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

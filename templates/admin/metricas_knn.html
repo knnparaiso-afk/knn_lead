@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Métricas · KNN Secreto{% endblock %}
+{% block body_class %}admin-dashboard{% endblock %}
+{% block content %}
+<section class="admin-hero"><div><span class="admin-kicker">RELATÓRIO KNN SECRETO</span><h1>Do QR à<br><em>matrícula.</em></h1><p>Acompanhe as etapas da experiência e a participação da comunidade.</p></div><a class="btn btn-secondary" href="{{ url_for('reports.metricas') }}">TODAS AS MÉTRICAS</a></section>
+{% set labels = {'qr_open':'Aberturas do QR','challenge_start':'Desafios iniciados','challenge_complete':'Desafios concluídos','reward_view':'Prêmios visualizados','form_start':'Cadastros iniciados','form_complete':'Cadastros concluídos','whatsapp_click':'Cliques no WhatsApp','friend_share_click':'Convites compartilhados','friend_invite_open':'Convites abertos','friend_invite_accept':'Convites aceitos'} %}
+<section class="metric-grid">{% for evento, label in labels.items() %}<article class="metric-card"><span>{{ label }}</span><strong>{{ totais.get(evento, 0) }}</strong><p>eventos registrados</p></article>{% endfor %}</section>
+<section class="workflow-section"><div><h2>Detalhe por QR e origem</h2><p>Eventos da experiência KNN Secreto.</p></div><div class="table-container" style="overflow-x:auto"><table class="admin-table"><thead><tr><th>Etapa</th><th>Campanha</th><th>QR</th><th>Origem</th><th>Total</th><th>Período</th></tr></thead><tbody>{% for linha in linhas %}<tr><td>{{ labels.get(linha.evento, linha.evento) }}</td><td>{{ linha.campanha_nome }}</td><td>{{ linha.qr_codigo }}</td><td>{{ 'Amigo' if linha.origem == 'amigo' else 'QR impresso' }}</td><td><strong>{{ linha.total }}</strong></td><td>{{ linha.primeira_data }}{% if linha.ultima_data != linha.primeira_data %} – {{ linha.ultima_data }}{% endif %}</td></tr>{% else %}<tr><td colspan="6">Ainda não há eventos do KNN Secreto.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

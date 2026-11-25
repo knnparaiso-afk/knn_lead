@@ -37,7 +37,7 @@
         <div><strong>{{ campanha.total_qrs }}</strong><span>QR Codes gerados</span></div>
         <div><strong>{{ campanha.total_cadastros if campanha.categoria == 'cadastro_direto' else campanha.total_descobertas }}</strong><span>{{ 'Participantes desta campanha' if campanha.categoria == 'cadastro_direto' else 'Descobertas desta campanha' }}</span></div>
         <a href="{{ url_for('reports.participantes', campanha_id=campanha.id) }}" class="table-link">PARTICIPANTES</a>
-        {% if campanha.categoria == 'cadastro_direto' %}<a href="{{ url_for('partner_qr.metricas_campanha', campanha_id=campanha.id) }}" class="table-link">MÉTRICAS E LOG</a>{% endif %}
+        {% if campanha.categoria == 'cadastro_direto' %}<a href="{{ url_for('partner_qr.metricas_campanha', campanha_id=campanha.id) }}" class="table-link">MÉTRICAS BLACK</a>{% endif %}
         <a href="{{ url_for('qr.gerenciar_qr', campanha_id=campanha.id) }}" class="btn btn-secondary">GERENCIAR QR CODES <span>→</span></a>
     </div>
 </section>

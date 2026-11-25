@@ -133,14 +133,6 @@ def metricas(qr_id):
             "WHERE qr_avulso_id = ? GROUP BY evento", (qr_id,),
         ).fetchall():
             totais[row["evento"]] = row["total"]
-        eventos = connection.execute(
-            "SELECT evento, data_evento FROM eventos_qr_avulso "
-            "WHERE qr_avulso_id = ? ORDER BY id DESC LIMIT 100", (qr_id,),
-        ).fetchall()
-        primeiro_evento = connection.execute(
-            "SELECT MIN(data_evento) AS data FROM eventos_qr_avulso WHERE qr_avulso_id = ?",
-            (qr_id,),
-        ).fetchone()["data"]
         total_cadastros = connection.execute(
             "SELECT COUNT(*) AS total FROM cadastros_qr_avulso WHERE qr_avulso_id = ?",
             (qr_id,),
@@ -150,8 +142,7 @@ def metricas(qr_id):
     conversao = (100 * totais["cadastro_concluido"] / totais["acesso"]
                  if totais["acesso"] else None)
     return render_template(
-        "admin/metricas_qr_avulso.html", qr=qr, totais=totais, eventos=eventos,
-        nomes_eventos=EVENTOS_QR_AVULSO, primeiro_evento=primeiro_evento,
+        "admin/metricas_qr_avulso.html", qr=qr, totais=totais,
         total_cadastros=total_cadastros, conversao=conversao,
     )
 
@@ -199,12 +190,7 @@ def metricas_campanha(campanha_id):
             "(SELECT COUNT(*) FROM eventos_qr_avulso e WHERE e.qr_avulso_id = q.id AND e.evento = 'acesso') AS acessos "
             "FROM qrs_avulsos q WHERE q.campanha_id = ? ORDER BY q.id", (campanha_id,),
         ).fetchall()
-        eventos = connection.execute(
-            "SELECT e.evento, e.data_evento, q.codigo, q.origem FROM eventos_qr_avulso e "
-            "JOIN qrs_avulsos q ON q.id = e.qr_avulso_id WHERE q.campanha_id = ? ORDER BY e.id DESC LIMIT 100", (campanha_id,),
-        ).fetchall()
     finally:
         connection.close()
     return render_template("admin/metricas_cadastro.html", campanha=campanha, totais=totais,
-                           participantes=participantes, origens=origens, eventos=eventos,
-                           nomes_eventos=EVENTOS_QR_AVULSO)
+                           participantes=participantes, origens=origens)

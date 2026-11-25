@@ -84,12 +84,45 @@ def admin_dashboard():
 @admin_required
 def metricas():
     connection = get_connection()
+    bio = connection.execute(
+        "SELECT evento, SUM(total) AS total FROM metricas_funil "
+        "WHERE origem = 'qr_bio' GROUP BY evento"
+    ).fetchall()
+    bio_totais = {item["evento"]: item["total"] for item in bio}
+    campanhas_black = connection.execute(
+        """
+        SELECT campanhas.id, campanhas.nome,
+               COUNT(DISTINCT cadastros_qr_avulso.usuario_id) AS participantes
+        FROM campanhas
+        LEFT JOIN qrs_avulsos ON qrs_avulsos.campanha_id = campanhas.id
+        LEFT JOIN cadastros_qr_avulso ON cadastros_qr_avulso.qr_avulso_id = qrs_avulsos.id
+        WHERE campanhas.categoria = 'cadastro_direto'
+        GROUP BY campanhas.id, campanhas.nome
+        ORDER BY campanhas.id DESC
+        """
+    ).fetchall()
+    connection.close()
+    return render_template("admin/metricas.html", bio_totais=bio_totais,
+                           campanhas_black=campanhas_black)
+
+
+@bp.route("/admin/metricas/knn-secreto")
+@admin_required
+def metricas_knn_secreto():
+    eventos_knn = (
+        "qr_open", "challenge_start", "challenge_complete", "reward_view",
+        "form_start", "form_complete", "whatsapp_click", "friend_share_click",
+        "friend_invite_open", "friend_invite_accept",
+    )
+    placeholders = ", ".join("?" for _ in eventos_knn)
+    connection = get_connection()
     resumo = connection.execute(
-        "SELECT evento, SUM(total) AS total FROM metricas_funil GROUP BY evento"
+        f"SELECT evento, SUM(total) AS total FROM metricas_funil "
+        f"WHERE evento IN ({placeholders}) GROUP BY evento", eventos_knn
     ).fetchall()
     totais = {item["evento"]: item["total"] for item in resumo}
     linhas = connection.execute(
-        """
+        f"""
         SELECT metricas_funil.evento, metricas_funil.categoria,
                metricas_funil.origem, SUM(metricas_funil.total) AS total,
                MIN(metricas_funil.data) AS primeira_data,
@@ -99,15 +132,42 @@ def metricas():
         FROM metricas_funil
         LEFT JOIN qr_codes ON qr_codes.id = metricas_funil.qr_code_id
         LEFT JOIN campanhas ON campanhas.id = metricas_funil.campanha_id
+        WHERE metricas_funil.evento IN ({placeholders})
         GROUP BY metricas_funil.evento, metricas_funil.categoria,
                  metricas_funil.origem, metricas_funil.qr_code_id,
                  metricas_funil.campanha_id, qr_codes.codigo, campanhas.nome
         ORDER BY ultima_data DESC, campanha_nome, qr_codigo, evento
+        """, eventos_knn
+    ).fetchall()
+    connection.close()
+    return render_template("admin/metricas_knn.html", totais=totais, linhas=linhas)
+
+
+@bp.route("/admin/metricas/black-november")
+@admin_required
+def metricas_black_november():
+    connection = get_connection()
+    bio = connection.execute(
+        "SELECT evento, SUM(total) AS total FROM metricas_funil "
+        "WHERE origem = 'qr_bio' AND evento IN ('bio_qr_open', 'bio_qr_form_complete') "
+        "GROUP BY evento"
+    ).fetchall()
+    bio_totais = {item["evento"]: item["total"] for item in bio}
+    campanhas_black = connection.execute(
+        """
+        SELECT campanhas.id, campanhas.nome,
+               COUNT(DISTINCT cadastros_qr_avulso.usuario_id) AS participantes
+        FROM campanhas
+        LEFT JOIN qrs_avulsos ON qrs_avulsos.campanha_id = campanhas.id
+        LEFT JOIN cadastros_qr_avulso ON cadastros_qr_avulso.qr_avulso_id = qrs_avulso.id
+        WHERE campanhas.categoria = 'cadastro_direto'
+        GROUP BY campanhas.id, campanhas.nome
+        ORDER BY campanhas.id DESC
         """
     ).fetchall()
-    cadastros = connection.execute("SELECT id, nome FROM campanhas WHERE categoria = 'cadastro_direto' ORDER BY id DESC").fetchall()
     connection.close()
-    return render_template("admin/metricas.html", totais=totais, linhas=linhas, campanhas_cadastro=cadastros)
+    return render_template("admin/metricas_black.html", bio_totais=bio_totais,
+                           campanhas_black=campanhas_black)
 
 
 @bp.route("/admin/participantes")

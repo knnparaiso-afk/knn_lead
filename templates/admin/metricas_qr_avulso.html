@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block body_class %}admin-black-campaign{% endblock %}
-{% block title %}Métricas {{ 'da landing' if qr.origem == 'landing' else 'do QR' }} | KNN{% endblock %}
+{% block title %}Resumo {{ 'da landing' if qr.origem == 'landing' else 'do QR' }} | KNN{% endblock %}
 {% block content %}
 <div class="admin-header">
-    <div><h1>Métricas {{ 'da landing' if qr.origem == 'landing' else 'do QR avulso' }}</h1><p>{{ qr.parceiro }} · Código {{ qr.codigo }}</p></div>
+    <div><h1>Resumo {{ 'da landing' if qr.origem == 'landing' else 'do QR avulso' }}</h1><p>{{ qr.parceiro }} · Código {{ qr.codigo }}</p></div>
     <a class="btn btn-secondary" href="{{ url_for('partner_qr.lista_qrs', campanha_id=qr.campanha_id) }}">VOLTAR AOS QR CODES</a>
 </div>
 <section class="metric-grid" aria-label="Métricas exclusivas deste QR code">
@@ -16,19 +16,6 @@
     <h2>Conversão: {% if conversao is not none %}{{ '%.1f' | format(conversao) | replace('.', ',') }}%{% else %}—{% endif %}</h2>
     <p>Novos cadastros medidos ÷ acessos ao formulário. Reenvios não aumentam os novos cadastros.</p>
     <p><strong>{{ total_cadastros }} cadastro(s) salvo(s) neste QR</strong>, incluindo cadastros anteriores à implantação das métricas.</p>
-    <p>O log começa com os eventos recebidos após esta atualização{% if primeiro_evento %}. Primeiro evento: {{ primeiro_evento | data_hora_brasilia }}{% endif %}. Cada abertura do link conta como um acesso; prévias e downloads do PNG não contam. Acessos anteriores não são recuperados.</p>
+    <p>O resumo mostra os eventos medidos e os cadastros salvos para este QR. Acessos anteriores à implantação das métricas não são recuperados.</p>
 </section>
-<div class="section-heading"><h2>Log exclusivo deste QR</h2><span class="point-counter">Últimos 100 eventos · horário de Brasília</span></div>
-<div class="table-container">
-    <table>
-        <thead><tr><th>Data e hora</th><th>Evento</th></tr></thead>
-        <tbody>
-        {% for evento in eventos %}
-        <tr><td>{{ evento.data_evento | data_hora_brasilia }}</td><td>{{ nomes_eventos.get(evento.evento, evento.evento) }}</td></tr>
-        {% else %}
-        <tr><td colspan="2" class="empty-table">Nenhum evento registrado para este QR.</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
 {% endblock %}
