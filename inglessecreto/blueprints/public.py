@@ -161,6 +161,9 @@ def _resgatar_roleta(navegador_id):
 @bp.route("/bio")
 def bio():
     """Página permanente de links da unidade, sem depender de campanhas."""
+    campanha = _campanha_ativa()
+    black_url = (url_for("public.cadastro_campanha", codigo=campanha["codigo"])
+                 if cadastro_direto(campanha) else "")
     whatsapp_url = "https://wa.me/" + UNIDADE["whatsapp"]
     aula_url = whatsapp_url + "?" + urlencode({
         "text": "Olá! Vim pelo link da bio da KNN Paraisópolis e quero agendar minha aula grátis."
@@ -173,7 +176,7 @@ def bio():
             "text": "Olá! Quero o link da comunidade KNN Paraisópolis."
         })
     return render_template(
-        "bio.html", u=UNIDADE, aula_url=aula_url,
+        "bio.html", u=UNIDADE, aula_url=aula_url, black_url=black_url,
         comunidade_url=comunidade_url, comunidade_direta=comunidade_direta,
         canonical_url=BASE_URL + url_for("public.bio"),
         imagem_url=BASE_URL + url_for("static", filename="img/black-november-knn.jpeg"),

@@ -158,3 +158,9 @@ html.share-is-open { overflow: hidden; }
   .share-footer { padding-top: 10px; }
   .share-footer label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 }
+
+.link-mega-black {
+  color: #ffe1d1;
+  background: #ff773c24;
+  border-color: #c66b45;
+}

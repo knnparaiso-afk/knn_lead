@@ -42,6 +42,9 @@
       <a class="link-card link-primary link-community" href="{{ comunidade_url }}" target="_blank" rel="noopener noreferrer">
         <strong class="community-title">{{ 'Entrar na comunidade KNN' if comunidade_direta else 'Pedir acesso à comunidade KNN' }}</strong>
       </a>
+      {% if black_url %}<a class="link-card link-mega-black" href="{{ black_url }}">
+        <strong>Participe da nossa MEGA BLACK</strong>
+      </a>{% endif %}
       <a class="link-card" href="{{ aula_url }}" target="_blank" rel="noopener noreferrer">
         Agendar minha aula grátis
       </a>
