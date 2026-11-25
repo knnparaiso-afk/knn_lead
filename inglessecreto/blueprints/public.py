@@ -33,6 +33,7 @@ METRIC_EVENTS = {
     "qr_open", "challenge_start", "challenge_complete", "reward_view", "form_start",
     "form_complete", "whatsapp_click", "friend_share_click",
     "friend_invite_open", "friend_invite_accept",
+    "bio_qr_open", "bio_qr_form_complete",
 }
 
 
@@ -164,6 +165,22 @@ def bio():
     campanha = _campanha_ativa()
     black_url = (url_for("public.cadastro_campanha", codigo=campanha["codigo"])
                  if cadastro_direto(campanha) else "")
+    if request.args.get("origem") == "qr_bio":
+        session["bio_qr_attribution"] = True
+        if not session.get("bio_qr_visit_counted"):
+            connection = get_connection()
+            try:
+                _registrar_metrica(
+                    connection, "bio_qr_open", campanha_id=campanha["id"] if campanha else 0,
+                    categoria="bio", origem="qr_bio",
+                )
+                connection.commit()
+            except Exception:
+                connection.rollback()
+                raise
+            finally:
+                connection.close()
+            session["bio_qr_visit_counted"] = True
     whatsapp_url = "https://wa.me/" + UNIDADE["whatsapp"]
     aula_url = whatsapp_url + "?" + urlencode({
         "text": "Olá! Vim pelo link da bio da KNN Paraisópolis e quero agendar minha aula grátis."
@@ -494,7 +511,12 @@ def cadastro_parceiro(codigo):
         return formulario(), 400
     whatsapp = normalizar_whatsapp(whatsapp)
     try:
-        salvar_cadastro_direto(connection, qr, nome, whatsapp, email, idade)
+        _, novo_cadastro = salvar_cadastro_direto(connection, qr, nome, whatsapp, email, idade)
+        if novo_cadastro and session.get("bio_qr_attribution"):
+            _registrar_metrica(
+                connection, "bio_qr_form_complete",
+                campanha_id=qr["campanha_id"] or 0, categoria="cadastro_direto", origem="qr_bio",
+            )
         connection.commit()
     except Exception:
         connection.rollback()
@@ -502,6 +524,7 @@ def cadastro_parceiro(codigo):
     finally:
         connection.close()
     session["cadastro_direto_qr_id"] = qr["id"]
+    session.pop("bio_qr_attribution", None)
     return redirect(url_for("public.cadastro_parceiro_concluido"))
 
 
