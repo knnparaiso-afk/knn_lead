@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Natal Gonçalves | Cadastro KNN{% endblock %}
+{% block brand_label %}NATAL GONÇALVES{% endblock %}
+{% block body_class %}public-page natal-goncalves-form-page conversion-page{% endblock %}
+{% block stylesheets %}{{ super() }}<link rel="stylesheet" href="{{ url_for('static', filename='css/natal-goncalves.css') | v }}">{% endblock %}
+{% block content %}
+<section class="natal-shell">
+  <header class="natal-header">
+    <img src="{{ url_for('static', filename='img/logo-knn-branco.png') | v }}" alt="KNN Idiomas" width="104" height="54">
+    <span>NATAL GONÇALVES · KNN PARAISÓPOLIS</span>
+  </header>
+  <div class="natal-layout">
+    <div class="natal-offer">
+      <h1>Um presente para abrir novos <span>caminhos.</span></h1>
+      <p class="natal-description">Seu próximo idioma pode começar neste Natal. Preencha o cadastro para conhecer o benefício exclusivo preparado pela KNN Paraisópolis.</p>
+      <div class="natal-benefit">🎁 <strong>Uma oportunidade especial para você</strong><br>A equipe apresenta os detalhes, explica as condições e ajuda a encontrar o curso ideal.</div>
+      <p class="natal-conditions">O cadastro inicia o atendimento. A equipe confirma cursos, turmas, valores e as condições do benefício antes de qualquer matrícula.</p>
+    </div>
+    <form method="POST" class="natal-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <p class="natal-eyebrow">CADASTRO NATAL GONÇALVES</p>
+      <h2>Vamos conversar?</h2>
+      <p class="natal-form-intro">Deixe seus dados para a equipe KNN entrar em contato sobre seu objetivo e o benefício especial.</p>
+      <div class="field"><label for="nome">Nome completo</label><input id="nome" type="text" name="nome" maxlength="120" autocomplete="name" value="{{ request.form.get('nome', '') }}" required></div>
+      <div class="field"><label for="whatsapp">WhatsApp com DDD</label><input id="whatsapp" type="tel" name="whatsapp" maxlength="32" autocomplete="tel" inputmode="tel" value="{{ request.form.get('whatsapp', '') }}" required></div>
+      <div class="field"><label for="email">E-mail</label><input id="email" type="email" name="email" maxlength="254" autocomplete="email" value="{{ request.form.get('email', '') }}" required></div>
+      <div class="field"><label for="idade">Idade</label><input id="idade" type="number" name="idade" min="3" max="120" inputmode="numeric" value="{{ request.form.get('idade', '') }}" required></div>
+      <div class="consent"><input type="checkbox" id="participacao_confirmada" name="participacao_confirmada" {% if request.form.get('participacao_confirmada') %}checked{% endif %} required><label for="participacao_confirmada">{{ consentimento }}</label></div>
+      <button type="submit" class="natal-submit">QUERO CONHECER MEU BENEFÍCIO <span aria-hidden="true">→</span></button>
+      <p class="natal-next-step">Depois de enviar, você verá a confirmação e poderá iniciar a conversa com a unidade. O cadastro não conclui a matrícula.</p>
+      <p class="natal-privacy">A KNN usará seus dados para entrar em contato sobre o atendimento e os cursos da unidade.</p>
+    </form>
+  </div>
+</section>
+<script>
+const telefone = document.getElementById('whatsapp');
+telefone.addEventListener('input', () => { const n=telefone.value.replace(/\D/g,'').slice(0,11); telefone.value=n.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2'); });
+</script>
+{% endblock %}

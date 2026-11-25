@@ -578,6 +578,62 @@ def _migrate_direct_campaigns(connection):
     connection.commit()
 
 
+def _migrate_natal_goncalves(connection):
+    """Cria o cadastro e QR da campanha Natal e reinicia os contadores de teste Black."""
+    chave = "natal_goncalves_campaign_and_reset_black_test_metrics_v1"
+    if DATABASE_URL:
+        connection.execute("SELECT pg_advisory_xact_lock(?)", (7193042110,))
+    else:
+        connection.execute("BEGIN IMMEDIATE")
+    if connection.execute("SELECT 1 FROM app_migrations WHERE migration_key = ?", (chave,)).fetchone():
+        connection.commit()
+        return
+
+    campanha = connection.execute(
+        "SELECT id FROM campanhas WHERE codigo = 'goncalves'"
+    ).fetchone()
+    if campanha:
+        campanha_id = campanha["id"]
+        connection.execute(
+            "UPDATE campanhas SET nome = 'Natal Gonçalves', categoria = 'cadastro_direto', "
+            "ativa = 1, exibir_faixa = 0, arquivada = 0, data_inicio = NULL, data_fim = NULL "
+            "WHERE id = ?", (campanha_id,),
+        )
+    else:
+        semana = connection.execute(
+            "SELECT COALESCE(MAX(semana), 0) + 1 AS proxima FROM campanhas"
+        ).fetchone()["proxima"]
+        campanha_id = connection.execute(
+            "INSERT INTO campanhas (codigo, nome, semana, frase, traducao, categoria, ativa, exibir_faixa, arquivada) "
+            "VALUES ('goncalves', 'Natal Gonçalves', ?, '', '', 'cadastro_direto', 1, 0, 0) RETURNING id",
+            (semana,),
+        ).fetchone()["id"]
+
+    for origem in ("qr", "landing"):
+        if not connection.execute(
+            "SELECT id FROM qrs_avulsos WHERE campanha_id = ? AND origem = ? LIMIT 1",
+            (campanha_id, origem),
+        ).fetchone():
+            connection.execute(
+                "INSERT INTO qrs_avulsos (codigo, parceiro, origem, campanha_id) VALUES (?, ?, ?, ?)",
+                (_codigo_migracao(connection), "Natal Gonçalves", origem, campanha_id),
+            )
+
+    # Remove apenas métricas de teste e acessos de teste da landing Black.
+    # Os cadastros e os vínculos das pessoas permanecem intactos.
+    connection.execute(
+        "DELETE FROM metricas_funil WHERE origem = 'premio_black_qr' AND evento IN "
+        "('black_prize_qr_open', 'black_prize_cadastro_click', 'black_prize_cadastro_complete')"
+    )
+    connection.execute(
+        "DELETE FROM eventos_qr_avulso WHERE evento = 'acesso' AND qr_avulso_id IN "
+        "(SELECT q.id FROM qrs_avulsos q JOIN campanhas c ON c.id = q.campanha_id "
+        "WHERE c.codigo = '7169C30E6708' AND q.origem = 'landing')"
+    )
+    connection.execute("INSERT INTO app_migrations (migration_key) VALUES (?)", (chave,))
+    connection.commit()
+
+
 def init_db():
     connection = get_connection()
     try:
@@ -597,6 +653,7 @@ def init_db():
 
         _migrate_black_campaigns(connection)
         _migrate_direct_campaigns(connection)
+        _migrate_natal_goncalves(connection)
         _migrate_qr_location_tracking(connection)
 
         # Corrige registros antigos de campanhas que ainda não tinham opções separadas.

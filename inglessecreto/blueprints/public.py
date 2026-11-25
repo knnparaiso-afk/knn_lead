@@ -34,7 +34,8 @@ METRIC_EVENTS = {
     "form_complete", "whatsapp_click", "friend_share_click",
     "friend_invite_open", "friend_invite_accept",
     "bio_qr_open", "bio_qr_form_complete",
-    "black_prize_qr_open", "black_prize_cadastro_click", "black_prize_cadastro_complete",
+    "natal_goncalves_qr_open", "natal_goncalves_cadastro_click",
+    "natal_goncalves_cadastro_complete",
 }
 
 
@@ -160,18 +161,19 @@ def _resgatar_roleta(navegador_id):
     return jsonify(whatsapp_url=whatsapp_resgate_url())
 
 
-PREMIO_QR_CADASTRO_CODIGO = "7169C30E6708"
+NATAL_GONCALVES_CODIGO = "goncalves"
 
 
+@bp.route("/natal-goncalves")
 @bp.route("/premio-exclusivo")
-def premio_exclusivo():
-    """Prévia pública do prêmio Black, acessada pelo QR impresso."""
-    if not session.get("black_prize_qr_open_counted"):
+def natal_goncalves_preview():
+    """Prévia de Natal aberta pelo QR da campanha Gonçalves."""
+    if not session.get("natal_goncalves_qr_open_counted"):
         connection = get_connection()
         try:
             _registrar_metrica(
-                connection, "black_prize_qr_open", categoria="premio_black",
-                origem="premio_black_qr",
+                connection, "natal_goncalves_qr_open", categoria="natal_goncalves",
+                origem="natal_goncalves_qr",
             )
             connection.commit()
         except Exception:
@@ -179,20 +181,21 @@ def premio_exclusivo():
             raise
         finally:
             connection.close()
-        session["black_prize_qr_open_counted"] = True
-    return render_template("premio_exclusivo.html")
+        session["natal_goncalves_qr_open_counted"] = True
+    return render_template("natal_goncalves_preview.html")
 
 
+@bp.route("/natal-goncalves/ir-para-cadastro")
 @bp.route("/premio-exclusivo/ir-para-cadastro")
-def premio_exclusivo_ir_para_cadastro():
-    """Registra o clique no CTA e segue para o cadastro Black já existente."""
-    session["black_prize_qr_attribution"] = True
-    if not session.get("black_prize_qr_click_counted"):
+def natal_goncalves_ir_para_cadastro():
+    """Registra o clique do QR de Natal e abre o cadastro próprio da campanha."""
+    session["natal_goncalves_qr_attribution"] = True
+    if not session.get("natal_goncalves_qr_click_counted"):
         connection = get_connection()
         try:
             _registrar_metrica(
-                connection, "black_prize_cadastro_click", categoria="premio_black",
-                origem="premio_black_qr",
+                connection, "natal_goncalves_cadastro_click", categoria="natal_goncalves",
+                origem="natal_goncalves_qr",
             )
             connection.commit()
         except Exception:
@@ -200,14 +203,19 @@ def premio_exclusivo_ir_para_cadastro():
             raise
         finally:
             connection.close()
-        session["black_prize_qr_click_counted"] = True
-    return redirect(url_for("public.cadastro_campanha", codigo=PREMIO_QR_CADASTRO_CODIGO))
+        session["natal_goncalves_qr_click_counted"] = True
+    return redirect(url_for("public.cadastro_campanha", codigo=NATAL_GONCALVES_CODIGO))
 
 
 @bp.route("/bio")
 def bio():
     """Página permanente de links da unidade, sem depender de campanhas."""
-    campanha = _campanha_ativa()
+    connection = get_connection()
+    campanha = connection.execute(
+        "SELECT * FROM campanhas WHERE codigo = ? AND categoria = ? LIMIT 1",
+        ("7169C30E6708", CADASTRO_DIRETO),
+    ).fetchone()
+    connection.close()
     black_url = (url_for("public.cadastro_campanha", codigo=campanha["codigo"])
                  if cadastro_direto(campanha) else "")
     if request.args.get("origem") == "qr_bio":
@@ -518,8 +526,11 @@ def cadastro_parceiro(codigo):
             return render_template("black_indisponivel.html"), 404
 
     def formulario():
+        template = ("cadastro_natal_goncalves.html"
+                    if campanha and campanha["codigo"] == NATAL_GONCALVES_CODIGO
+                    else "cadastro_parceiro.html")
         return render_template(
-            "cadastro_parceiro.html",
+            template,
             consentimento=DIRECT_REGISTRATION_CONSENT_TEXT,
             campanha=campanha,
         )
@@ -536,7 +547,13 @@ def cadastro_parceiro(codigo):
 
     if request.method in ("GET", "HEAD"):
         if request.method == "GET":
-            registrar_e_fechar("acesso")
+            black_landing = campanha and campanha["codigo"] == "7169C30E6708" and qr["origem"] == "landing"
+            if not black_landing or not session.get("black_landing_access_counted"):
+                registrar_e_fechar("acesso")
+                if black_landing:
+                    session["black_landing_access_counted"] = True
+            else:
+                connection.close()
         else:
             connection.close()
         return formulario()
@@ -562,11 +579,12 @@ def cadastro_parceiro(codigo):
                 connection, "bio_qr_form_complete",
                 campanha_id=qr["campanha_id"] or 0, categoria="cadastro_direto", origem="qr_bio",
             )
-        if novo_cadastro and session.get("black_prize_qr_attribution"):
+        if (novo_cadastro and session.get("natal_goncalves_qr_attribution")
+                and campanha and campanha["codigo"] == NATAL_GONCALVES_CODIGO):
             _registrar_metrica(
-                connection, "black_prize_cadastro_complete",
-                campanha_id=qr["campanha_id"] or 0, categoria="premio_black",
-                origem="premio_black_qr",
+                connection, "natal_goncalves_cadastro_complete",
+                campanha_id=qr["campanha_id"] or 0, categoria="natal_goncalves",
+                origem="natal_goncalves_qr",
             )
         connection.commit()
     except Exception:
@@ -576,7 +594,7 @@ def cadastro_parceiro(codigo):
         connection.close()
     session["cadastro_direto_qr_id"] = qr["id"]
     session.pop("bio_qr_attribution", None)
-    session.pop("black_prize_qr_attribution", None)
+    session.pop("natal_goncalves_qr_attribution", None)
     return redirect(url_for("public.cadastro_parceiro_concluido"))
 
 

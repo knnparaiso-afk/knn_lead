@@ -87,26 +87,19 @@ def admin_dashboard():
 @admin_required
 def metricas():
     connection = get_connection()
-    bio = connection.execute(
+    black_acessos = _contar(connection,
+        "SELECT COUNT(*) AS total FROM eventos_qr_avulso e "
+        "JOIN qrs_avulsos q ON q.id = e.qr_avulso_id "
+        "JOIN campanhas c ON c.id = q.campanha_id "
+        "WHERE c.codigo = '7169C30E6708' AND q.origem = 'landing' AND e.evento = 'acesso'")
+    natal_rows = connection.execute(
         "SELECT evento, SUM(total) AS total FROM metricas_funil "
-        "WHERE origem = 'premio_black_qr' GROUP BY evento"
+        "WHERE origem = 'natal_goncalves_qr' GROUP BY evento"
     ).fetchall()
-    qr_totais = {item["evento"]: item["total"] for item in bio}
-    campanhas_black = connection.execute(
-        """
-        SELECT campanhas.id, campanhas.nome,
-               COUNT(DISTINCT cadastros_qr_avulso.usuario_id) AS participantes
-        FROM campanhas
-        LEFT JOIN qrs_avulsos ON qrs_avulsos.campanha_id = campanhas.id
-        LEFT JOIN cadastros_qr_avulso ON cadastros_qr_avulso.qr_avulso_id = qrs_avulsos.id
-        WHERE campanhas.categoria = 'cadastro_direto'
-        GROUP BY campanhas.id, campanhas.nome
-        ORDER BY campanhas.id DESC
-        """
-    ).fetchall()
+    natal_totais = {item["evento"]: item["total"] for item in natal_rows}
     connection.close()
-    return render_template("admin/metricas.html", qr_totais=qr_totais,
-                           campanhas_black=campanhas_black)
+    return render_template("admin/metricas.html", black_acessos=black_acessos,
+                           natal_totais=natal_totais)
 
 
 @bp.route("/admin/metricas/knn-secreto")
@@ -150,40 +143,40 @@ def metricas_knn_secreto():
 @admin_required
 def metricas_black_november():
     connection = get_connection()
-    bio = connection.execute(
+    acessos = _contar(connection,
+        "SELECT COUNT(*) AS total FROM eventos_qr_avulso e "
+        "JOIN qrs_avulsos q ON q.id = e.qr_avulso_id "
+        "JOIN campanhas c ON c.id = q.campanha_id "
+        "WHERE c.codigo = '7169C30E6708' AND q.origem = 'landing' AND e.evento = 'acesso'")
+    connection.close()
+    return render_template("admin/metricas_black.html", acessos=acessos)
+
+
+@bp.route("/admin/metricas/natal-goncalves")
+@admin_required
+def metricas_natal_goncalves():
+    connection = get_connection()
+    rows = connection.execute(
         "SELECT evento, SUM(total) AS total FROM metricas_funil "
-        "WHERE origem = 'premio_black_qr' AND evento IN "
-        "('black_prize_qr_open', 'black_prize_cadastro_click', 'black_prize_cadastro_complete') "
+        "WHERE origem = 'natal_goncalves_qr' AND evento IN "
+        "('natal_goncalves_qr_open', 'natal_goncalves_cadastro_click', 'natal_goncalves_cadastro_complete') "
         "GROUP BY evento"
     ).fetchall()
-    qr_totais = {item["evento"]: item["total"] for item in bio}
-    campanhas_black = connection.execute(
-        """
-        SELECT campanhas.id, campanhas.nome,
-               COUNT(DISTINCT cadastros_qr_avulso.usuario_id) AS participantes
-        FROM campanhas
-        LEFT JOIN qrs_avulsos ON qrs_avulsos.campanha_id = campanhas.id
-        LEFT JOIN cadastros_qr_avulso ON cadastros_qr_avulso.qr_avulso_id = qrs_avulsos.id
-        WHERE campanhas.categoria = 'cadastro_direto'
-        GROUP BY campanhas.id, campanhas.nome
-        ORDER BY campanhas.id DESC
-        """
-    ).fetchall()
     connection.close()
-    return render_template("admin/metricas_black.html", qr_totais=qr_totais,
-                           campanhas_black=campanhas_black)
+    totais = {item["evento"]: item["total"] for item in rows}
+    return render_template("admin/metricas_natal_goncalves.html", totais=totais)
 
 
-@bp.route("/admin/metricas/black-november/qr.png")
+@bp.route("/admin/metricas/natal-goncalves/qr.png")
 @admin_required
-def baixar_qr_premio_black():
-    destino = f"{BASE_URL}{url_for('public.premio_exclusivo')}"
+def baixar_qr_natal_goncalves():
+    destino = f"{BASE_URL}{url_for('public.natal_goncalves_preview')}"
     imagem = qrcode.make(destino)
     arquivo = io.BytesIO()
     imagem.save(arquivo, format="PNG")
     arquivo.seek(0)
     return send_file(arquivo, mimetype="image/png", as_attachment=True,
-                     download_name="qr-premio-exclusivo-knn.png")
+                     download_name="qr-natal-goncalves-knn.png")
 
 
 @bp.route("/admin/participantes")
