@@ -159,7 +159,7 @@ def metricas_black_november():
                COUNT(DISTINCT cadastros_qr_avulso.usuario_id) AS participantes
         FROM campanhas
         LEFT JOIN qrs_avulsos ON qrs_avulsos.campanha_id = campanhas.id
-        LEFT JOIN cadastros_qr_avulso ON cadastros_qr_avulso.qr_avulso_id = qrs_avulso.id
+        LEFT JOIN cadastros_qr_avulso ON cadastros_qr_avulso.qr_avulso_id = qrs_avulsos.id
         WHERE campanhas.categoria = 'cadastro_direto'
         GROUP BY campanhas.id, campanhas.nome
         ORDER BY campanhas.id DESC
