@@ -1,7 +1,10 @@
 """Dashboard, participantes, descobertas e English Pass (admin)."""
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+import io
 
-from config import ENGLISH_PASS_REQUIRED
+import qrcode
+from flask import Blueprint, abort, flash, redirect, render_template, request, send_file, url_for
+
+from config import BASE_URL, ENGLISH_PASS_REQUIRED
 from database import get_connection
 
 from ..decorators import admin_required
@@ -86,9 +89,9 @@ def metricas():
     connection = get_connection()
     bio = connection.execute(
         "SELECT evento, SUM(total) AS total FROM metricas_funil "
-        "WHERE origem = 'qr_bio' GROUP BY evento"
+        "WHERE origem = 'premio_black_qr' GROUP BY evento"
     ).fetchall()
-    bio_totais = {item["evento"]: item["total"] for item in bio}
+    qr_totais = {item["evento"]: item["total"] for item in bio}
     campanhas_black = connection.execute(
         """
         SELECT campanhas.id, campanhas.nome,
@@ -102,7 +105,7 @@ def metricas():
         """
     ).fetchall()
     connection.close()
-    return render_template("admin/metricas.html", bio_totais=bio_totais,
+    return render_template("admin/metricas.html", qr_totais=qr_totais,
                            campanhas_black=campanhas_black)
 
 
@@ -149,10 +152,11 @@ def metricas_black_november():
     connection = get_connection()
     bio = connection.execute(
         "SELECT evento, SUM(total) AS total FROM metricas_funil "
-        "WHERE origem = 'qr_bio' AND evento IN ('bio_qr_open', 'bio_qr_form_complete') "
+        "WHERE origem = 'premio_black_qr' AND evento IN "
+        "('black_prize_qr_open', 'black_prize_cadastro_click', 'black_prize_cadastro_complete') "
         "GROUP BY evento"
     ).fetchall()
-    bio_totais = {item["evento"]: item["total"] for item in bio}
+    qr_totais = {item["evento"]: item["total"] for item in bio}
     campanhas_black = connection.execute(
         """
         SELECT campanhas.id, campanhas.nome,
@@ -166,8 +170,20 @@ def metricas_black_november():
         """
     ).fetchall()
     connection.close()
-    return render_template("admin/metricas_black.html", bio_totais=bio_totais,
+    return render_template("admin/metricas_black.html", qr_totais=qr_totais,
                            campanhas_black=campanhas_black)
+
+
+@bp.route("/admin/metricas/black-november/qr.png")
+@admin_required
+def baixar_qr_premio_black():
+    destino = f"{BASE_URL}{url_for('public.premio_exclusivo')}"
+    imagem = qrcode.make(destino)
+    arquivo = io.BytesIO()
+    imagem.save(arquivo, format="PNG")
+    arquivo.seek(0)
+    return send_file(arquivo, mimetype="image/png", as_attachment=True,
+                     download_name="qr-premio-exclusivo-knn.png")
 
 
 @bp.route("/admin/participantes")

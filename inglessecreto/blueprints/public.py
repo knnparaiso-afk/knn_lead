@@ -34,6 +34,7 @@ METRIC_EVENTS = {
     "form_complete", "whatsapp_click", "friend_share_click",
     "friend_invite_open", "friend_invite_accept",
     "bio_qr_open", "bio_qr_form_complete",
+    "black_prize_qr_open", "black_prize_cadastro_click", "black_prize_cadastro_complete",
 }
 
 
@@ -157,6 +158,50 @@ def _resgatar_roleta(navegador_id):
     if not registrar_resgate(navegador_id, whatsapp):
         return jsonify(erro="Este número ou giro já está vinculado a um prêmio. Confira o número e tente novamente."), 409
     return jsonify(whatsapp_url=whatsapp_resgate_url())
+
+
+PREMIO_QR_CADASTRO_CODIGO = "7169C30E6708"
+
+
+@bp.route("/premio-exclusivo")
+def premio_exclusivo():
+    """Prévia pública do prêmio Black, acessada pelo QR impresso."""
+    if not session.get("black_prize_qr_open_counted"):
+        connection = get_connection()
+        try:
+            _registrar_metrica(
+                connection, "black_prize_qr_open", categoria="premio_black",
+                origem="premio_black_qr",
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+        session["black_prize_qr_open_counted"] = True
+    return render_template("premio_exclusivo.html")
+
+
+@bp.route("/premio-exclusivo/ir-para-cadastro")
+def premio_exclusivo_ir_para_cadastro():
+    """Registra o clique no CTA e segue para o cadastro Black já existente."""
+    session["black_prize_qr_attribution"] = True
+    if not session.get("black_prize_qr_click_counted"):
+        connection = get_connection()
+        try:
+            _registrar_metrica(
+                connection, "black_prize_cadastro_click", categoria="premio_black",
+                origem="premio_black_qr",
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+        session["black_prize_qr_click_counted"] = True
+    return redirect(url_for("public.cadastro_campanha", codigo=PREMIO_QR_CADASTRO_CODIGO))
 
 
 @bp.route("/bio")
@@ -517,6 +562,12 @@ def cadastro_parceiro(codigo):
                 connection, "bio_qr_form_complete",
                 campanha_id=qr["campanha_id"] or 0, categoria="cadastro_direto", origem="qr_bio",
             )
+        if novo_cadastro and session.get("black_prize_qr_attribution"):
+            _registrar_metrica(
+                connection, "black_prize_cadastro_complete",
+                campanha_id=qr["campanha_id"] or 0, categoria="premio_black",
+                origem="premio_black_qr",
+            )
         connection.commit()
     except Exception:
         connection.rollback()
@@ -525,6 +576,7 @@ def cadastro_parceiro(codigo):
         connection.close()
     session["cadastro_direto_qr_id"] = qr["id"]
     session.pop("bio_qr_attribution", None)
+    session.pop("black_prize_qr_attribution", None)
     return redirect(url_for("public.cadastro_parceiro_concluido"))
 
 

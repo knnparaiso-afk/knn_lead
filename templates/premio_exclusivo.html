@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Um prêmio exclusivo espera por você | KNN{% endblock %}
+{% block body_class %}public-page premio-preview-page{% endblock %}
+{% block stylesheets %}{{ super() }}<link rel="stylesheet" href="{{ url_for('static', filename='css/premio-exclusivo.css') | v }}">{% endblock %}
+{% block content %}
+<main class="prize-preview-shell">
+  <div class="prize-glow prize-glow-one"></div><div class="prize-glow prize-glow-two"></div>
+  <section class="prize-preview-card" aria-labelledby="prize-title">
+    <a class="prize-brand" href="{{ url_for('public.index') }}" aria-label="KNN Idiomas"><img src="{{ url_for('static', filename='img/logo-knn-branco.png') | v }}" alt="KNN Idiomas" width="114" height="58"></a>
+    <span class="prize-kicker"><span aria-hidden="true">✦</span> BLACK NOVEMBER · KNN PARAISÓPOLIS</span>
+    <div class="prize-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M10 27h44v29H10zM6 18h52v12H6zM32 18v38M32 18H19a8 8 0 1 1 8-8c0 4.4 5 8 5 8Zm0 0h13a8 8 0 1 0-8-8c0 4.4-5 8-5 8Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg></div>
+    <p class="prize-overline">UMA SURPRESA ESPECIAL PARA VOCÊ</p>
+    <h1 id="prize-title">Você recebeu um<br><em>prêmio exclusivo.</em></h1>
+    <p class="prize-description">A KNN preparou um benefício especial para você. Continue para o cadastro e dê o próximo passo com a nossa equipe.</p>
+    <a class="prize-cta" href="{{ url_for('public.premio_exclusivo_ir_para_cadastro') }}">Ir para o cadastro <span aria-hidden="true">→</span></a>
+    <p class="prize-footnote"><span aria-hidden="true">✓</span> Cadastro seguro, direto com a KNN Paraisópolis.</p>
+    <div class="prize-divider"></div>
+    <p class="prize-signoff">KNN Idiomas · Paraisópolis, MG</p>
+  </section>
+</main>
+{% endblock %}

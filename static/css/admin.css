@@ -128,7 +128,7 @@
 .black-bio-panel { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(0, 1.2fr); gap: 26px; align-items: center; margin-bottom: 34px; padding: 30px; border-radius: 8px; background: linear-gradient(135deg, #211417, #151517); color: white; }
 .black-bio-panel h2 { margin: 12px 0 8px; font: 800 32px/1 "Barlow Condensed", Impact, sans-serif; }
 .black-bio-panel p { max-width: 390px; color: rgba(255,255,255,.68); font-size: 12px; line-height: 1.6; }
-.black-bio-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.black-bio-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .black-bio-stats article { min-height: 130px; padding: 20px; border: 1px solid rgba(255,255,255,.14); border-radius: 6px; background: rgba(255,255,255,.05); }
 .black-bio-stats span, .black-bio-stats small { display: block; color: rgba(255,255,255,.65); font-size: 9px; font-weight: 700; letter-spacing: .08em; }
 .black-bio-stats strong { display: block; margin: 14px 0 7px; color: #ff777f; font: 800 46px/.9 "Barlow Condensed", Impact, sans-serif; }
@@ -136,3 +136,6 @@
 .black-campaign-list { margin-top: 30px; }
 @media (max-width: 700px) { .metrics-hub-grid, .black-bio-panel { grid-template-columns: 1fr; }.metrics-hub-card { min-height: 235px; padding: 24px; }.black-bio-panel { padding: 23px; } }
 @media (max-width: 440px) { .black-bio-stats { grid-template-columns: 1fr; }.metrics-hub-numbers { gap: 16px; } }
+
+.black-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }.admin-page .black-hero-actions .btn { width: auto; }
+@media (max-width: 540px) { .admin-page .black-hero-actions { width: 100%; }.admin-page .black-hero-actions .btn { flex: 1 1 100%; } }
