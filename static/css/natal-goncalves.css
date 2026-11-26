@@ -1,43 +1,41 @@
-.natal-preview-page { --natal-green: #80c78b; --natal-red: #d94a48; min-height: 100vh; background: #0c1712; color: #fff; font-family: "DM Sans", Arial, sans-serif; }
+.natal-preview-page { --natal-red: #d65360; height: 100vh; height: 100svh; overflow: hidden; background: #11090d; color: #fff; font-family: "DM Sans", Arial, sans-serif; }
 .natal-preview-page .topbar, .natal-preview-page .footer { display: none; }
-.natal-preview-page .main-container { width: 100%; max-width: none; margin: 0; padding: 0; }
-.natal-preview-shell { position: relative; display: grid; min-height: 100svh; place-items: center; overflow: hidden; padding: 16px 18px; background: radial-gradient(ellipse at 50% 8%, #244c36 0, #15291f 43%, #0c1712 100%); }
-.natal-preview-shell::before, .natal-preview-shell::after { position: absolute; width: 440px; height: 440px; border: 1px solid rgba(235,211,153,.1); border-radius: 50%; content: ""; pointer-events: none; }
+.natal-preview-page .main-container { width: 100%; height: 100%; max-width: none; margin: 0; padding: 0; }
+.natal-preview-shell { position: relative; display: grid; width: 100%; height: 100vh; height: 100svh; box-sizing: border-box; place-items: center; overflow: hidden; padding: 12px 16px; background: radial-gradient(ellipse at 50% 8%, #5b202a 0, #32121b 43%, #11090d 100%); }
+.natal-preview-shell::before, .natal-preview-shell::after { position: absolute; width: 440px; height: 440px; border: 1px solid rgba(241,190,153,.08); border-radius: 50%; content: ""; pointer-events: none; }
 .natal-preview-shell::before { top: -250px; right: -170px; box-shadow: 0 0 0 36px rgba(255,255,255,.018), 0 0 0 72px rgba(255,255,255,.014); }
 .natal-preview-shell::after { bottom: -320px; left: -220px; box-shadow: 0 0 0 42px rgba(255,255,255,.018), 0 0 0 84px rgba(255,255,255,.012); }
-.natal-sparkle { position: absolute; z-index: 1; color: #e9d49d; font-size: 34px; opacity: .86; pointer-events: none; }.natal-sparkle-one { top: 15%; left: 12%; }.natal-sparkle-two { right: 12%; bottom: 18%; color: #e89a87; }
-.natal-preview-card { position: relative; z-index: 2; width: min(100%, 520px); padding: clamp(23px, 5vw, 34px); border: 1px solid rgba(150,205,153,.28); border-radius: 24px; background: linear-gradient(155deg, rgba(24,52,39,.97), rgba(16,31,24,.97)); box-shadow: 0 28px 90px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.05); text-align: center; }
-.natal-brand { display: flex; width: 82px; height: 54px; align-items: center; justify-content: center; margin: 0 auto 17px; opacity: .96; }.natal-brand img { display: block; width: 78px; height: auto; object-fit: contain; }
-.natal-kicker { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid rgba(235,211,153,.24); border-radius: 999px; background: rgba(255,255,255,.045); color: #e6d7ae; font-size: 9px; font-weight: 800; letter-spacing: .12em; }.natal-kicker span { color: #e99a87; font-size: 14px; }
-.natal-gift-icon { display: grid; width: 58px; height: 58px; place-items: center; margin: 18px auto 15px; border: 1px solid rgba(233,154,135,.45); border-radius: 18px; background: linear-gradient(145deg, rgba(217,74,72,.2), rgba(128,199,139,.16)); color: #e9b18f; box-shadow: 0 12px 34px rgba(217,74,72,.12); }.natal-gift-icon svg { width: 32px; height: 32px; }
-.natal-overline { margin: 0 0 11px; color: #c6d7c8; font-size: 10px; font-weight: 800; letter-spacing: .13em; }
-.natal-preview-card h1 { margin: 0; color: #fff; font: 800 clamp(38px, 9vw, 54px)/.98 "Barlow Condensed", Impact, sans-serif; letter-spacing: -.025em; }.natal-preview-card h1 em { color: #e99a87; font-style: normal; }
-.natal-description { max-width: 380px; margin: 13px auto 18px; color: rgba(255,255,255,.76); font-size: 14px; line-height: 1.55; }
-.natal-cta { display: flex; min-height: 58px; align-items: center; justify-content: center; gap: 12px; border: 1px solid rgba(250,222,169,.38); border-radius: 12px; background: linear-gradient(100deg, #e6c989, #d7b66d); box-shadow: 0 10px 28px rgba(0,0,0,.2); color: #183223; font-size: 14px; font-weight: 800; text-decoration: none; transition: transform .18s ease, box-shadow .18s ease; }.natal-cta:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(0,0,0,.28); }.natal-cta span { font-size: 20px; }
-.natal-footnote { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 14px 0 0; color: rgba(255,255,255,.58); font-size: 10px; }.natal-footnote span { color: #a8d9a8; font-size: 13px; }
-.natal-divider { height: 1px; margin: 17px 0 11px; background: rgba(255,255,255,.1); }.natal-signoff { margin: 0; color: rgba(255,255,255,.46); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
-@media (max-width: 540px) { .natal-preview-shell { padding: 18px 14px; }.natal-preview-card { border-radius: 20px; }.natal-description { font-size: 13px; } }
+.natal-sparkle { position: absolute; z-index: 1; color: #ead4a5; font-size: 26px; opacity: .7; pointer-events: none; }.natal-sparkle-one { top: 15%; left: 12%; }.natal-sparkle-two { right: 12%; bottom: 18%; color: #e8a0a1; }
+.natal-preview-card { position: relative; z-index: 2; box-sizing: border-box; width: min(100%, 500px); padding: clamp(20px, 4.5vw, 32px); border: 1px solid rgba(225,141,151,.3); border-radius: 22px; background: linear-gradient(155deg, rgba(58,24,33,.97), rgba(29,15,21,.98)); box-shadow: 0 28px 90px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.05); text-align: center; }
+.natal-brand { display: flex; width: 78px; height: 46px; align-items: center; justify-content: center; margin: 0 auto 12px; opacity: .96; }.natal-brand img { display: block; width: 72px; height: auto; object-fit: contain; }
+.natal-gift-icon { display: grid; width: 48px; height: 48px; place-items: center; margin: 10px auto 9px; border: 1px solid rgba(233,154,135,.4); border-radius: 15px; background: rgba(214,83,96,.13); color: #edb4a1; }.natal-gift-icon svg { width: 27px; height: 27px; }
+.natal-overline { margin: 0 0 7px; color: #e6c6bd; font-size: 9px; font-weight: 800; letter-spacing: .13em; }
+.natal-preview-card h1 { margin: 0; color: #fff; font: 800 clamp(36px, 8.5vw, 52px)/.96 "Barlow Condensed", Impact, sans-serif; letter-spacing: -.025em; }.natal-preview-card h1 em { color: #ed9a91; font-style: normal; }
+.natal-preview-card .natal-description { max-width: 380px; margin: 10px auto 14px; color: rgba(255,255,255,.76); font-size: 13px; line-height: 1.45; }
+.natal-cta { display: flex; min-height: 50px; align-items: center; justify-content: center; gap: 12px; border: 1px solid rgba(250,222,169,.38); border-radius: 11px; background: linear-gradient(100deg, #e6c989, #d7b66d); box-shadow: 0 10px 28px rgba(0,0,0,.2); color: #32151c; font-size: 14px; font-weight: 800; text-decoration: none; transition: transform .18s ease, box-shadow .18s ease; }.natal-cta:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(0,0,0,.28); }.natal-cta span { font-size: 20px; }
+.natal-footnote { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 10px 0 0; color: rgba(255,255,255,.58); font-size: 9px; }.natal-footnote span { color: #d9be8d; font-size: 12px; }
+.natal-divider { height: 1px; margin: 13px 0 9px; background: rgba(255,255,255,.1); }.natal-signoff { margin: 0; color: rgba(255,255,255,.46); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+@media (max-width: 540px) { .natal-preview-shell { padding: 10px 12px; }.natal-preview-card { padding: 16px 18px; border-radius: 18px; }.natal-brand { height: 38px; margin-bottom: 8px; }.natal-brand img { width: 66px; }.natal-gift-icon { width: 42px; height: 42px; margin: 7px auto; }.natal-gift-icon svg { width: 23px; height: 23px; }.natal-overline { font-size: 8px; margin-bottom: 5px; }.natal-preview-card h1 { font-size: clamp(32px, 8.8vw, 39px); }.natal-preview-card .natal-description { margin: 8px auto 12px; font-size: 12px; line-height: 1.4; }.natal-cta { min-height: 46px; }.natal-footnote { margin-top: 8px; font-size: 8px; }.natal-divider { margin: 10px 0 7px; }.natal-signoff { font-size: 8px; } }
 @media (prefers-reduced-motion: reduce) { .natal-cta { transition: none; } }
 
-body.natal-goncalves-form-page { --natal-accent: #d8bf79; min-height: 100vh; background: radial-gradient(ellipse at 12% 15%, #173e2b 0, transparent 48%), #0d1913; color: #f7f6ee; font-family: Arial, sans-serif; }
-.natal-goncalves-form-page .topbar { border-bottom-color: #ffffff20; background: #101d16; }
+body.natal-goncalves-form-page { --natal-accent: #e2bd75; min-height: 100vh; background: radial-gradient(ellipse at 12% 15%, #4a1822 0, transparent 48%), #100b0e; color: #f7f3ef; font-family: Arial, sans-serif; }
+.natal-goncalves-form-page .topbar { border-bottom-color: #ffffff20; background: #191014; }
 .natal-shell { width: min(1120px, 100%); margin: auto; padding: 34px 40px 58px; }
 .natal-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-bottom: 26px; border-bottom: 1px solid #ffffff24; }
 .natal-header img { display: block; width: 104px; height: 54px; object-fit: contain; }
-.natal-header span { color: #b8d6ba; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-align: right; }
+.natal-header span { color: #e1bfc0; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-align: right; }
 .natal-layout { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 64px; padding-top: 42px; }
 .natal-offer h1 { margin: 0 0 24px; color: #fff; font: 900 clamp(48px, 6.4vw, 78px)/.96 Impact, "Arial Narrow", sans-serif; letter-spacing: -.035em; }.natal-offer h1 span { color: #e7c983; }
-.natal-description { max-width: 440px; margin: 0; color: #d8e1d7; font-size: 18px; line-height: 1.6; }
-.natal-benefit { max-width: 430px; margin: 28px 0 0; padding: 20px; border: 1px solid #89c69655; border-radius: 10px; background: #7dbe8c12; color: #eef4e8; font-size: 14px; line-height: 1.65; }.natal-benefit strong { color: #e7c983; }
-.natal-conditions { max-width: 430px; margin: 22px 0 0; color: #b9c8ba; font-size: 12px; line-height: 1.65; }
-.natal-form { min-width: 0; padding: 30px; border: 1px solid #a8d7ae38; border-radius: 14px; background: linear-gradient(150deg, #1c3024, #17231b); box-shadow: 0 18px 60px #0004; }
+.natal-description { max-width: 440px; margin: 0; color: #e3d2d2; font-size: 18px; line-height: 1.6; }
+.natal-conditions { max-width: 430px; margin: 22px 0 0; color: #cfbfc0; font-size: 12px; line-height: 1.65; }
+.natal-form { min-width: 0; padding: 30px; border: 1px solid #cb768147; border-radius: 14px; background: linear-gradient(150deg, #321820, #201318); box-shadow: 0 18px 60px #0004; }
 .natal-form .natal-eyebrow { margin: 0 0 14px; color: #e7c983; font-size: 10px; font-weight: 800; letter-spacing: .14em; }
 .natal-form h2 { margin: 0 0 9px; color: #fff; font-size: 25px; line-height: 1.2; letter-spacing: -.03em; }
-.natal-form-intro { margin: 0 0 23px; color: #c4d1c4; font-size: 13px; line-height: 1.55; }
-.natal-form .field { margin-bottom: 15px; }.natal-form .field label { color: #f3f4ec; }.natal-form .field input { height: 47px; border-color: #597263; border-radius: 6px; background: #101b14; color: #fff; font-family: Arial, sans-serif; }.natal-form .field input:focus { border-color: #a9d69f; box-shadow: 0 0 0 3px #8dca8d26; }
-.natal-form .consent { margin: 20px 0; color: #c7d1c6; font-size: 11px; }.natal-form .consent input { flex: 0 0 16px; accent-color: #88c58d; }
-.natal-submit { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; padding: 14px 18px; border: 0; border-radius: 7px; background: linear-gradient(100deg, #e4c981, #cfa95f); color: #193121; font: 800 12px Arial, sans-serif; letter-spacing: .03em; cursor: pointer; }.natal-submit:hover { filter: brightness(1.08); }.natal-submit span { font-size: 21px; }
-.natal-next-step, .natal-privacy { color: #b9c8ba; font-size: 11px; line-height: 1.6; text-align: center; }.natal-next-step { margin: 16px 0 0; }.natal-privacy { margin: 12px 0 0; color: #a5b4a7; font-size: 10px; }
+.natal-form-intro { margin: 0 0 23px; color: #d2c3c4; font-size: 13px; line-height: 1.55; }
+.natal-form .field { margin-bottom: 15px; }.natal-form .field label { color: #f6f0eb; }.natal-form .field input { height: 47px; border-color: #76515a; border-radius: 6px; background: #181014; color: #fff; font-family: Arial, sans-serif; }.natal-form .field input:focus { border-color: #e2bd75; box-shadow: 0 0 0 3px #e2bd7526; }
+.natal-form .consent { margin: 20px 0; color: #d4c8c8; font-size: 11px; }.natal-form .consent input { flex: 0 0 16px; accent-color: #d65360; }
+.natal-submit { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; padding: 14px 18px; border: 0; border-radius: 7px; background: linear-gradient(100deg, #e4c981, #cfa95f); color: #32151c; font: 800 12px Arial, sans-serif; letter-spacing: .03em; cursor: pointer; }.natal-submit:hover { filter: brightness(1.08); }.natal-submit span { font-size: 21px; }
+.natal-next-step, .natal-privacy { color: #cfbfc0; font-size: 11px; line-height: 1.6; text-align: center; }.natal-next-step { margin: 16px 0 0; }.natal-privacy { margin: 12px 0 0; color: #b8a7a9; font-size: 10px; }
 .natal-goncalves-form-page .flash.error { border: 1px solid #f2a2a0; background: #4a2221; color: #fff0ef; }
 @media (max-width: 800px) { .natal-shell { padding: 24px 20px 42px; }.natal-layout { grid-template-columns: 1fr; gap: 32px; padding-top: 30px; }.natal-form { padding: 24px; } }
 @media (max-width: 480px) { .natal-header { align-items: flex-start; }.natal-header span { max-width: 140px; line-height: 1.6; }.natal-shell { padding-inline: 16px; }.natal-form { padding: 20px; } }
